@@ -10,6 +10,12 @@ public class PartialViewController {
     public String IndexGET() {
         return "main/index";
     }
+    
+    @GetMapping("/login")
+    public String LoginGET() {
+    	return "/member/login";
+    }
+    
 
 
 }
