@@ -1,0 +1,13 @@
+# 자동으로 텍스트 파일의 줄바꿈을 OS에 맞게 변환
+* text=auto
+
+# 명시적으로 줄바꿈 통일: LF (macOS/Linux 기준 - 서버가 대부분 리눅스라..)
+* text eol=lf
+
+# 바이너리 파일은 줄바꿈 변경 안 하도록 지정
+*.png binary
+*.jpg binary
+*.gif binary
+*.pdf binary
+*.ico binary
+
