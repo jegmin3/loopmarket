@@ -1,6 +1,9 @@
 package com.loopmarket.domain.member;
 
 import java.time.LocalDateTime;
+import java.util.Optional;
+
+import javax.servlet.http.HttpSession;
 
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -8,6 +11,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.loopmarket.common.controller.BaseController;
 import com.loopmarket.domain.member.dto.MemberDTO;
@@ -26,24 +30,35 @@ public class MemberController extends BaseController {
 		return render("member/login", model);
 	}
 	
+	@PostMapping("/login")
+	public String login(@ModelAttribute MemberDTO dto, HttpSession session, RedirectAttributes redirectAttributes) {
+		Optional<MemberEntity> optionalMember = memberRepository.findByEmail(dto.getEmail());
+		
+		MemberEntity member = optionalMember.get();
+		
+		// 로그인 성공시 세션에 사용자 정보 저장
+		session.setAttribute("loginUser", member);
+		
+		redirectAttributes.addFlashAttribute("successMessage", "로그인 되었습니다.");
+		return "redirect:/"; // 로그인 성공 시 메인 페이지로 이동
+	}
+	
+	// 로그아웃
+	@GetMapping("/logout")
+	public String logout(HttpSession session, RedirectAttributes redirectAttributes) {
+		session.invalidate(); // 세션 전체 제거 (로그아웃)
+		
+		redirectAttributes.addFlashAttribute("successMessage", "로그아웃 되었습니다.");
+		return "redirect:/member/login"; // 로그인 페이지로 이동
+	}
+	
 	@GetMapping("/signup")
 	public String signupGET(Model model) {
 		return render("member/signup", model);
 	}
 	
     @PostMapping("/signup")
-    public String signupPOST(@ModelAttribute MemberDTO dto, Model model) {
-
-        if (memberRepository.existsByEmail(dto.getEmail())) {
-            model.addAttribute("errorMessage", "이미 사용 중인 이메일입니다.");
-            return "member/signup"; // 다시 회원가입 페이지로
-        }
-
-        if (memberRepository.existsByNickname(dto.getNickname())) {
-            model.addAttribute("errorMessage", "이미 사용 중인 닉네임입니다.");
-            return "member/signup";
-        }
-        
+    public String signupPOST(@ModelAttribute MemberDTO dto) {
         // 비밀번호는 추후 암호화 예정
         MemberEntity newMember = MemberEntity.builder()
                 .email(dto.getEmail())
@@ -53,9 +68,10 @@ public class MemberController extends BaseController {
                 .build();
         
         memberRepository.save(newMember);
-
+       
         return "redirect:/member/login";
     }
+
 	
 	
 }
