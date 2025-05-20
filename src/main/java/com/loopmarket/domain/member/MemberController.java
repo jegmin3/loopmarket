@@ -30,14 +30,35 @@ public class MemberController extends BaseController {
 		return render("member/login", model);
 	}
 	
+	@PostMapping("/login")
+	public String login(@ModelAttribute MemberDTO dto, HttpSession session, RedirectAttributes redirectAttributes) {
+		Optional<MemberEntity> optionalMember = memberRepository.findByEmail(dto.getEmail());
+		
+		MemberEntity member = optionalMember.get();
+		
+		// 로그인 성공시 세션에 사용자 정보 저장
+		session.setAttribute("loginUser", member);
+		
+		redirectAttributes.addFlashAttribute("successMessage", "로그인 되었습니다.");
+		return "redirect:/"; // 로그인 성공 시 메인 페이지로 이동
+	}
+	
+	// 로그아웃
+	@GetMapping("/logout")
+	public String logout(HttpSession session, RedirectAttributes redirectAttributes) {
+		session.invalidate(); // 세션 전체 제거 (로그아웃)
+		
+		redirectAttributes.addFlashAttribute("successMessage", "로그아웃 되었습니다.");
+		return "redirect:/member/login"; // 로그인 페이지로 이동
+	}
+	
 	@GetMapping("/signup")
 	public String signupGET(Model model) {
 		return render("member/signup", model);
 	}
 	
     @PostMapping("/signup")
-    public String signupPOST(@ModelAttribute MemberDTO dto, RedirectAttributes redirectAttributes) {
-        
+    public String signupPOST(@ModelAttribute MemberDTO dto) {
         // 비밀번호는 추후 암호화 예정
         MemberEntity newMember = MemberEntity.builder()
                 .email(dto.getEmail())
@@ -47,41 +68,8 @@ public class MemberController extends BaseController {
                 .build();
         
         memberRepository.save(newMember);
-        
-        redirectAttributes.addFlashAttribute("successMessage", "회원가입이 완료되었습니다.");
+       
         return "redirect:/member/login";
-    }
-    
-    @PostMapping("/login")
-    public String login(@ModelAttribute MemberDTO dto, HttpSession session, RedirectAttributes redirectAttributes) {
-        Optional<MemberEntity> optionalMember = memberRepository.findByEmail(dto.getEmail());
-
-        if (optionalMember.isEmpty()) {
-            redirectAttributes.addFlashAttribute("errorMessage", "존재하지 않는 이메일입니다.");
-            return "redirect:/member/login";
-        }
-
-        MemberEntity member = optionalMember.get();
-
-        // 비밀번호 확인(아직 암호화 안해서 평문 비교중)
-        if (!member.getPassword().equals(dto.getPassword())) {
-            redirectAttributes.addFlashAttribute("errorMessage", "비밀번호가 일치하지 않습니다.");
-            return "redirect:/member/login";
-        }
-
-        // 로그인 성공시 세션에 사용자 정보 저장
-        session.setAttribute("loginUser", member);
-
-        return "redirect:/"; // 로그인 성공 시 메인 페이지로 이동
-    }
-    
-    // 로그아웃
-    @GetMapping("/logout")
-    public String logout(HttpSession session, RedirectAttributes redirectAttributes) {
-        session.invalidate(); // 세션 전체 제거 (로그아웃)
-        
-        redirectAttributes.addFlashAttribute("successMessage", "로그아웃 되었습니다.");
-        return "redirect:/member/login"; // 로그인 페이지로 이동
     }
 
 	
