@@ -35,6 +35,22 @@
 	<!-- 공통헤더 삽입-->
     <div th:replace="layout/header :: header"></div>
 	
+	<!-- 성공시 출력할 플래시 메시지 -->
+	<div th:if="${successMessage}" class="alert alert-success" th:text="${successMessage}"></div>
+	<!-- 에러시 출력할 플래시 메시지 -->
+	<div th:if="${errorMessage}" class="alert alert-danger" th:text="${errorMessage}"></div>
+	<script> // 플래시메시지용 스크립트
+	  $(document).ready(function () {
+	    const $alerts = $(".alert-success, .alert-danger");
+
+	    if ($alerts.length > 0) {
+	      setTimeout(function () {
+	        $alerts.fadeOut("slow");
+	      }, 1500); // 1.5초 후 사라짐
+	    }
+	  });
+	</script>
+	
 	<!-- 본문 삽입 -->
 	<main class="container my-4" th:insert="${viewName} :: content"></main>
 

@@ -69,11 +69,21 @@ public class MemberController extends BaseController {
             return "redirect:/member/login";
         }
 
-        // 로그인 성공 → 세션에 사용자 정보 저장
+        // 로그인 성공시 세션에 사용자 정보 저장
         session.setAttribute("loginUser", member);
 
         return "redirect:/"; // 로그인 성공 시 메인 페이지로 이동
     }
+    
+    // 로그아웃
+    @GetMapping("/logout")
+    public String logout(HttpSession session, RedirectAttributes redirectAttributes) {
+        session.invalidate(); // 세션 전체 제거 (로그아웃)
+        
+        redirectAttributes.addFlashAttribute("successMessage", "로그아웃 되었습니다.");
+        return "redirect:/member/login"; // 로그인 페이지로 이동
+    }
+
 	
 	
 }

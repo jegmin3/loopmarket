@@ -2,29 +2,6 @@
 <div th:fragment="content" class="container my-5" style="max-width: 400px;">
     <h3 class="text-center mb-4">로그인</h3>
 	
-	<!-- 성공 메시지 -->
-	<div th:if="${successMessage}" class="alert alert-success" th:text="${successMessage}"></div>
-	<!-- 에러 메시지 -->
-	<div th:if="${errorMessage}" class="alert alert-danger" th:text="${errorMessage}"></div>
-	<script> // 에러 스크립트
-	  $(document).ready(function () {
-	    const $successAlert = $(".alert-success");
-	    const $errorAlert = $(".alert-danger");
-	    
-	    if ($successAlert.length > 0) {
-	      setTimeout(function () {
-	        $successAlert.fadeOut("slow"); // 1초 정도 걸쳐 사라짐
-	      }, 1500); // 1.5초 후 사라짐
-	    }
-	    if ($errorAlert.length > 0) {
-	      setTimeout(function () {
-	        $errorAlert.fadeOut("slow");
-	      }, 1500);
-	    }
-		
-	  });
-	</script>
-	
     <form th:action="@{/member/login}" method="post">
         <div class="mb-3">
             <label for="email" class="form-label">이메일</label>
