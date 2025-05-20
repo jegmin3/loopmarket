@@ -36,18 +36,18 @@
     <div th:replace="layout/header :: header"></div>
 	
 	<!-- 본문 삽입(조각뷰 비동기 처리로) -->
-    <main id="main-content" class="container my-4"></main>
+    <main class="container-fluid my-4 " th:insert="${viewName}"></main>
 	
 	<!-- 공통 푸터 삽입-->
     <div th:replace="layout/footer :: footer"></div>
 	
 </div>
 
-<script>
+<!--<script>
     document.addEventListener("DOMContentLoaded", () => {
         render("index");
     });
-</script>
+</script>-->
 	
 </body>
 </html>

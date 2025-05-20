@@ -15,7 +15,5 @@ public class PartialViewController {
     public String LoginGET() {
     	return "/member/login";
     }
-    
-
 
 }
