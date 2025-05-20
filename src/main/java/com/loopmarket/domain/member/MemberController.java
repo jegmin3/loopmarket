@@ -1,6 +1,9 @@
 package com.loopmarket.domain.member;
 
 import java.time.LocalDateTime;
+import java.util.Optional;
+
+import javax.servlet.http.HttpSession;
 
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -8,6 +11,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.loopmarket.common.controller.BaseController;
 import com.loopmarket.domain.member.dto.MemberDTO;
@@ -32,17 +36,7 @@ public class MemberController extends BaseController {
 	}
 	
     @PostMapping("/signup")
-    public String signupPOST(@ModelAttribute MemberDTO dto, Model model) {
-
-        if (memberRepository.existsByEmail(dto.getEmail())) {
-            model.addAttribute("errorMessage", "이미 사용 중인 이메일입니다.");
-            return "member/signup"; // 다시 회원가입 페이지로
-        }
-
-        if (memberRepository.existsByNickname(dto.getNickname())) {
-            model.addAttribute("errorMessage", "이미 사용 중인 닉네임입니다.");
-            return "member/signup";
-        }
+    public String signupPOST(@ModelAttribute MemberDTO dto, RedirectAttributes redirectAttributes) {
         
         // 비밀번호는 추후 암호화 예정
         MemberEntity newMember = MemberEntity.builder()
@@ -53,8 +47,32 @@ public class MemberController extends BaseController {
                 .build();
         
         memberRepository.save(newMember);
-
+        
+        redirectAttributes.addFlashAttribute("successMessage", "회원가입이 완료되었습니다.");
         return "redirect:/member/login";
+    }
+    
+    @PostMapping("/login")
+    public String login(@ModelAttribute MemberDTO dto, HttpSession session, RedirectAttributes redirectAttributes) {
+        Optional<MemberEntity> optionalMember = memberRepository.findByEmail(dto.getEmail());
+
+        if (optionalMember.isEmpty()) {
+            redirectAttributes.addFlashAttribute("errorMessage", "존재하지 않는 이메일입니다.");
+            return "redirect:/member/login";
+        }
+
+        MemberEntity member = optionalMember.get();
+
+        // 비밀번호 확인(아직 암호화 안해서 평문 비교중)
+        if (!member.getPassword().equals(dto.getPassword())) {
+            redirectAttributes.addFlashAttribute("errorMessage", "비밀번호가 일치하지 않습니다.");
+            return "redirect:/member/login";
+        }
+
+        // 로그인 성공 → 세션에 사용자 정보 저장
+        session.setAttribute("loginUser", member);
+
+        return "redirect:/"; // 로그인 성공 시 메인 페이지로 이동
     }
 	
 	
