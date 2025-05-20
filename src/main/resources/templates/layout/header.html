@@ -1,6 +1,3 @@
-<!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
-<body>
 <header th:fragment="header">
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
         <div class="container-fluid">
@@ -13,26 +10,22 @@
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav me-auto">
                     <li class="nav-item">
-                        <a class="nav-link active" aria-current="page" href="#" onclick="render('index')">홈</a>
+                        <a class="nav-link active" aria-current="page" href="/">홈</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="#" onclick="render('product-list')">상품 목록</a>
+                        <a class="nav-link" href="#">상품 목록</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="#" onclick="render('mypage')">마이페이지</a>
+                        <a class="nav-link" href="#">마이페이지</a>
                     </li>
                 </ul>
 
                 <ul class="navbar-nav">
                     <li class="nav-item">
-                        <a class="nav-link" href="#" id="loginclick">로그인</a>
+                        <a class="nav-link" href="/member/login">로그인</a>
                     </li>
                 </ul>
             </div>
         </div>
     </nav>
 </header>
-
-</body>
-</html>
-
