@@ -1,0 +1,50 @@
+<!-- 
+	charge.html: 마이페이지 > 자체페이 충전 페이지 조각 뷰입니다.
+	
+    1. 하단에 외부 JS 스크립트 3개가 포함되어 있습니다:
+      - iamport.payment.js: 포트원 결제창
+      - pay.js: 결제 요청 처리 (requestPay 함수)
+      - pay-ui.js: 충전 화면 전용 입력 로직 (금액 입력, 키패드, 버튼 이벤트 등)
+	2. 테스트용 사용자 정보 부분은 추후 실제 로그인 사용자 정보 사용 시 수정하겠습니다.
+-->
+
+<!-- 테스트용 사용자 정보 -->
+<script>
+    window.loginUserId = 1;
+    window.loginUserName = "테스트 사용자";
+    window.loginUserEmail = "test@itwill.com";
+</script>
+
+<!-- Bootstrap 스타일 적용 예시 -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
+<div class="container py-5 text-center">
+  <h2 class="mb-3">얼마를 충전할까요?</h2>
+  <div class="text-muted mb-3">현재 잔액: <span id="currentBalance">0</span>원</div>
+
+  <input id="amountInput" class="form-control form-control-lg text-center mb-3" type="text" value="0" readonly />
+
+  <div class="d-flex flex-wrap justify-content-center gap-2 mb-3">
+    <button class="btn btn-outline-primary" data-amount="10000">+1만원</button>
+    <button class="btn btn-outline-primary" data-amount="50000">+5만원</button>
+    <button class="btn btn-outline-primary" data-amount="100000">+10만원</button>
+  </div>
+
+  <div class="d-flex flex-wrap justify-content-center gap-2 mb-3" id="keypad"></div>
+
+  <div class="mb-3">
+    <label for="pgSelect" class="form-label fw-bold">결제 수단 선택</label>
+    <select id="pgSelect" class="form-select w-auto mx-auto">
+      <option value="kakaopay">카카오페이</option>
+      <option value="tosspay">토스페이</option>
+      <option value="html5_inicis">이니시스</option>
+    </select>
+  </div>
+
+  <button class="btn btn-dark btn-lg w-100" id="chargeBtn">충전하기</button>
+</div>
+
+<!-- 외부 스크립트 연결 -->
+<script src="https://cdn.iamport.kr/js/iamport.payment-1.1.8.js"></script>
+<script src="/js/pay.js"></script>
+<script src="/js/pay-ui.js"></script>
