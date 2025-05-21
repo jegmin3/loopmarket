@@ -56,7 +56,6 @@ public class PayApiController {
 	
 	/**
 	 * 로그인 사용자의 잔액 조회 API
-	 * ex) GET /api/pay/balance?userId=5
 	 */
 	@GetMapping("/balance/{userId}")
 	public ResponseEntity<BalanceResponse> getBalance(@PathVariable Long userId) {
