@@ -6,13 +6,15 @@ import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
 
 /**
- * 잔액 조회 API 응답 DTO
+ * 페이 환불 API 응답 DTO
+ * PayApiController 의 /api/pay/refund API에서 사용됩니다.
  */
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class BalanceResponse {
+public class RefundResponse {
+
     private boolean success;
     private String message;
     private int balance;

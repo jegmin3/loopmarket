@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 @RequestMapping("/pay")
 public class PayController extends BaseController {
 	
+	// 페이 충전 페이지
 	@GetMapping("/charge")
 	public String showChargePage(HttpSession session, Model model) {
 	    MemberEntity loginUser = (MemberEntity) session.getAttribute("loginUser");
@@ -36,5 +37,20 @@ public class PayController extends BaseController {
 
 	    return render("pay/charge", model);
 	}
+	
+	// 페이 환불 페이지
+	@GetMapping("/refund")
+    public String showRefundPage(HttpSession session, Model model) {
+        MemberEntity loginUser = (MemberEntity) session.getAttribute("loginUser");
 
+        if (loginUser == null) {
+            return "redirect:/member/login";
+        }
+
+        model.addAttribute("userId", loginUser.getUserId());
+        model.addAttribute("userName", loginUser.getNickname());
+        model.addAttribute("userEmail", loginUser.getEmail());
+
+        return render("pay/refund", model);
+    }
 }

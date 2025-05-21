@@ -12,6 +12,8 @@ import org.springframework.web.bind.annotation.RestController;
 import com.loopmarket.domain.pay.dto.BalanceResponse;
 import com.loopmarket.domain.pay.dto.ChargeRequest;
 import com.loopmarket.domain.pay.dto.ChargeResponse;
+import com.loopmarket.domain.pay.dto.RefundRequest;
+import com.loopmarket.domain.pay.dto.RefundResponse;
 import com.loopmarket.domain.pay.enums.PaymentMethod;
 import com.loopmarket.domain.pay.service.PayService;
 
@@ -66,5 +68,25 @@ public class PayApiController {
 			balance
 		);
 		return ResponseEntity.ok(response);
+	}
+	
+	/**
+	 * 페이 환불 처리 API
+	 */
+	@PostMapping("/refund")
+	public ResponseEntity<RefundResponse> refund(@RequestBody RefundRequest request) {
+	    // 1. 환불 처리
+	    payService.refund(request.getUserId(), request.getAmount());
+
+	    // 2. 현재 잔액 조회
+	    int balance = payService.getBalance(request.getUserId());
+
+	    // 3. 응답 객체 생성
+	    RefundResponse response = new RefundResponse(
+	        true,
+	        "환불이 완료되었습니다.",
+	        balance
+	    );
+	    return ResponseEntity.ok(response);
 	}
 }
