@@ -129,10 +129,8 @@ function searchOrFilterLocation() {
 
   if (!recommendSection || !resultList) return;
 
-  if (input === "") {
-    recommendSection.classList.remove("d-none");
-    resultList.classList.add("d-none");
-    resultList.innerHTML = "";
+  if (input.length < 2) {
+    resultList.innerHTML = "<li class='list-group-item text-muted'>2글자 이상 입력해주세요.</li>";
     return;
   }
 
@@ -146,8 +144,6 @@ function searchOrFilterLocation() {
   })
     .then(res => res.json())
     .then(data => {
-      console.log("카카오 검색 응답", data); // 확인용
-
       resultList.innerHTML = "";
 
       if (!data.documents || data.documents.length === 0) {
@@ -158,31 +154,38 @@ function searchOrFilterLocation() {
         return;
       }
 
-      const uniqueAddresses = [
-        ...new Set(
-          data.documents
-            .filter(doc => doc.address_name) // ✅ null 방지
-            .map(doc => doc.address_name)
-        )
-      ];
+      const dongSet = new Set();
 
-      const filtered = uniqueAddresses.sort((a, b) => a.localeCompare(b, 'ko'));
+      data.documents.forEach(doc => {
+        const full = doc.address_name;
+        if (!full) return;
 
-      filtered.forEach(addressName => {
-        const dongName = extractAdminUnit(addressName);
+        const dong = extractAdminUnit(full);
+        if (!dong || /\d/.test(dong) || dong.length < 2) return;
+
+        const parts = full.split(" ");
+        const displayText = `${parts[0]} ${parts[1]} ${dong}`;
 
         const li = document.createElement("li");
         li.className = "list-group-item";
-        li.textContent = addressName;
-        li.onclick = () => setLocation(dongName);
+        li.textContent = displayText;
+        li.onclick = () => setLocation(displayText);
         resultList.appendChild(li);
       });
-    })
 
+      if (dongSet.size === 0) {
+        const li = document.createElement("li");
+        li.className = "list-group-item text-muted";
+        li.textContent = "검색 결과가 없습니다.";
+        resultList.appendChild(li);
+      }
+    })
     .catch(err => {
       console.error("주소 검색 실패:", err);
     });
 }
+
+
 
 // 주소 문자열에서 동/읍/면 단위 추출 (보조용)
 function extractDongFromFull(fullAddress) {
@@ -212,25 +215,62 @@ function extractDongFromFull(fullAddress) {
 function extractAdminUnit(fullAddress) {
   if (!fullAddress) return "동네";
 
+  const excludeWords = [
+    "서울", "부산", "광주", "대전", "인천", "세종", "대구", "울산",
+    "경기", "강원", "충북", "충남", "전북", "전남", "경북", "경남", "제주"
+  ];
+
   const words = fullAddress.trim().split(/\s+/).reverse();
 
-  // 동/읍/면이 있는 경우
+  // 동/읍/면
   for (const word of words) {
-    if (word.endsWith("동") || word.endsWith("읍") || word.endsWith("면")) {
+    if ((word.endsWith("동") || word.endsWith("읍") || word.endsWith("면")) && word.length > 1) {
       return word;
     }
   }
 
-  // 그 외 숫자/번지 제외한 마지막 행정단위 (예: 세종로)
+  // 그 외 숫자/번지 제외, 광역시/도 제외
   for (const word of words) {
-    if (!/\d/.test(word) && !word.includes("-")) {
+    if (
+      !/\d/.test(word) &&
+      !word.includes("-") &&
+      word.length > 1 &&
+      !word.endsWith("구") &&
+      !excludeWords.includes(word)
+    ) {
       return word;
     }
   }
 
-  // fallback
+  // 마지막 fallback: 어쨌든 무조건 하나는 돌려줌
   return words[0];
 }
+
+
+
+
+
+function cleanAddress(fullAddress) {
+  if (!fullAddress) return "";
+
+  const words = fullAddress.trim().split(/\s+/);
+
+  // 최소 3단계까지 자르기 (예: 서울 용산구 이태원동)
+  const filtered = [];
+
+  for (let i = 0; i < words.length; i++) {
+    const word = words[i];
+    filtered.push(word);
+
+    if (word.endsWith("동") || word.endsWith("읍") || word.endsWith("면") || word.endsWith("로") || word.endsWith("구")) {
+      // 여기서 '구' 포함하면 "서울 용산구"까지만도 허용 가능
+      break;
+    }
+  }
+
+  return filtered.join(" ");
+}
+
 
 
 // 엔터 키 입력 시 검색 실행
