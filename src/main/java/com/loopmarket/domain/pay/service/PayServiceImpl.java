@@ -8,6 +8,8 @@ import com.loopmarket.domain.pay.enums.TransactionType;
 import com.loopmarket.domain.pay.repository.MoneyTransactionRepository;
 import com.loopmarket.domain.pay.repository.UserMoneyRepository;
 import lombok.RequiredArgsConstructor;
+
+import org.hibernate.type.TrueFalseType;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -66,5 +68,16 @@ public class PayServiceImpl implements PayService {
                 PaymentMethod.PAY
         );
         moneyTransactionRepository.save(transaction);
+    }
+    
+    /**
+     * 유저의 현재 잔액을 반환 (없으면 0)
+     */
+    @Override
+    @Transactional(readOnly = true)
+    public int getCurrentBalance(Long userId) {
+    	return userMoneyRepository.findById(userId)
+    			.map(UserMoney::getBalance)
+    			.orElse(0);
     }
 }
