@@ -4,14 +4,18 @@
 
 
     <div class="container my-5 text-center">
-      <h2 class="mb-3">📍 상봉동에서 아이폰 찾고 계신가요?</h2>
+      <h2 class="mb-3">📍 <span id="location-title">상봉동</span>에서 아이폰 찾고 계신가요?</h2>
 
       <div class="d-flex justify-content-center align-items-center mt-4 gap-2">
-        <select class="form-select w-auto">
-          <option>상봉asd동</option>
-          <option>신촌aa</option>
-          <option>홍대</option>
-        </select>
+        <!-- 위치 표시 버튼 -->
+          <div class="d-flex justify-content-center mt-3">
+            <button id="location-btn"
+                    class="btn btn-dark rounded-pill px-4 py-2"
+                    data-bs-toggle="modal" data-bs-target="#locationModal">
+            <span id="current-location">위치 찾는 중...</span>
+            </button>
+          </div>
+
         <input type="text" class="form-control w-50" placeholder="검색어를 입력해주세요">
         <button class="btn btn-dark">🔍</button>
       </div>
@@ -33,3 +37,9 @@
     <!-- 카테고리 카드 끝 -->
   </div>
 </div>
+
+
+
+
+<script th:src="@{/js/render.js}"></script>
+
