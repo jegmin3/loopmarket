@@ -4,8 +4,21 @@
  */
 
 document.addEventListener("DOMContentLoaded", () => {
+	// 현재 잔액 조회
+	fetch(`/api/pay/balance/${window.loginUserId}`)
+		.then(res => res.json())
+		.then(data => {
+			console.log("잔액 API 응답:", data);
+			if (data.success && data.balance !== undefined) {
+				document.getElementById("balance").textContent = data.balance.toLocaleString();
+			}
+		})
+		.catch(err => {
+			console.error("잔액 조회 실패:", err);
+			document.getElementById("balance").textContent = "0";
+		});
 	// 결제 수단 선택 버튼 클릭 이벤트 처리
-	let selectedPg = "kakaopay"; // "kakaopay" 초기값 줄 수도 있음
+	let selectedPg = "kakaopay"; // "kakaopay" 초기값
 
 	document.querySelectorAll("#pgButtons button").forEach(btn => {
 		btn.addEventListener("click", () => {
@@ -72,7 +85,7 @@ document.addEventListener("DOMContentLoaded", () => {
 	// 충전 버튼 클릭 시 → 포트원 결제창 실행
 	document.getElementById("chargeBtn").addEventListener("click", () => {
 		const amount = parseInt(document.getElementById("amountInput").value || "0");
-		const currentBalance = parseInt(document.getElementById("currentBalance").textContent.replace(/,/g, ""));
+		const balance = parseInt(document.getElementById("balance").textContent.replace(/,/g, ""));
 		const MAX_AMOUNT = 1000000; // 최대 충전 금액 (100만원으로 설정)
 
 		if (amount <= 0) {
@@ -91,7 +104,7 @@ document.addEventListener("DOMContentLoaded", () => {
 			});
 			return;
 		}
-		if (currentBalance + amount > MAX_AMOUNT) {
+		if (balance + amount > MAX_AMOUNT) {
 			Swal.fire({
 				icon: 'warning',
 				title: '최대 잔액 초과',

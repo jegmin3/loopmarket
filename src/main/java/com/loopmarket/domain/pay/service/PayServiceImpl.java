@@ -35,8 +35,8 @@ public class PayServiceImpl implements PayService {
 		UserMoney userMoney = userMoneyRepository.findById(userId).orElse(new UserMoney(userId, 0));
 
 		// 총 잔액이 천만원을 초과하지 않도록 제한
-		int currentBalance = userMoney.getBalance();
-		if (currentBalance + amount > 10_000_000) {
+		int balance = userMoney.getBalance();
+		if (balance + amount > 10_000_000) {
 			throw new IllegalArgumentException("총 잔액은 천만원을 초과할 수 없습니다.");
 		}
 
@@ -82,10 +82,11 @@ public class PayServiceImpl implements PayService {
 
 	/**
 	 * 충전/환불 등 잔액이 변경됐을 때 실시간으로 변경된 잔액 출력을 위한 메서드
+	 * -> 잔액 조회 API 에서 사용
 	 */
 	@Override
 	@Transactional(readOnly = true)
-	public int getCurrentBalance(Long userId) {
+	public int getBalance(Long userId) {
 		return userMoneyRepository.findById(userId).map(UserMoney::getBalance).orElse(0);
 	}
 }

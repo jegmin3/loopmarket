@@ -12,5 +12,5 @@ import lombok.Data;
 public class ChargeResponse {
 	private boolean success;	// 성공 여부
 	private String message;		// 사용자 메시지
-	private int currentBalance;		// 충전 후 잔액
+	private int balance;		// 충전 후 잔액
 }
