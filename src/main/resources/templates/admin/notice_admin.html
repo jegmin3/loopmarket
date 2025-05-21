@@ -1,8 +1,129 @@
 <!-- 공지사항 관리 페이지 -->
 <div th:fragment="content">
-	<div class="container">
-	    <div class="text-center">
-	        <h2 class="noticePage">공지사항 관리 페이지 입니다.</h2>
-	    </div>
-	</div>
+    <div class="container">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2>공지사항 관리</h2>
+            <button class="btn btn-primary" id="createNoticeBtn">공지사항 등록</button>
+        </div>
+
+        <!-- 공지사항 목록 -->
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>제목</th>
+                    <th>작성일</th>
+                    <th>공개 여부</th>
+                    <th>관리</th>
+                </tr>
+            </thead>
+            <tbody id="noticeList">
+				<tr th:each="notice : ${notices}">
+			        <td th:text="${notice.noticeId}">1</td>
+			        <td th:text="${notice.title}">제목</td>
+			        <td th:text="${notice.createdAt}">2025-05-21</td>
+			        <td th:text="${notice.published} ? '공개' : '비공개'">공개</td>
+			        <td>
+			            <a th:href="@{'/admin/notice/edit/' + ${notice.noticeId}}" class="btn btn-sm btn-warning">수정</a>
+			            <form th:action="@{'/admin/notice/delete/' + ${notice.noticeId}}" method="post" style="display:inline;">
+			                <button type="submit" class="btn btn-sm btn-danger">삭제</button>
+			            </form>
+			        </td>
+			    </tr>
+            </tbody>
+        </table>
+    </div>
+	
+	<!-- jquery 추가 -->
+	<script src="https://code.jquery.com/jquery-3.7.1.js" integrity="sha256-eKhayi8LEQwp4NKxN+CfCh+3qOVUtJn3QNZ0TciWLP4=" crossorigin="anonymous"></script>
+
+    <script>
+		// 페이지 불러오기
+		function loadAdminPage(url) {
+		    $.ajax({
+		        url: url,
+		        method: 'GET',
+		        success: function (data) {
+		            $('#admin-content').html(data);
+		        },
+		        error: function () {
+		            alert('페이지 로딩에 실패했습니다.');
+		        }
+		    });
+		}
+		
+        $(document).ready(function () {
+            $('#createNoticeBtn').click(function () {
+                $.ajax({
+                    url: '/admin/notice/form',
+                    method: 'GET',
+                    success: function (data) {
+                        $('#admin-content').html(data);
+                    },
+                    error: function () {
+                        alert("폼을 불러오는 데 실패했습니다.");
+                    }
+                });
+            });
+
+			// 동적으로 로드된 폼에 submit 이벤트 위임
+	        $(document).on('submit', '#saveNoticeForm', function (e) {
+	            e.preventDefault();
+	
+	            $.ajax({
+	                type: 'POST',
+	                url: '/admin/notice/save',
+	                data: $(this).serialize(),
+	                success: function () {
+	                    loadAdminPage('/admin/notice'); // 저장 후 목록 다시 로드
+	                },
+	                error: function () {
+	                    alert('공지사항 저장 중 오류가 발생했습니다.');
+	                }
+	            });
+	        });
+			
+			// 수정 버튼 클릭 시 AJAX 폼 로드
+		    $(document).on('click', '.btn-warning', function(e) {
+		        e.preventDefault();
+		        const url = $(this).attr('href');
+
+		        $.ajax({
+		            url: url,
+		            method: 'GET',
+		            success: function(data) {
+		                $('#admin-content').html(data);
+		            },
+		            error: function() {
+		                alert('수정 폼을 불러오는 데 실패했습니다.');
+		            }
+		        });
+		    });
+			
+			// 삭제 버튼 클릭 이벤트 위임
+		    $(document).on('click', '.btn-danger', function(e) {
+		        e.preventDefault();
+		        if(!confirm('정말 삭제하시겠습니까?')) return;
+
+		        const form = $(this).closest('form');
+
+		        $.ajax({
+		            type: 'POST',
+		            url: form.attr('action'),
+		            success: function(response) {
+		                if(response === 'success') {
+		                    loadAdminPage('/admin/notice');
+		                } else {
+		                    alert('삭제 중 오류가 발생했습니다.');
+		                }
+		            },
+		            error: function() {
+		                alert('서버 요청 실패');
+		            }
+		        });
+		    });
+			
+	    });
+		
+    </script>
 </div>
