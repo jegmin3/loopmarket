@@ -1,11 +1,15 @@
 package com.loopmarket.domain.pay.api;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.loopmarket.domain.pay.dto.BalanceResponse;
 import com.loopmarket.domain.pay.dto.ChargeRequest;
 import com.loopmarket.domain.pay.dto.ChargeResponse;
 import com.loopmarket.domain.pay.enums.PaymentMethod;
@@ -27,7 +31,7 @@ public class PayApiController {
 	
 	/**
 	 * 포트원 결제 성공 이후 호출되는 충전 처리 API
-	 * 프론트에서 fetch("/api/pay/charge")로 호출됨
+	 * pay.js에서 fetch("/api/pay/charge")로 호출됨
 	 */
 	@PostMapping("/charge")
 	public ResponseEntity<ChargeResponse> charge(@RequestBody ChargeRequest request){
@@ -38,14 +42,29 @@ public class PayApiController {
 		payService.charge(request.getUserId(), request.getAmount(), method);
 		
 		// 3. 현재 잔액 조회
-		int currentBalance = payService.getCurrentBalance(request.getUserId());
+		int balance = payService.getBalance(request.getUserId());
 		
 		// 4. 응답 반환
 		//    추후 ApiResponse<ChargeResponse> 형태의 공통 응답 포맷으로 변경 논의 필요할 것 같습니다.
 		ChargeResponse response = new ChargeResponse(
 			true,
 			"충전이 완료되었습니다.",
-			currentBalance
+			balance
+		);
+		return ResponseEntity.ok(response);
+	}
+	
+	/**
+	 * 로그인 사용자의 잔액 조회 API
+	 * ex) GET /api/pay/balance?userId=5
+	 */
+	@GetMapping("/balance/{userId}")
+	public ResponseEntity<BalanceResponse> getBalance(@PathVariable Long userId) {
+		int balance = payService.getBalance(userId);
+		BalanceResponse response = new BalanceResponse(
+			true,
+			"현재 잔액 조회 성공",
+			balance
 		);
 		return ResponseEntity.ok(response);
 	}

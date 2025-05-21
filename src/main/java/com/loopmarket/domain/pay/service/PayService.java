@@ -14,5 +14,5 @@ public interface PayService {
     void refund(Long userId, int amount);
     
     // 현재 유저의 잔액 조회 (존재하지 않으면 0 반환)
-    int getCurrentBalance(Long userId);
+    int getBalance(Long userId);
 }

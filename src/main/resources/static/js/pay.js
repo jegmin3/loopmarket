@@ -40,13 +40,15 @@ function requestPay(userId, amount, selectedPg) {
 						timer: 1500,
 						showConfirmButton: false
 					});
-					// 현재 잔액 갱신
-					if (data.currentBalance !== undefined) {
-						const balanceSpan = document.getElementById("currentBalance");
-						if (balanceSpan) {
-							balanceSpan.textContent = data.currentBalance.toLocaleString();
-						}
-					}
+					// 잔액은 서버에 다시 조회해서 반영
+					fetch(`/api/pay/balance/${userId}`)
+						.then(res => res.json())
+						.then(balanceData => {
+							if (balanceData.success && balanceData.balance !== undefined) {
+								document.getElementById("balance").textContent =
+									balanceData.balance.toLocaleString();
+							}
+						});
 				}); // fetch.then
 		} else {
 			// 결제 실패 sweetalert 메시지

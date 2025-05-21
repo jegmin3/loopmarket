@@ -21,8 +21,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 @RequestMapping("/pay")
 public class PayController extends BaseController {
 	
-	private final PayService payService;
-	
 	@GetMapping("/charge")
 	public String showChargePage(HttpSession session, Model model) {
 	    MemberEntity loginUser = (MemberEntity) session.getAttribute("loginUser");
@@ -32,13 +30,9 @@ public class PayController extends BaseController {
 	        return "redirect:/member/login";
 	    }
 	    
-	    // 세션 정보로 해당 유저의 현재 잔액도 페이지에 함께 넘김
-	    int currentBalance = payService.getCurrentBalance(loginUser.getUserId().longValue());
-	    
 	    model.addAttribute("userId", loginUser.getUserId());
 	    model.addAttribute("userName", loginUser.getNickname());
 	    model.addAttribute("userEmail", loginUser.getEmail());
-	    model.addAttribute("currentBalance", currentBalance);
 
 	    return render("pay/charge", model);
 	}
