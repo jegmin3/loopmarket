@@ -1,6 +1,7 @@
 package com.loopmarket.admin.notice;
 
 import com.loopmarket.admin.notice.dto.NoticeDTO;
+import com.loopmarket.common.controller.BaseController;
 import com.loopmarket.admin.notice.NoticeEntity;
 import com.loopmarket.admin.notice.NoticeRepository;
 
@@ -11,9 +12,11 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+import javax.servlet.http.HttpServletRequest;
+
 @Controller
 @RequestMapping("/admin/notice")
-public class NoticeAdminController {
+public class NoticeAdminController extends BaseController {
 
     private final NoticeRepository noticeRepository;
 
@@ -21,23 +24,33 @@ public class NoticeAdminController {
     public NoticeAdminController(NoticeRepository noticeRepository) {
         this.noticeRepository = noticeRepository;
     }
+    
+    private String renderAdminPage(HttpServletRequest request, Model model, String viewName) {
+	    if ("XMLHttpRequest".equals(request.getHeader("X-Requested-With"))) {
+	        return viewName + " :: content";
+	    } else {
+	        return render(viewName, model);
+	    }
+	}
 
     // 공지사항 관리 페이지 진입
     @GetMapping
-    public String noticeAdminPage(Model model) {
+    public String noticeAdminPage(HttpServletRequest request, Model model) {
         List<NoticeEntity> noticeList = noticeRepository.findAll();
         model.addAttribute("notices", noticeList);
-        return "admin/notice_admin :: content"; // AJAX로 fragment만 로드
+        //return "admin/notice_admin :: content"; // AJAX로 fragment만 로드
+        return renderAdminPage(request, model,"admin/notice_admin");
     }
 
     // 공지사항 등록 폼
     @GetMapping("/form")
-    public String showNoticeForm(Model model) {
+    public String showNoticeForm(HttpServletRequest request, Model model) {
         model.addAttribute("notice", new NoticeDTO()); // 빈 DTO 넘기기
-        return "admin/form/notice_form :: content"; // fragment만 반환 (AJAX용)
+        //return "admin/form/notice_form :: content"; // fragment만 반환 (AJAX용)
+        return renderAdminPage(request, model, "admin/form/notice_form");
     }
 
- // 공지사항 등록/수정 처리
+    // 공지사항 등록/수정 처리
     @PostMapping("/save")
     @ResponseBody
     public String saveNotice(@ModelAttribute NoticeDTO noticeDTO) {
@@ -59,13 +72,14 @@ public class NoticeAdminController {
 
     // 공지사항 수정 폼
     @GetMapping("/edit/{id}")
-    public String editNotice(@PathVariable("id") int id, Model model) {
+    public String editNotice(HttpServletRequest request, @PathVariable("id") int id, Model model) {
         NoticeEntity notice = noticeRepository.findById(id).orElse(null);
         if (notice == null) {
             return "redirect:/admin/notice";
         }
         model.addAttribute("notice", notice);
-        return "admin/form/notice_form :: content";
+        //return "admin/form/notice_form :: content";
+        return renderAdminPage(request, model, "admin/form/notice_form");
     }
 
     // 공지사항 삭제
