@@ -10,34 +10,39 @@ const IMP = window.IMP;
 IMP.init("imp62256541");
 
 function requestPay(userId, amount, selectedPg) {
-    IMP.request_pay({
-        pg: selectedPg,
-        pay_method: "card",
-        merchant_uid: "order_" + new Date().getTime(),
-        name: "LoopMarket 충전",
-        amount: amount,
-        buyer_email: window.loginUserEmail,
-        buyer_name: window.loginUserName
-    }, function (rsp) {
-        if (rsp.success) {
-            // 결제 성공 → 서버로 충전 요청
-            fetch("/api/pay/charge", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    userId: userId,
-                    amount: amount,
-                    method: selectedPg.toUpperCase()
-                })
-            })
-            .then(res => res.json())
-            .then(data => alert(data.message))
-            .catch(err => {
-                alert("충전 처리 중 오류 발생");
-                console.error(err);
-            });
-        } else {
-            alert("결제가 실패되었습니다: " + rsp.error_msg);
-        }
-    });
-}
+	IMP.request_pay({
+		pg: selectedPg,
+		pay_method: "card",
+		merchant_uid: "order_" + new Date().getTime(),
+		name: "LoopMarket 충전",
+		amount: amount,
+		buyer_email: window.loginUserEmail,
+		buyer_name: window.loginUserName
+	}, function(rsp) {
+		if (rsp.success) {
+			// 결제 성공 → 서버로 충전 요청
+			fetch("/api/pay/charge", {
+				method: "POST",
+				headers: { "Content-Type": "application/json" },
+				body: JSON.stringify({
+					userId: userId,
+					amount: amount,
+					method: selectedPg.toUpperCase()
+				})
+			})
+				.then(res => res.json())
+				.then(data => {
+					alert(data.message);
+					// 현재 잔액 갱신
+					if (data.currentBalance !== undefined) {
+						const balanceSpan = document.getElementById("currentBalance");
+						if (balanceSpan) {
+							balanceSpan.textContent = data.currentBalance.toLocaleString();
+						}
+					}
+				}); // fetch.then
+		} else {
+			alert("결제가 실패되었습니다: " + rsp.error_msg);
+		}
+	}); // IMP.request_pay
+} // requestPay 함수
