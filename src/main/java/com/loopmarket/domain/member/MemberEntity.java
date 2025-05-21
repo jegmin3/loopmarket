@@ -15,6 +15,8 @@ import javax.persistence.Table;
 import lombok.Getter;
 import lombok.*;
 
+/** 엔티티는 DB와 연결, 저장/조회만 하도록..
+ *  즉 내부용 입니다. */
 @Entity
 @Getter
 @Setter
