@@ -1,8 +1,8 @@
-<!-- src/main/resources/templates/main/index.html -->
+<!-- templates/main/index.html -->
 <div th:fragment="content">
   <div class="container my-5">
 
-    <!-- 1. 검색창 + 위치 (fragment 먼저 삽입) -->
+    <!-- 1. 검색창 + 위치 -->
     <div th:replace="fragment/searchAndLocation :: searchAndLocation"></div>
 
     <!-- 2. 카테고리 카드 출력 -->
@@ -19,7 +19,4 @@
     </div>
 
   </div>
-
-  <!-- 스크립트는 맨 아래에 위치 유지 -->
-  <script th:src="@{/js/render.js}"></script>
 </div>
