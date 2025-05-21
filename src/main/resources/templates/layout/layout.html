@@ -46,62 +46,6 @@
     });
 </script>-->
 
-<!-- 공통 모달 삽입 -->
-<div class="modal fade" id="locationModal" tabindex="-1" aria-labelledby="locationModalLabel" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content">
-
-      <div class="modal-header">
-        <h5 class="modal-title" id="locationModalLabel">지역 변경</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="닫기"></button>
-      </div>
-
-      <div class="modal-body"
-           style="height: 500px; overflow-y: hidden; display: flex; flex-direction: column;">
-
-        <!-- 🔍 검색창 -->
-        <div class="input-group mb-3">
-          <input type="text" id="locationSearchInput"
-                 class="form-control"
-                 placeholder="지역이나 동네로 검색하기"
-                 oninput="searchOrFilterLocation()"
-                 onkeyup="handleLocationKey(event)">
-          <button class="btn btn-outline-secondary" type="button" onclick="searchOrFilterLocation()">🔍</button>
-        </div>
-
-        <!-- 📍 위치 버튼 -->
-        <div class="text-center mb-3">
-          <button class="btn btn-outline-danger" onclick="getLocation()">📍 현재 내 위치 사용하기</button>
-        </div>
-
-        <!-- 🔁 아래 영역 스크롤 전용 wrapper -->
-        <div style="flex: 1; overflow-y: auto;">
-
-          <!-- 추천 영역 -->
-          <div id="recommendSection" style="margin-bottom: 1rem;">
-            <div class="mb-2 fw-bold text-primary">추천</div>
-            <ul class="list-group" id="locationList">
-              <li class="list-group-item location-option"
-                  th:each="dong : ${recommendedDongNames}"
-                  th:text="${dong}"
-                  th:attr="data-location=${dong}"
-                  onclick="setLocation(this.dataset.location)">
-              </li>
-            </ul>
-
-          </div>
-
-          <!-- 검색 결과 영역 -->
-          <ul id="searchResultList" class="list-group d-none"
-              style="min-height: 250px; max-height: 300px; overflow-y: auto;">
-          </ul>
-
-
-        </div>
-      </div>
-    </div>
-</div>
-
 
 <!-- 위치기반 서비스 실행을 위해 위치 옮김 -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>

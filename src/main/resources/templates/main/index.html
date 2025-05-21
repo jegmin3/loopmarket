@@ -2,26 +2,10 @@
 <div th:fragment="content">
   <div class="container my-5">
 
+    <!-- 1. 검색창 + 위치 (fragment 먼저 삽입) -->
+    <div th:replace="fragment/searchAndLocation :: searchAndLocation"></div>
 
-    <div class="container my-5 text-center">
-      <h2 class="mb-3">📍 <span id="location-title">상봉동</span>에서 아이폰 찾고 계신가요?</h2>
-
-      <div class="d-flex justify-content-center align-items-center mt-4 gap-2">
-        <!-- 위치 표시 버튼 -->
-          <div class="d-flex justify-content-center mt-3">
-            <button id="location-btn"
-                    class="btn btn-dark rounded-pill px-4 py-2"
-                    data-bs-toggle="modal" data-bs-target="#locationModal">
-            <span id="current-location">위치 찾는 중...</span>
-            </button>
-          </div>
-
-        <input type="text" class="form-control w-50" placeholder="검색어를 입력해주세요">
-        <button class="btn btn-dark">🔍</button>
-      </div>
-    </div>
-
-    <!-- 카테고리 카드 시작 -->
+    <!-- 2. 카테고리 카드 출력 -->
     <div class="container my-5">
       <div class="row row-cols-2 row-cols-md-4 g-4 justify-content-center">
         <div class="col" th:each="category : ${mainCategories}">
@@ -34,14 +18,8 @@
       </div>
     </div>
 
-    <!-- 카테고리 카드 끝 -->
   </div>
 
-
+  <!-- 스크립트는 맨 아래에 위치 유지 -->
+  <script th:src="@{/js/render.js}"></script>
 </div>
-
-
-
-
-<script th:src="@{/js/render.js}"></script>
-
