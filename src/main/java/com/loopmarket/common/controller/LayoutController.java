@@ -9,7 +9,11 @@ public class LayoutController extends BaseController {
 	
 	// http://localhost:8080/
     @GetMapping("/")
-    public String layout(Model model) {
-        return render("main/index", model); // 항상 layout.html만 렌더링됨
+    public String index(Model model) {
+        return render("main/index", model);
     }
+
+    
+    
 }
+

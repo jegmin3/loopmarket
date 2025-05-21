@@ -12,4 +12,3 @@ public abstract class BaseController {
         return "layout/layout";
     }
 }
-
