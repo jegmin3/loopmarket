@@ -72,11 +72,34 @@ document.addEventListener("DOMContentLoaded", () => {
 	// 충전 버튼 클릭 시 → 포트원 결제창 실행
 	document.getElementById("chargeBtn").addEventListener("click", () => {
 		const amount = parseInt(document.getElementById("amountInput").value || "0");
+		const currentBalance = parseInt(document.getElementById("currentBalance").textContent.replace(/,/g, ""));
+		const MAX_AMOUNT = 1000000; // 최대 충전 금액 (100만원으로 설정)
 
-		if (amount > 0) {
-			requestPay(window.loginUserId, amount, selectedPg);  // 위에서 관리하던 변수 사용
-		} else {
-			alert("충전 금액을 입력하세요.");
+		if (amount <= 0) {
+			Swal.fire({
+				icon: 'warning',
+				title: '충전 금액 오류',
+				text: '충전 금액을 입력하세요.',
+			});
+			return;
 		}
+		if (amount > MAX_AMOUNT) {
+			Swal.fire({
+				icon: 'warning',
+				title: '충전 금액 초과',
+				text: '1회 최대 충전 금액은 100만원입니다.',
+			});
+			return;
+		}
+		if (currentBalance + amount > MAX_AMOUNT) {
+			Swal.fire({
+				icon: 'warning',
+				title: '최대 잔액 초과',
+				text: '잔액은 최대 천만원까지 보관할 수 있습니다.',
+			});
+			return;
+		}
+		// 정상 충전 요청
+		requestPay(window.loginUserId, amount, selectedPg);
 	});
 });
