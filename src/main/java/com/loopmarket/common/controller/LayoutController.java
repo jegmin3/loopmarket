@@ -1,4 +1,4 @@
-package com.loopmarket;
+package com.loopmarket.common.controller;
 
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -13,4 +13,3 @@ public class LayoutController extends BaseController {
         return render("main/index", model); // 항상 layout.html만 렌더링됨
     }
 }
-
