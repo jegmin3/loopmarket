@@ -32,7 +32,14 @@ function requestPay(userId, amount, selectedPg) {
 			})
 				.then(res => res.json())
 				.then(data => {
-					alert(data.message);
+					// 결제 성공 sweetalert 메시지
+					Swal.fire({
+						icon: 'success',
+						title: '충전 완료!',
+						text: data.message,
+						timer: 1500,
+						showConfirmButton: false
+					});
 					// 현재 잔액 갱신
 					if (data.currentBalance !== undefined) {
 						const balanceSpan = document.getElementById("currentBalance");
@@ -42,7 +49,13 @@ function requestPay(userId, amount, selectedPg) {
 					}
 				}); // fetch.then
 		} else {
-			alert("결제가 실패되었습니다: " + rsp.error_msg);
+			// 결제 실패 sweetalert 메시지
+			Swal.fire({
+				icon: 'error',
+				title: '결제 실패',
+				text: rsp.error_msg,
+				confirmButtonText: '확인'
+			});
 		}
 	}); // IMP.request_pay
 } // requestPay 함수
