@@ -1,5 +1,7 @@
 package com.loopmarket.domain.pay.api;
 
+import java.util.Map;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -14,6 +16,8 @@ import com.loopmarket.domain.pay.dto.ChargeRequest;
 import com.loopmarket.domain.pay.dto.ChargeResponse;
 import com.loopmarket.domain.pay.dto.RefundRequest;
 import com.loopmarket.domain.pay.dto.RefundResponse;
+import com.loopmarket.domain.pay.dto.SafePayRequest;
+import com.loopmarket.domain.pay.dto.SafePayResponse;
 import com.loopmarket.domain.pay.enums.PaymentMethod;
 import com.loopmarket.domain.pay.service.PayService;
 
@@ -74,5 +78,17 @@ public class PayApiController {
 		// 3. 응답 객체 생성
 		RefundResponse response = new RefundResponse(true, "환불이 완료되었습니다.", balance);
 		return ResponseEntity.ok(response);
+	}
+	
+	/**
+	 * 안전결제 요청 API
+	 * 구매자가 결제 → 금액 차감 + 거래 기록 + 보류 상태 저장
+	 */
+	@PostMapping("/safe")
+	public ResponseEntity<SafePayResponse> safePay(@RequestBody SafePayRequest request) {
+	    Long paymentId = payService.safePay(request.getBuyerId(), request.getSellerId(), request.getProductId(), request.getAmount());
+
+	    SafePayResponse response = new SafePayResponse(true, "안전결제 요청이 완료되었습니다.", paymentId);
+	    return ResponseEntity.ok(response);
 	}
 }

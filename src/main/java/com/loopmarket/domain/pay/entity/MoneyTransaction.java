@@ -21,7 +21,7 @@ public class MoneyTransaction {
     private Long transactionId;
 
     @Column(name = "user_id", nullable = false)
-    private Long userId; // 일단 연관관계 매핑 (@ManyToOne)하지 않고 userId만 저장
+    private Long userId; // 연관관계 매핑 (@ManyToOne)하지 않고 userId만 저장
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
