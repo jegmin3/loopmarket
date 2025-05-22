@@ -1,17 +1,13 @@
 package com.loopmarket.common.controller;
 
-
-import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
 @Controller
+@RequiredArgsConstructor
 public class LayoutController extends BaseController {
 
-	// http://localhost:8080
-    @GetMapping("/")
-    public String index(Model model) {
-        return render("main/index", model);
-    }
-    
-}
+    model.addAttribute("mainCategories", mainCategories);
+    model.addAttribute("recommendedDongNames", recommendedDongNames);
 
+    // layout.html → th:insert="${viewName} :: content"
+    return render("main/index", model);
+  }
+}
