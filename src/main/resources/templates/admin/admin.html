@@ -1,0 +1,72 @@
+<!-- admin.html -->
+<div th:fragment="content">
+    <div class="container-fluid">
+        <div class="row">
+            <!-- 사이드바 -->
+            <nav class="col-md-3 col-lg-2 sidebar bg-light p-3">
+                <ul class="nav flex-column">
+                    <li class="nav-item"><a class="nav-link admin-link" href="#" data-url="/admin/product">상품 관리</a></li>
+                    <li class="nav-item"><a class="nav-link admin-link" href="#" data-url="/admin/user">사용자 관리</a></li>
+                    <li class="nav-item"><a class="nav-link admin-link" href="#" data-url="/admin/report">신고 관리</a></li>
+                    <li class="nav-item"><a class="nav-link admin-link" href="#" data-url="/admin/ads">사이드 바 광고 관리</a></li>
+                    <li class="nav-item"><a class="nav-link admin-link" href="#" data-url="/admin/notifications">알림 전송</a></li>
+                    <li class="nav-item"><a class="nav-link admin-link" href="#" data-url="/admin/notice">공지사항 관리</a></li>
+                    <li class="nav-item"><a class="nav-link admin-link" href="#" data-url="/admin/dashboard">통계 대시보드</a></li>
+                </ul>
+            </nav>
+
+            <!-- 메인 콘텐츠 -->
+            <main class="col-md-9 col-lg-10 p-4" id="admin-content">
+                <!-- AJAX 콘텐츠 로드 -->
+            </main>
+        </div>
+    </div>
+	
+	<!-- jquery 추가 -->
+	<script src="https://code.jquery.com/jquery-3.7.1.js" integrity="sha256-eKhayi8LEQwp4NKxN+CfCh+3qOVUtJn3QNZ0TciWLP4=" crossorigin="anonymous"></script>
+
+    <script th:inline="javascript">
+       
+		$(document).ready(function() {
+			
+		    function loadAdminPage(url) {
+		        console.log("Loading admin page:", url);
+		        $.ajax({
+		            url: url,
+		            method: 'GET',
+		            success: function(data) {
+		                console.log("AJAX 성공", data);
+		                $('#admin-content').html(data);
+		            },
+		            error: function(xhr, status, error) {
+		                console.error("AJAX 오류", status, error);
+		                $('#admin-content').html('<p style="color:red;">페이지를 불러오지 못했습니다.</p>');
+		            }
+		        });
+		    }
+			
+			loadAdminPage('/admin/dashboard');
+			
+			$(document).on('click', '.admin-link', function (e) {
+	            e.preventDefault();
+	            const url = $(this).data('url');
+	            loadAdminPage(url);
+	        });
+		});
+    </script>
+
+    <style>
+        .sidebar {
+            max-height: calc(100vh - 3.5rem);
+            overflow-y: auto;
+            position: sticky;
+            top: 3.5rem;
+        }
+        #admin-content {
+            max-height: calc(100vh - 3.5rem);
+            overflow-y: auto;
+            background-color: #fff;
+            padding: 2rem;
+        }
+    </style>
+</div>
