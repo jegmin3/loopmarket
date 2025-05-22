@@ -11,6 +11,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.Map;
 
@@ -42,5 +43,28 @@ public class PayController extends BaseController {
 
 		model.addAttribute("loginUser", loginUser);
 		return render("pay/refund", model);
+	}
+	
+	// 결제(안전결제) 화면 진입
+	@GetMapping("/checkout")
+	public String showCheckoutPage(@RequestParam("productId") Long productId, Model model) {
+	    MemberEntity loginUser = getLoginUser();
+	    if (loginUser == null) return "redirect:/member/login";
+
+	    // 하드코딩된 상품 정보 (추후 productService.findById(...)로 대체 예정)
+	    //Product product = productService.findById(productId);
+	    Map<String, Object> product = Map.of(
+	        "id", 100,
+	        "title", "임시 상품 제목",
+	        "price", 15000,
+	        "imageUrl", "/img/pay/sample.png",
+	        "tradeType", "택배거래",
+	        "sellerId", 1L
+	    );
+	    
+	    model.addAttribute("loginUser", loginUser);
+	    model.addAttribute("product", product);
+
+	    return render("pay/checkout", model);
 	}
 }

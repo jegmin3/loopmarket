@@ -93,6 +93,9 @@ public class PayServiceImpl implements PayService {
 		return userMoneyRepository.findById(userId).map(UserMoney::getBalance).orElse(0);
 	}
 	
+	/**
+	 * 안전결제 처리
+	 */
 	@Override
 	@Transactional
 	public Long safePay(Long buyerId, Long sellerId, Long productId, int amount) {
@@ -121,5 +124,29 @@ public class PayServiceImpl implements PayService {
 	    );
 	    paymentRepository.save(payment);
 	    return payment.getPaymentId();
+	}
+	
+	/**
+	 * 구매 확정 처리
+	 */
+	@Override
+	@Transactional
+	public int completePay(Long paymentId) {
+	    // 1. 결제 정보 조회
+	    Payment payment = paymentRepository.findById(paymentId)
+	            .orElseThrow(() -> new IllegalArgumentException("결제 정보를 찾을 수 없습니다."));
+
+	    // 2. 상태 변경
+	    payment.complete();  // status → COMPLETED
+
+	    // 3. 판매자 잔액 업데이트
+	    UserMoney sellerMoney = userMoneyRepository.findById(payment.getSellerId())
+	            .orElse(new UserMoney(payment.getSellerId(), 0)); // 없으면 새로 생성
+	    sellerMoney.charge(payment.getAmount());
+
+	    userMoneyRepository.save(sellerMoney); // 신규일 경우 save 필요
+
+	    // 4. 판매자 잔액 반환
+	    return sellerMoney.getBalance();
 	}
 }
