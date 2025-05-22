@@ -1,0 +1,24 @@
+<div th:fragment="content">
+    <h2>내 채팅방</h2>
+
+    <div class="list-group">
+        <a th:each="room : ${chatRooms}"
+		   th:attrappend="href=${room.user1Id == session.loginUser.userId} ?
+		                        '?target=' + ${room.user2Id} :
+		                        '?target=' + ${room.user1Id}"
+           class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+
+		   <th:block th:with="targetId=${room.user1Id == session.loginUser.userId ? room.user2Id : room.user1Id}">
+		       <a th:href="@{'/chat/' + ${room.roomId} + '?target=' + ${targetId}}"
+		          class="list-group-item list-group-item-action">
+		           채팅방 입장
+		       </a>
+		   </th:block>
+
+            <span class="badge bg-danger" th:if="${room.user1Id == session.loginUser.userId && room.user1UnreadCount > 0}"
+                  th:text="${room.user1UnreadCount}">0</span>
+            <span class="badge bg-danger" th:if="${room.user2Id == session.loginUser.userId && room.user2UnreadCount > 0}"
+                  th:text="${room.user2UnreadCount}">0</span>
+        </a>
+    </div>
+</div>
