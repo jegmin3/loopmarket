@@ -1,19 +1,32 @@
 package com.loopmarket.common.controller;
 
+import com.loopmarket.domain.category.entity.Category;
+import com.loopmarket.domain.category.repository.CategoryRepository;
+import com.loopmarket.domain.location.service.LocationService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 
+import java.util.List;
+
 @Controller
+@RequiredArgsConstructor
 public class LayoutController extends BaseController {
-	
-	// http://localhost:8080/
-    @GetMapping("/")
-    public String index(Model model) {
-        return render("main/index", model);
-    }
 
-    
-    
+  private final CategoryRepository categoryRepository;
+  private final LocationService locationService;
+
+  // http://localhost:8080/
+  @GetMapping("/")
+  public String showMain(Model model) {
+    List<Category> mainCategories = categoryRepository.findMainCategories();
+    List<String> recommendedDongNames = locationService.getRecommendedDongNames();
+
+    model.addAttribute("mainCategories", mainCategories);
+    model.addAttribute("recommendedDongNames", recommendedDongNames);
+
+    // layout.html → th:insert="${viewName} :: content"
+    return render("main/index", model);
+  }
 }
-
