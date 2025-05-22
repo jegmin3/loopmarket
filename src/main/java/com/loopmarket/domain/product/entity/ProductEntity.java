@@ -27,6 +27,7 @@ public class ProductEntity {
   private Long locationId;
   private String condition;
   private String status;
+  private String imageUrl;
 
   private String description;
   private String locationText;    // 💡 거래 희망 장소
