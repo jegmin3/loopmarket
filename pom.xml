@@ -97,7 +97,6 @@
 			<artifactId>spring-security-test</artifactId>
 			<scope>test</scope>
 		</dependency>
-
 		<!-- 웹소켓 -->
 		<dependency>
 		    <groupId>org.springframework.boot</groupId>
@@ -108,6 +107,12 @@
 		    <groupId>com.fasterxml.jackson.core</groupId>
 		    <artifactId>jackson-databind</artifactId>
 		</dependency>
+		<!-- 파이어 베이스 -->
+		<dependency>
+            <groupId>com.google.firebase</groupId>
+            <artifactId>firebase-admin</artifactId>
+            <version>9.1.1</version>
+        </dependency>
 	</dependencies>
 
 	<build>
