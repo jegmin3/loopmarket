@@ -23,7 +23,7 @@ import lombok.RequiredArgsConstructor;
 @RequestMapping("/member")
 @RequiredArgsConstructor
 public class MemberController extends BaseController {
-	
+
 	private final MemberRepository memberRepository;
 	private final PasswordEncoder passwordEncoder;
 
@@ -31,7 +31,7 @@ public class MemberController extends BaseController {
 	public String loginGET(Model model) {
 		return render("member/login", model);
 	}
-	
+
 	@PostMapping("/login")
 	public String login(@ModelAttribute MemberDTO dto, HttpSession session, RedirectAttributes redirectAttributes) {
 	    Optional<MemberEntity> optionalMember = memberRepository.findByEmail(dto.getEmail());
@@ -43,10 +43,10 @@ public class MemberController extends BaseController {
 
 	    MemberEntity member = optionalMember.get();
 
-//	    if (!passwordEncoder.matches(dto.getPassword(), member.getPassword())) {
-//	        redirectAttributes.addFlashAttribute("errorMessage", "비밀번호가 일치하지 않습니다.");
-//	        return "redirect:/member/login";
-//	    }
+	    if (!passwordEncoder.matches(dto.getPassword(), member.getPassword())) {
+	        redirectAttributes.addFlashAttribute("errorMessage", "비밀번호가 일치하지 않습니다.");
+	        return "redirect:/member/login";
+	    }
 
 	    // Entity → DTO 변환
 	    //MemberDTO loginUser = MemberDTO.fromEntity(member);
@@ -56,22 +56,22 @@ public class MemberController extends BaseController {
 	    redirectAttributes.addFlashAttribute("successMessage", "로그인 성공!");
 	    return "redirect:/";
 	}
-	
+
 	// 로그아웃
 	@GetMapping("/logout")
 	public String logout(HttpSession session, RedirectAttributes redirectAttributes) {
 		session.invalidate(); // 세션 전체 제거 (로그아웃)
-		
+
 		redirectAttributes.addFlashAttribute("successMessage", "로그아웃 되었습니다.");
 		return "redirect:/member/login"; // 로그인 페이지로 이동
 	}
-	
+
 	// 회원가입
 	@GetMapping("/signup")
 	public String signupGET(Model model) {
 		return render("member/signup", model);
 	}
-    
+
     @PostMapping("/signup")
     public String signupPOST(@ModelAttribute MemberDTO dto) {
         // MemberEntity엔티티 객체를 Builder 패턴을 이용해 생성
@@ -84,10 +84,10 @@ public class MemberController extends BaseController {
                 .build();
 
         memberRepository.save(newMember);
-        
+
         return "redirect:/member/login";
     }
 
-	
-	
+
+
 }

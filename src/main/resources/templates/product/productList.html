@@ -1,28 +1,94 @@
-<!-- templates/product/productList.html -->
+<style>
+  /* 이전/다음 슬라이드 버튼 스타일 - 기본은 투명, 카드 호버 시 보임 */
+  .slider-prev,
+  .slider-next {
+    opacity: 0;
+    pointer-events: none;
+    color: rgba(0, 0, 0, 0.4);
+    font-size: 20px;
+    background: transparent;
+    border: none;
+    transition: opacity 0.3s ease, color 0.3s ease;
+  }
+
+  /* 카드에 마우스 올리면 슬라이드 버튼 활성화 */
+  .card:hover .slider-prev,
+  .card:hover .slider-next {
+    opacity: 1;
+    pointer-events: auto;
+    color: rgba(0, 0, 0, 0.85);
+  }
+</style>
+
+<html lang="ko" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+
 <div th:fragment="content">
   <div class="container my-5">
     <h2 class="mb-4 text-center">📦 전체 상품 목록</h2>
-    <div class="text-end mb-3">
-      <a href="/products/new" class="btn btn-primary">상품 등록</a> <!-- 임시 버튼-->
+
+    <!-- 상품 등록 버튼 -->
+    <!--
+    <div class="text-end mb-3" sec:authorize="isAuthenticated()">
+      <a href="/products/new" class="btn btn-primary">상품 등록</a>
     </div>
+    -->
+    <!-- 임시: 로그인 여부 상관없이 버튼 항상 표시 -->
+    <div class="text-end mb-3">
+      <a href="/products/new" class="btn btn-primary">상품 등록</a>
+    </div>
+
+    <!-- 상품 카드 그리드 -->
     <div class="row row-cols-1 row-cols-md-3 g-4">
+      <!-- 상품 리스트 반복 출력 -->
       <div class="col" th:each="product : ${productList}">
         <div class="card h-100 shadow-sm">
 
-          <!-- 이미지 일단 임시 고정 -->
-          <img th:src="@{/images/sample.jpg}"
-               class="card-img-top"
-               alt="상품 이미지" style="height: 200px; object-fit: cover;" />
+          <!-- 이미지 슬라이더 영역 -->
+          <div class="position-relative" style="height: 200px; overflow: hidden;">
+            <div class="slider-track d-flex"
+                 th:style="'width:' + (${product.imagePaths.size()} * 100) + '%; height: 100%; transition: transform 0.5s ease;'"
+                 th:attr="data-count=${product.imagePaths.size()}">
+              <!-- 각 상품 이미지 출력 -->
+              <img th:each="img : ${product.imagePaths}"
+                   th:src="@{${img}}"
+                   th:style="'width:' + (100 / ${product.imagePaths.size()}) + '%; height: 100%; object-fit: cover; flex-shrink: 0;'"
+              />
+            </div>
 
+            <!-- 이전 버튼: 이미지 2장 이상일 때만 보임 -->
+            <button th:if="${product.imagePaths.size() > 1}"
+                    class="slider-prev btn position-absolute top-50 start-0 translate-middle-y"
+                    onclick="slideImage(this, -1)">❮</button>
+
+            <!-- 다음 버튼: 이미지 2장 이상일 때만 보임 -->
+            <button th:if="${product.imagePaths.size() > 1}"
+                    class="slider-next btn position-absolute top-50 end-0 translate-middle-y"
+                    onclick="slideImage(this, 1)">❯</button>
+
+            <!-- 점(dot) 네비게이션: 이미지 2장 이상일 때만 보임 -->
+            <div th:if="${product.imagePaths.size() > 1}"
+                 class="position-absolute bottom-0 start-50 translate-middle-x d-flex gap-1 mb-1">
+                <span th:each="i : ${#numbers.sequence(0, product.imagePaths.size() - 1)}"
+                      class="dot bg-dark rounded-circle"
+                      th:attr="data-index=${i}"
+                      style="width: 6px; height: 6px; opacity: 0.4;"></span>
+            </div>
+          </div>
+
+          <!-- 상품 정보 -->
           <div class="card-body">
             <h5 class="card-title" th:text="${product.title}">상품명</h5>
             <p class="card-text fw-bold" th:text="${#numbers.formatInteger(product.price, 3, 'COMMA') + '원'}">가격</p>
-            <!-- location 연관관계 아직 없으면 이 줄도 잠시 주석 -->
+            <!-- 위치 정보 (추후 연관관계 생기면 활성화) -->
             <!--<p class="text-muted" th:text="${product.location.dongName}">위치</p>-->
           </div>
         </div>
       </div>
     </div>
   </div>
+
+  <!-- 상품 슬라이드 기능 스크립트 로드 -->
+  <script th:src="@{/js/product.js}"></script>
 
 </div>
