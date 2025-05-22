@@ -32,24 +32,48 @@ public class MemberController extends BaseController {
 		return render("member/login", model);
 	}
 	
+//	@PostMapping("/login")
+//	public String login(@ModelAttribute MemberDTO dto, HttpSession session, RedirectAttributes redirectAttributes) {
+//	    Optional<MemberEntity> optionalMember = memberRepository.findByEmail(dto.getEmail());
+//
+//	    if (optionalMember.isEmpty()) {
+//	        redirectAttributes.addFlashAttribute("errorMessage", "존재하지 않는 이메일입니다.");
+//	        //return "redirect:/member/login";
+//	    }
+//
+//	    MemberEntity member = optionalMember.get();
+//
+////	    if (!passwordEncoder.matches(dto.getPassword(), member.getPassword())) {
+////	        redirectAttributes.addFlashAttribute("errorMessage", "비밀번호가 일치하지 않습니다.");
+////	        return "redirect:/member/login";
+////	    }
+//
+//	    // Entity → DTO 변환
+//	    //MemberDTO loginUser = MemberDTO.fromEntity(member);
+//
+//	    session.setAttribute("loginUser", member);
+//
+//	    redirectAttributes.addFlashAttribute("successMessage", "로그인 성공!");
+//	    return "redirect:/";
+//	}
+	
+	
 	@PostMapping("/login")
 	public String login(@ModelAttribute MemberDTO dto, HttpSession session, RedirectAttributes redirectAttributes) {
 	    Optional<MemberEntity> optionalMember = memberRepository.findByEmail(dto.getEmail());
 
 	    if (optionalMember.isEmpty()) {
 	        redirectAttributes.addFlashAttribute("errorMessage", "존재하지 않는 이메일입니다.");
-	        //return "redirect:/member/login";
+	        return "redirect:/member/login";  // 여기에 반드시 리턴을 넣어야 함
 	    }
 
 	    MemberEntity member = optionalMember.get();
 
-//	    if (!passwordEncoder.matches(dto.getPassword(), member.getPassword())) {
-//	        redirectAttributes.addFlashAttribute("errorMessage", "비밀번호가 일치하지 않습니다.");
-//	        return "redirect:/member/login";
-//	    }
-
-	    // Entity → DTO 변환
-	    //MemberDTO loginUser = MemberDTO.fromEntity(member);
+	    // 비밀번호 검증 부분도 활성화 권장
+	    if (!passwordEncoder.matches(dto.getPassword(), member.getPassword())) {
+	        redirectAttributes.addFlashAttribute("errorMessage", "비밀번호가 일치하지 않습니다.");
+	        return "redirect:/member/login";
+	    }
 
 	    session.setAttribute("loginUser", member);
 

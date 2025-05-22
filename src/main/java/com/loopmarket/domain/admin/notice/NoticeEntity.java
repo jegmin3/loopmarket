@@ -1,4 +1,4 @@
-package com.loopmarket.admin.notice;
+package com.loopmarket.domain.admin.notice;
 
 import java.time.LocalDateTime;
 

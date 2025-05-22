@@ -1,9 +1,9 @@
-package com.loopmarket.admin.notice;
+package com.loopmarket.domain.admin.notice;
 
-import com.loopmarket.admin.notice.dto.NoticeDTO;
 import com.loopmarket.common.controller.BaseController;
-import com.loopmarket.admin.notice.NoticeEntity;
-import com.loopmarket.admin.notice.NoticeRepository;
+import com.loopmarket.domain.admin.notice.NoticeEntity;
+import com.loopmarket.domain.admin.notice.NoticeRepository;
+import com.loopmarket.domain.admin.notice.dto.NoticeDTO;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;

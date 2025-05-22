@@ -1,0 +1,44 @@
+<div th:fragment="content" th:object="${users}">
+    <div class="container my-5">
+        <h2 class="mb-4">프로필 수정</h2>
+
+        <form th:action="@{/mypage/edit}" method="post" enctype="multipart/form-data">
+            <div class="mb-3">
+                <label for="nickname" class="form-label">별명 <span class="text-danger">*</span></label>
+                <input type="text" id="nickname" th:field="*{nickname}" class="form-control" required />
+            </div>
+
+			<div class="mb-3">
+			    <label for="phoneNumber" class="form-label">전화번호</label>
+			    <input type="tel" id="phoneNumber" th:field="*{phoneNumber}" 
+			           pattern="\d{2,3}-\d{3,4}-\d{4}" 
+			           placeholder="010-1234-5678" class="form-control" />
+			    <small class="form-text text-muted">형식: 010-1234-5678</small>
+			</div>
+
+            <div class="mb-3">
+                <label for="birthdate" class="form-label">생년월일</label>
+                <input type="date" id="birthdate" th:field="*{birthdate}" class="form-control" />
+            </div>
+
+            <div class="mb-3">
+                <label for="profileImage" class="form-label">프로필 이미지</label>
+                <input type="file" id="profileImage" name="profileImage" accept="image/*" class="form-control" />
+                <div class="mt-2">
+                    현재 이미지:<br />
+                    <img th:src="@{/images/profiles/{id}.png(id=${users.profileImgId})}" 
+                         alt="프로필 이미지" width="100" height="100" class="rounded" />
+                </div>
+            </div>
+
+            <button type="submit" class="btn btn-primary">저장</button>
+            <a href="/mypage" class="btn btn-secondary ms-2">취소</a>
+        </form>
+    </div>
+	
+	
+	<script src="/static/js/editprofile.js"></script>
+	
+	
+	
+</div>

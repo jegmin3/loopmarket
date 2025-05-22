@@ -1,4 +1,4 @@
-package com.loopmarket.notice;
+package com.loopmarket.domain.notice;
 
 import java.util.List;
 
@@ -10,10 +10,10 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.server.ResponseStatusException;
 
-import com.loopmarket.admin.notice.NoticeEntity;
-import com.loopmarket.admin.notice.NoticeRepository;
 import com.loopmarket.common.controller.BaseController;
 import com.loopmarket.common.controller.LayoutController;
+import com.loopmarket.domain.admin.notice.NoticeEntity;
+import com.loopmarket.domain.admin.notice.NoticeRepository;
 
 @Controller
 @RequestMapping("/notice")

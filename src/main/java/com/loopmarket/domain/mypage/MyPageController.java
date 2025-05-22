@@ -1,7 +1,11 @@
 package com.loopmarket.domain.mypage;
 
+import com.loopmarket.domain.member.MemberEntity;
+import com.loopmarket.domain.member.MemberRepository;
+import com.loopmarket.domain.member.dto.MemberDTO;
 import com.loopmarket.domain.product.entity.ProductEntity;
 import com.loopmarket.domain.product.repository.ProductRepository;
+import com.loopmarket.domain.purchase.repository.PurchaseRepository;
 import com.loopmarket.common.controller.BaseController;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,19 +14,30 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
+
+import java.io.IOException;
 import java.security.Principal;
 import java.util.List;
+
+import org.springframework.web.multipart.MultipartFile;
 
 @Controller
 @RequestMapping("/mypage")
 public class MyPageController extends BaseController {
+	
+	private final ProductRepository productRepository;
+    private final PurchaseRepository purchaseRepository;
 
-    private final ProductRepository productRepository;
-
+//    @Autowired
+//    private MemberRepository memberRepository;
+    
     @Autowired
-    public MyPageController(ProductRepository productRepository) {
+    public MyPageController(ProductRepository productRepository, PurchaseRepository purchaseRepository) {
         this.productRepository = productRepository;
+        this.purchaseRepository = purchaseRepository;
     }
+    
 
     private String renderMypage(HttpServletRequest request, Model model, String viewName) {
         if ("XMLHttpRequest".equals(request.getHeader("X-Requested-With"))) {
@@ -34,28 +49,92 @@ public class MyPageController extends BaseController {
 
     // 마이페이지 기본 진입
     @GetMapping
-    public String myPageHome(HttpServletRequest request, Model model) {
-        return renderMypage(request, model, "mypage/mypage_main");
-    }
+    public String myPageHome(Model model, HttpSession session) {
+        MemberEntity member = (MemberEntity) session.getAttribute("loginUser");
 
-    // 내가 등록한 상품 목록
-    @GetMapping("/selling")
-    public String mySellingItems(HttpServletRequest request, Model model, Principal principal) {
-        String username = principal.getName(); // 로그인 사용자 ID
-        List<ProductEntity> myProducts = productRepository.findBySeller(username);
-        model.addAttribute("products", myProducts);
-        return renderMypage(request, model, "mypage/my_selling_items");
-    }
-
-    // 상품 삭제 (AJAX)
-    @PostMapping("/selling/delete/{id}")
-    @ResponseBody
-    public String deleteMyProduct(@PathVariable("id") Long id, Principal principal) {
-        ProductEntity product = productRepository.findById(id).orElse(null);
-        if (product != null && product.getSeller().equals(principal.getName())) {
-            productRepository.delete(product);
-            return "success";
+        if (member == null) {
+            return "redirect:/member/login";
         }
-        return "error";
+
+        model.addAttribute("users", member);
+
+        long totalSalesCount = productRepository.countByUserId((long)member.getUserId());
+        long totalPurchaseCount = purchaseRepository.countByBuyerId((long)member.getUserId());
+
+        model.addAttribute("totalSalesCount", totalSalesCount);
+        model.addAttribute("totalPurchaseCount", totalPurchaseCount);
+
+        return render("mypage/mypage", model);
     }
+
+    
+    @GetMapping("/products")
+    public String mySellingItems(HttpServletRequest request, HttpSession session, Model model) {
+        MemberEntity member = (MemberEntity) session.getAttribute("loginUser");
+        if (member == null) {
+            return "redirect:/member/login";
+        }
+        
+        // 거래중 상태만 필터링 ('ON_SALE', 'RESERVED' 등 실제 DB 상태명 사용)
+        List<String> ongoingStatuses = List.of("ONSALE", "RESERVED");
+        
+        List<ProductEntity> myProducts = productRepository.findByUserIdAndStatusIn((long)member.getUserId(),ongoingStatuses);
+        model.addAttribute("products", myProducts);
+
+        return renderMypage(request , model, "mypage/my_selling_items");
+    }
+    
+    @GetMapping("/sales")
+    public String mySalesHistory(HttpServletRequest request, HttpSession session, Model model) {
+        MemberEntity member = (MemberEntity) session.getAttribute("loginUser");
+        if (member == null) {
+            return "redirect:/member/login";
+        }
+
+        List<ProductEntity> soldProducts = productRepository.findByUserIdAndStatus((long) member.getUserId(), "SOLD"); // "판매완료"
+
+        model.addAttribute("soldProducts", soldProducts);
+
+        return renderMypage(request, model, "mypage/my_sales_history");
+    }
+    
+    
+    
+//    @PostMapping("/edit") 
+//    public String updateProfile(@ModelAttribute MemberEntity formMember, HttpSession session, Model model) {
+//        MemberEntity member = (MemberEntity) session.getAttribute("loginUser");
+//        if (member == null) {
+//            return "redirect:/member/login";
+//        }
+//
+//        // DB에서 최신 멤버 엔티티 조회
+//        member = memberRepository.findById(member.getUserId()).orElseThrow();
+//
+//        // 변경 가능 필드만 업데이트
+//        member.setNickname(formMember.getNickname());
+//        member.setPhoneNumber(formMember.getPhoneNumber());
+//        member.setBirthdate(formMember.getBirthdate());
+//        member.setProfileImgId(formMember.getProfileImgId());
+//
+//        member.setUpdatedAt(java.time.LocalDateTime.now());
+//
+//        memberRepository.save(member);
+//
+//        // 세션 갱신
+//        session.setAttribute("loginUser", member);
+//
+//        return render("mypage/mypage", model);
+//    }
+    
+	 /* 
+	 * // 상품 삭제 (AJAX)
+	 * 
+	 * @PostMapping("/selling/delete/{id}")
+	 * 
+	 * @ResponseBody public String deleteMyProduct(@PathVariable("id") Long id,
+	 * Principal principal) { ProductEntity product =
+	 * productRepository.findById(id).orElse(null); if (product != null &&
+	 * product.getSeller().equals(principal.getName())) {
+	 * productRepository.delete(product); return "success"; } return "error"; }
+	 */
 }
