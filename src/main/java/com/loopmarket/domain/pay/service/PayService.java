@@ -18,4 +18,7 @@ public interface PayService {
     
     // 안전결제 처리 로직 (구매자 잔액 차감, 거래기록 생성, 상태 변경)
     Long safePay(Long buyerId, Long sellerId, Long productId, int amount);
+    
+    // 구매 확정 처리 (결제 상태 변경, 판매자 잔액에 금액 정산)
+    int completePay(Long paymentId);
 }

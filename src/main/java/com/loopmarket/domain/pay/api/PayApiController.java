@@ -14,6 +14,8 @@ import org.springframework.web.bind.annotation.RestController;
 import com.loopmarket.domain.pay.dto.BalanceResponse;
 import com.loopmarket.domain.pay.dto.ChargeRequest;
 import com.loopmarket.domain.pay.dto.ChargeResponse;
+import com.loopmarket.domain.pay.dto.CompletePayRequest;
+import com.loopmarket.domain.pay.dto.CompletePayResponse;
 import com.loopmarket.domain.pay.dto.RefundRequest;
 import com.loopmarket.domain.pay.dto.RefundResponse;
 import com.loopmarket.domain.pay.dto.SafePayRequest;
@@ -89,6 +91,18 @@ public class PayApiController {
 	    Long paymentId = payService.safePay(request.getBuyerId(), request.getSellerId(), request.getProductId(), request.getAmount());
 
 	    SafePayResponse response = new SafePayResponse(true, "안전결제 요청이 완료되었습니다.", paymentId);
+	    return ResponseEntity.ok(response);
+	}
+	
+	/**
+	 * 구매 확정 API
+	 * 구매자가 확정 → 판매자에게 금액 정산 + 상태 COMPLETED로 변경
+	 */
+	@PostMapping("/complete")
+	public ResponseEntity<CompletePayResponse> completePay(@RequestBody CompletePayRequest request) {
+	    int sellerBalance = payService.completePay(request.getPaymentId());
+
+	    CompletePayResponse response = new CompletePayResponse(true, "구매 확정이 완료되었습니다.", sellerBalance);
 	    return ResponseEntity.ok(response);
 	}
 }
