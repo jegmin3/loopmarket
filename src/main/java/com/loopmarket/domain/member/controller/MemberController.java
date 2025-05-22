@@ -1,4 +1,4 @@
-package com.loopmarket.domain.member;
+package com.loopmarket.domain.member.controller;
 
 import java.time.LocalDateTime;
 import java.util.Optional;
@@ -15,6 +15,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.loopmarket.common.controller.BaseController;
+import com.loopmarket.domain.member.MemberEntity;
+import com.loopmarket.domain.member.MemberRepository;
 import com.loopmarket.domain.member.dto.MemberDTO;
 
 import lombok.RequiredArgsConstructor;
