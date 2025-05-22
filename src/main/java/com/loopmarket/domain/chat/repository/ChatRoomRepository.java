@@ -4,7 +4,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import com.loopmarket.domain.chat.entity.ChatRoom;
-
 import java.util.List;
 import java.util.Optional;
 
@@ -17,5 +16,7 @@ public interface ChatRoomRepository extends JpaRepository<ChatRoom, Long> {
 
     // 특정 유저가 참여한 채팅방 모두 조회
     List<ChatRoom> findByUser1IdOrUser2Id(Integer userId1, Integer userId2);
+    
+
 }
 

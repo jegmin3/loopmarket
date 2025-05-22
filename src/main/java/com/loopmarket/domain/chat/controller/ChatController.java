@@ -2,8 +2,6 @@ package com.loopmarket.domain.chat.controller;
 
 import java.util.List;
 
-import javax.servlet.http.HttpSession;
-
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -16,24 +14,22 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import com.loopmarket.common.controller.BaseController;
 import com.loopmarket.domain.chat.entity.ChatRoom;
 import com.loopmarket.domain.chat.service.ChatService;
-import com.loopmarket.domain.member.dto.MemberDTO;
+import com.loopmarket.domain.member.MemberEntity;
+
+import lombok.RequiredArgsConstructor;
 
 @Controller
 @RequestMapping("/chat")
+@RequiredArgsConstructor
 public class ChatController extends BaseController {
 	
 	private final ChatService chatService;
-	
-    public ChatController(HttpSession session, ChatService chatService) {
-        super(session);
-        this.chatService = chatService;
-    }
 	
 	// 채팅방 목록
 	@GetMapping
 	public String chatList(Model model, RedirectAttributes redirectAttributes) {
 		
-	    MemberDTO loginUser = getLoginUser();
+	    MemberEntity loginUser = getLoginUser();
 	    if (loginUser == null) {
 	        redirectAttributes.addFlashAttribute("errorMessage", "로그인 후 이용해 주세요.");
 	        return "redirect:/member/login";
@@ -60,7 +56,7 @@ public class ChatController extends BaseController {
     // 채팅방 나가기
     @PostMapping("/exit")
     public String exitChat(@RequestParam Long roomId, RedirectAttributes redirectAttributes) {
-        MemberDTO user = getLoginUser();
+        MemberEntity user = getLoginUser();
         //if (user == null) return "redirect:/member/login";
 
         chatService.exitRoom(roomId, user.getUserId());

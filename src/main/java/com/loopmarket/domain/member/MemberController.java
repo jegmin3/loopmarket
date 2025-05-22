@@ -15,51 +15,43 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.loopmarket.common.controller.BaseController;
-import com.loopmarket.domain.member.dto.LoginDTO;
 import com.loopmarket.domain.member.dto.MemberDTO;
-import com.loopmarket.domain.member.dto.SignupDTO;
+
+import lombok.RequiredArgsConstructor;
 
 @Controller
 @RequestMapping("/member")
+@RequiredArgsConstructor
 public class MemberController extends BaseController {
 	
 	private final MemberRepository memberRepository;
 	private final PasswordEncoder passwordEncoder;
-	
-	// BaseController에 기본생성자가 없는데 super()를 호출하려다 실패해서 오류남으로 인해
-	// requiredArgsConstructor 안쓰고 직접 생성자 했음
-    public MemberController(HttpSession session, MemberRepository memberRepository, PasswordEncoder passwordEncoder) {
-        super(session); // 명시적으로 부모 생성자 호출
-        this.memberRepository = memberRepository;
-        this.passwordEncoder = passwordEncoder;
-    }
-    
+
 	@GetMapping("/login")
 	public String loginGET(Model model) {
 		return render("member/login", model);
 	}
 	
 	@PostMapping("/login")
-	public String login(@ModelAttribute LoginDTO dto, HttpSession session, RedirectAttributes redirectAttributes) {
+	public String login(@ModelAttribute MemberDTO dto, HttpSession session, RedirectAttributes redirectAttributes) {
 	    Optional<MemberEntity> optionalMember = memberRepository.findByEmail(dto.getEmail());
 
 	    if (optionalMember.isEmpty()) {
 	        redirectAttributes.addFlashAttribute("errorMessage", "존재하지 않는 이메일입니다.");
-	        return "redirect:/member/login";
+	        //return "redirect:/member/login";
 	    }
 
 	    MemberEntity member = optionalMember.get();
 
-	    if (!passwordEncoder.matches(dto.getPassword(), member.getPassword())) {
-	        redirectAttributes.addFlashAttribute("errorMessage", "비밀번호가 일치하지 않습니다.");
-	        return "redirect:/member/login";
-	    }
+//	    if (!passwordEncoder.matches(dto.getPassword(), member.getPassword())) {
+//	        redirectAttributes.addFlashAttribute("errorMessage", "비밀번호가 일치하지 않습니다.");
+//	        return "redirect:/member/login";
+//	    }
 
 	    // Entity → DTO 변환
-	    MemberDTO loginUser = MemberDTO.fromEntity(member);
+	    //MemberDTO loginUser = MemberDTO.fromEntity(member);
 
-	    // 세션에 DTO 저장
-	    session.setAttribute("loginUser", loginUser);
+	    session.setAttribute("loginUser", member);
 
 	    redirectAttributes.addFlashAttribute("successMessage", "로그인 성공!");
 	    return "redirect:/";
@@ -81,16 +73,18 @@ public class MemberController extends BaseController {
 	}
     
     @PostMapping("/signup")
-    public String signupPOST(@ModelAttribute SignupDTO dto) {
-        // 비밀번호는 추후 암호화 필요
+    public String signupPOST(@ModelAttribute MemberDTO dto) {
+        // MemberEntity엔티티 객체를 Builder 패턴을 이용해 생성
         MemberEntity newMember = MemberEntity.builder()
                 .email(dto.getEmail())
                 .password(passwordEncoder.encode(dto.getPassword())) // passwordEncoder.encode()로 암호화
                 .nickname(dto.getNickname())
                 .createdAt(LocalDateTime.now())
+                // 지금까지 설정한 값들을 바탕으로 MemberEntity 객체를 최종 생성
                 .build();
 
         memberRepository.save(newMember);
+        
         return "redirect:/member/login";
     }
 
