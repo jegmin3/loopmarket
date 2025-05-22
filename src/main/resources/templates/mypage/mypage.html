@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>마이페이지</title>
+    <script src="/js/jquery.min.js"></script>
+    <script src="/js/mypage/mypage.js"></script>
+</head>
+<body>
+    <div th:replace="common/header :: header"></div>
+
+    <div id="mypage-menu">
+        <button class="menu-btn" data-url="/mypage/selling">내 판매상품</button>
+        <button class="menu-btn" data-url="/mypage/wishlist">관심목록</button>
+        <button class="menu-btn" data-url="/mypage/history">거래내역</button>
+        <button class="menu-btn" data-url="/mypage/profile">회원정보</button>
+        <button class="menu-btn" data-url="/mypage/payments">결제관리</button>
+    </div>
+
+    <div id="content">
+        <!-- AJAX로 불러온 content fragment가 여기 들어옴 -->
+    </div>
+
+    <div th:replace="common/footer :: footer"></div>
