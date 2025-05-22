@@ -1,0 +1,140 @@
+<!-- templates/product/productForm.html -->
+<div th:fragment="content">
+  <div class="container my-5 d-flex justify-content-center">
+    <div class="w-100" style="max-width: 700px;">
+
+      <h2 class="text-center mb-4">📦 상품 등록</h2>
+
+      <form th:action="@{/products}" method="post" th:object="${product}">
+
+        <div class="mb-3">
+          <label>상품명</label>
+          <input type="text" th:field="*{title}" class="form-control" required minlength="2" maxlength="40">
+        </div>
+
+        <div class="mb-3">
+          <label>가격 (원)</label>
+          <!-- 표시용 -->
+          <input type="text" id="priceDisplay" class="form-control">
+          <!-- 서버 전송용 -->
+          <input type="hidden" th:field="*{price}" id="priceInput">
+        </div>
+
+        <div class="mb-3">
+          <label>거래 방식</label><br>
+          <input type="radio" name="saleType" value="SALE" checked id="sale"> 판매
+          <input type="radio" name="saleType" value="DONATION" id="donation"> 나눔
+        </div>
+
+        <div class="mb-3">
+          <label>카테고리</label>
+          <select id="main-category" class="form-select">
+            <option value="">대분류 선택</option>
+            <option th:each="main : ${mainCategories}"
+                    th:value="${main.ctgCode}"
+                    th:text="${main.ctgName}">
+            </option>
+          </select>
+        </div>
+
+        <div class="mb-3">
+          <label>소분류 선택</label>
+          <select id="sub-category" name="ctgCode" class="form-select" required>
+            <option value="">소분류 선택</option>
+          </select>
+        </div>
+
+
+
+        <div class="mb-3">
+          <label>상품 상태</label>
+          <select th:field="*{condition}" class="form-select">
+            <option value="새상품">새상품</option>
+            <option value="사용감 있음">사용감 있음</option>
+            <option value="수리필요">수리 필요</option>
+          </select>
+        </div>
+
+        <div class="mb-3">
+          <label>상품 설명</label>
+          <textarea th:field="*{description}" class="form-control" minlength="10"></textarea>
+        </div>
+
+        <!-- 희망 거래 방식 -->
+        <div class="mb-3">
+          <label>희망 거래 방식</label><br>
+          <input type="checkbox" name="isDirect" value="true" id="isDirect"> 직거래
+          <input type="checkbox" name="isDelivery" value="true" id="isDelivery"> 비대면
+          <input type="checkbox" name="isNonface" value="true" id="isNonface"> 택배
+        </div>
+
+        <!-- 거래 희망 장소 -->
+        <div class="mb-3" id="locationGroup" style="display: none;">
+          <label>거래 희망 장소</label>
+          <div class="d-flex gap-2">
+            <input type="text" class="form-control" placeholder="예: 역삼역" id="locationText" name="locationText" readonly>
+            <button type="button" class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#locationModal">
+              위치 찾기
+            </button>
+          </div>
+        </div>
+        <!-- 숨겨진 필드들 -->
+        <input type="hidden" id="latitude" name="latitude">
+        <input type="hidden" id="longitude" name="longitude">
+
+        <!-- 택배비 입력 -->
+        <div class="mb-3" id="shippingFeeGroup" style="display: none;">
+          <label>택배비 (원)</label>
+          <input type="number" class="form-control" th:field="*{shippingFee}">
+        </div>
+        <!-- 지도 미리보기 영역-->
+        <div id="mapPreview" class="my-4" style="width:100%; height:250px; display:none;"></div>
+
+
+
+        <div class="text-center mt-4">
+          <button type="submit" class="btn btn-dark px-5">상품 등록</button>
+        </div>
+      </form>
+
+      <!-- 위치 선택 모달 -->
+      <div class="modal fade" id="locationModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title">거래할 위치를 선택해보세요!</h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <!-- 모달 내부 -->
+            <div class="modal-body p-0" style="position: relative;">
+              <div id="map" style="width:100%; height:400px;"></div>
+              <div id="overlay-address" class="bg-white text-dark small text-center px-2 py-1 rounded shadow-sm"
+                   style="position: absolute; top: 10px; left: 50%; transform: translateX(-50%); z-index: 10;">
+                📍 지도 중앙을 움직여 위치를 선택해주세요
+              </div>
+
+              <!-- 💡 상세 장소 입력칸 -->
+              <div class="p-3">
+                <label class="form-label small">선택한 장소 설명 (예: 명동역 2번 출구)</label>
+                <input type="text" id="customLocationDetail" class="form-control" placeholder="예: 강남역 1번 출구, 교보타워 앞">
+              </div>
+            </div>
+
+
+
+            <div class="modal-footer justify-content-between">
+              <div id="selected-address" class="text-start small"></div>
+              <button type="button" class="btn btn-dark" id="confirmLocation" data-bs-dismiss="modal">선택 완료</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+
+      <script th:src="@{/js/category.js}"></script>
+      <script th:src="@{/js/product.js}"></script>
+    </div>
+  </div>
+
+</div>
+
