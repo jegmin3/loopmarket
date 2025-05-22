@@ -1,4 +1,4 @@
-package com.loopmarket.admin.notice.dto;
+package com.loopmarket.domain.admin.notice.dto;
 
 import lombok.*;
 

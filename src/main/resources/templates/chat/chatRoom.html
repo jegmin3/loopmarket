@@ -1,0 +1,416 @@
+<div id="chat-main-container" th:fragment="content">
+
+    <div id="chatRooms" class="p-3">
+        <h4 class="mb-3">내 채팅방</h4>
+        <div class="list-group" id="roomList">
+            </div>
+        <hr>
+        <div class="mt-3">
+            <h5 class="mb-2">새로운 채팅</h5>
+            <input type="text" id="targetUserEmail" class="form-control mb-2" placeholder="채팅할 상대방 이메일 입력">
+            <button class="btn btn-primary w-100" onclick="startNewChat()">새 채팅 시작</button>
+        </div>
+    </div>
+
+    <div id="chatWindow">
+        <div id="noChatSelected" class="no-chat-selected">
+            <p>채팅방을 선택하거나 새 채팅을 시작하세요.</p>
+        </div>
+
+        <div id="activeChat" style="display: none; height: 100%;">
+            <div class="chat-header d-flex justify-content-between align-items-center">
+                <h5 id="currentChatPartnerNickname"></h5>
+                <button class="btn btn-sm btn-outline-danger" onclick="disconnectChat()">나가기</button>
+            </div>
+            <div id="messages" class="d-flex flex-column">
+                </div>
+            <form id="messageInputForm" class="d-flex" onsubmit="sendMessage(event)">
+                <input type="text" id="messageInput" class="form-control me-2" placeholder="메시지 입력..." autocomplete="off">
+                <button type="submit" class="btn btn-success">전송</button>
+            </form>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.5.0/sockjs.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-messaging.js"></script>
+
+    <script th:inline="javascript">
+        /*<![CDATA[*/
+        // Thymeleaf에서 백엔드 로그인 사용자 정보 가져오기
+		// MemberEntity 객체를 JSON 문자열로 변환하여 JavaScript에서 파싱
+		var currentUser = /*[[${session.loginUser != null ? session.loginUser : null}]]*/ null;
+		// 만약 loginUser가 null이 아니라면, JSON.parse를 통해 자바스크립트 객체로 변환
+		if (currentUser !== null) {
+		    currentUser = JSON.parse(JSON.stringify(currentUser));
+		}
+		// 이제 currentUser는 JavaScript 객체입니다.
+        var currentUserId = currentUser ? currentUser.userId : null;
+        var currentUserNickname = currentUser ? currentUser.nickname : null;
+
+        var stompClient = null;
+        var currentRoomId = null;
+        var currentChatPartnerId = null;
+        var currentChatPartnerNickname = null;
+
+        // Firebase 설정 (본인의 Firebase 프로젝트 설정에서 웹 앱을 추가하여 얻은 정보 사용)
+        // 이 정보는 실제 프로젝트에 맞게 변경해야 합니다.
+        const firebaseConfig = {
+            apiKey: "YOUR_API_KEY",
+            authDomain: "YOUR_AUTH_DOMAIN",
+            projectId: "YOUR_PROJECT_ID",
+            storageBucket: "YOUR_STORAGE_BUCKET",
+            messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+            appId: "YOUR_APP_ID",
+            measurementId: "YOUR_MEASUREMENT_ID"
+        };
+
+        // Firebase 초기화 (FCM 토큰 요청 전에 초기화 필수)
+        if (!firebase.apps.length) {
+            firebase.initializeApp(firebaseConfig);
+        }
+        const messaging = firebase.messaging();
+
+        // FCM 토큰 요청 및 백엔드에 전송
+        function requestFCMToken() {
+            if (!currentUserId) {
+                console.warn("FCM Token request skipped: User not logged in.");
+                return;
+            }
+
+            // [Violation] Only request notification permission in response to a user gesture.
+            // 위 오류를 해결하기 위해 페이지 로드 시 바로 호출하지 않고,
+            // 사용자가 명시적으로 클릭하는 버튼 등에 연결하는 것이 좋습니다.
+            // 여기서는 일단 기존 로직 유지하되, 이 문제를 인지해야 합니다.
+            messaging.requestPermission().then(function() {
+                console.log('Notification permission granted.');
+                return messaging.getToken();
+            }).then(function(token) {
+                console.log('FCM Token:', token);
+                // TODO: 이 토큰을 서버의 MemberEntity에 저장하는 API 호출
+                // 예를 들어, /api/member/{userId}/fcm-token 엔드포인트로 POST 요청
+                $.ajax({
+                    url: '/api/member/' + currentUserId + '/fcm-token', // MemberApiController에 추가됨
+                    type: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify({ fcmToken: token }),
+                    success: function(response) {
+                        console.log('FCM Token successfully sent to server.');
+                    },
+                    error: function(xhr, status, error) {
+                        console.error('Failed to send FCM token to server:', error);
+                    }
+                });
+            }).catch(function(err) {
+                console.error('Unable to get permission to notify or get FCM token.', err);
+            });
+        }
+
+        // 포그라운드에서 FCM 메시지 수신 시 처리
+        messaging.onMessage(function(payload) {
+            console.log('FCM Message received in foreground. ', payload);
+            // 현재 활성화된 채팅방 메시지인지 확인하고, 아니면 알림 띄우기
+            let senderId = payload.data ? parseInt(payload.data.senderId) : null; // senderId를 숫자로 변환
+            let messageContent = payload.data ? payload.data.messageContent : payload.notification.body;
+            let senderNickname = payload.data ? payload.data.senderNickname : payload.notification.title;
+
+            // 현재 보고 있는 채팅방에서 온 메시지가 아니라면, 알림 UI 띄우기
+            if (currentChatPartnerId !== senderId) {
+                displayMessage({
+                    type: 'SYSTEM',
+                    message: `[${senderNickname}] ${messageContent}`
+                });
+                // 실제 서비스에서는 여기에 작은 팝업이나 사운드 등으로 알림을 구현하거나,
+                // header.html의 알림 배지 카운트를 업데이트하는 로직을 추가합니다.
+                 updateNotificationBadge(); // 알림 뱃지 업데이트 함수 호출
+            } else {
+                // 같은 채팅방 메시지인데 웹소켓으로 받지 못한 경우 (드물지만)
+                // 메시지를 다시 표시하도록 할 수 있습니다.
+                // displayMessage({ type: 'TALK', senderId: senderId, senderNickname: senderNickname, message: messageContent });
+            }
+        });
+
+
+        $(document).ready(function() {
+            if (!currentUserId) { // 로그인 안 된 경우 리다이렉트
+                alert('로그인이 필요합니다. 로그인 페이지로 이동합니다.');
+                window.location.href = '/member/login';
+                return;
+            }
+            loadChatRooms(); // 페이지 로드 시 채팅방 목록 불러오기
+            // requestFCMToken(); // FCM 토큰 요청 - 사용자 제스처로 이동 권장
+        });
+
+        // 채팅방 목록 불러오기
+        function loadChatRooms() {
+            $.get('/api/chat/rooms', function(rooms) {
+                $('#roomList').empty();
+                if (rooms.length === 0) {
+                    $('#roomList').append('<p class="text-muted mt-3">채팅방이 없습니다. 새 채팅을 시작해보세요!</p>');
+                    return;
+                }
+                rooms.forEach(function(room) {
+                    // 상대방 정보 추출
+                    var partnerId = (room.user1Id === currentUserId) ? room.user2Id : room.user1Id;
+                    var partnerNickname = (room.user1Id === currentUserId) ? room.user2Nickname : room.user1Nickname;
+
+                    var listItem = `
+                        <a href="#" class="list-group-item list-group-item-action py-3 lh-tight"
+                           onclick="selectChatRoom('${room.roomId}', <span class="math-inline">\{partnerId\}, '</span>{partnerNickname}')">
+                            <div class="d-flex w-100 align-items-center justify-content-between">
+                                <strong class="mb-1">${partnerNickname}</strong>
+                                ${room.unreadMessageCount > 0 ? `<span class="badge bg-danger rounded-pill">${room.unreadMessageCount}</span>` : ''}
+                            </div>
+                            <div class="col-10 mb-1 small text-truncate">
+                                ${room.lastMessagePreview ? room.lastMessagePreview : '새로운 채팅방입니다.'}
+                            </div>
+                            <div class="col-10 mb-1 text-end small text-muted">
+                                ${room.lastMessageTime ? new Date(room.lastMessageTime).toLocaleString() : ''}
+                            </div>
+                        </a>
+                    `;
+                    $('#roomList').append(listItem);
+                });
+            }).fail(function(xhr, status, error) {
+                console.error('채팅방 목록 로드 실패:', error);
+                // 401 Unauthorized 오류일 경우 로그인 페이지로 리다이렉트
+                if (xhr.status === 401) {
+                    alert('세션이 만료되었거나 로그인이 필요합니다. 로그인 페이지로 이동합니다.');
+                    window.location.href = '/member/login';
+                } else {
+                    alert('채팅방 목록을 불러오지 못했습니다. 다시 시도해주세요.');
+                }
+            });
+        }
+
+        // 채팅방 선택 시
+        function selectChatRoom(roomId, partnerId, partnerNickname) {
+            // ... (기존 selectChatRoom 함수 로직 동일)
+            if (stompClient && stompClient.connected && currentRoomId) {
+                // 이전 채팅방의 LEAVE 메시지 전송 (선택 사항)
+                stompClient.send("/pub/chat/message", {}, JSON.stringify({
+                    roomId: currentRoomId,
+                    type: 'LEAVE',
+                    senderId: currentUserId,
+                    receiverId: currentChatPartnerId,
+                    message: currentUserNickname + '님이 채팅방을 나갔습니다.'
+                }));
+                stompClient.unsubscribe('/sub/chat/room/' + currentRoomId);
+                stompClient.disconnect(function() {
+                    console.log("Disconnected from previous room: " + currentRoomId);
+                    // 연결 해제 후 새 채팅방 연결
+                    connectAndLoadChat(roomId, partnerId, partnerNickname);
+                });
+            } else {
+                connectAndLoadChat(roomId, partnerId, partnerNickname);
+            }
+            // 선택된 채팅방에 active 클래스 추가 (선택된 UI 표시)
+            $('.list-group-item.active').removeClass('active');
+            $(event.currentTarget).addClass('active');
+        }
+
+        // 새 채팅 시작 (상대방 이메일로)
+        function startNewChat() {
+            var targetEmail = $('#targetUserEmail').val().trim();
+            if (!targetEmail) {
+                alert('채팅할 상대방의 이메일을 입력해주세요.');
+                return;
+            }
+
+            if (targetEmail === currentUser.email) {
+                alert('자신과 채팅할 수 없습니다.');
+                return;
+            }
+
+            $.get('/api/member/id-by-email', { email: targetEmail }, function(response) {
+                if (response && response.userId) {
+                    var partnerId = response.userId;
+                    var partnerNickname = response.nickname; // 상대방 닉네임도 받아옴
+
+                    // 자기 자신과의 채팅 방지
+                    if (partnerId === currentUserId) {
+                        alert('자신과 채팅할 수 없습니다.');
+                        return;
+                    }
+
+                    var generatedRoomId = generateRoomId(currentUserId, partnerId);
+
+                    // 서버에 채팅방 생성을 요청하거나, 기존 채팅방 정보를 가져오는 API (구현 필요)
+                    // 현재는 클라이언트에서 단순히 생성하고 연결 시도
+                    selectChatRoom(generatedRoomId, partnerId, partnerNickname);
+                    $('#targetUserEmail').val(''); // 입력창 초기화
+                } else {
+                    // API가 404 Not Found를 반환했을 경우, 이곳이 실행됩니다.
+                    alert('해당 이메일을 가진 사용자를 찾을 수 없습니다.');
+                }
+            }).fail(function(xhr, status, error) {
+                console.error('사용자 조회 실패:', error);
+                alert('사용자 조회 중 오류가 발생했습니다.');
+            });
+        }
+
+
+        // 웹소켓 연결 및 채팅방 메시지 로드
+        function connectAndLoadChat(roomId, partnerId, partnerNickname) {
+            currentRoomId = roomId;
+            currentChatPartnerId = partnerId;
+            currentChatPartnerNickname = partnerNickname;
+
+            $('#noChatSelected').hide();
+            $('#activeChat').show();
+            $('#currentChatPartnerNickname').text(currentChatPartnerNickname);
+            $('#messages').empty(); // 기존 메시지 초기화
+
+            // 메시지 기록 불러오기
+            loadChatMessages(currentRoomId);
+
+            // 웹소켓 연결
+            var socket = new SockJS('/ws/chat'); // 백엔드의 /ws/chat 엔드포인트
+            stompClient = Stomp.over(socket);
+
+            stompClient.connect({}, function(frame) {
+                console.log('Connected to WebSocket: ' + frame);
+
+                // 현재 채팅방 구독
+                stompClient.subscribe('/sub/chat/room/' + currentRoomId, function(message) {
+                    var chatMessage = JSON.parse(message.body);
+                    displayMessage(chatMessage);
+                });
+
+                // 입장 메시지 전송
+                stompClient.send("/pub/chat/message", {}, JSON.stringify({
+                    roomId: currentRoomId,
+                    type: 'ENTER',
+                    senderId: currentUserId,
+                    receiverId: currentChatPartnerId,
+                    message: currentUserNickname + '님이 입장하셨습니다.'
+                }));
+
+                // 메시지 '읽음' 처리 API 호출
+                markMessagesAsRead(currentRoomId);
+
+            }, function(error) {
+                console.error('STOMP Error:', error);
+                alert('채팅 연결 실패. 다시 시도해주세요.');
+                $('#activeChat').hide();
+                $('#noChatSelected').show();
+            });
+        }
+
+        // 웹소켓 연결 해제
+        function disconnectChat() {
+            if (stompClient !== null) {
+                // 퇴장 메시지 전송
+                stompClient.send("/pub/chat/message", {}, JSON.stringify({
+                    roomId: currentRoomId,
+                    type: 'LEAVE',
+                    senderId: currentUserId,
+                    receiverId: currentChatPartnerId,
+                    message: currentUserNickname + '님이 퇴장하셨습니다.'
+                }));
+                stompClient.disconnect();
+            }
+            console.log("Disconnected from chat room.");
+            currentRoomId = null;
+            currentChatPartnerId = null;
+            currentChatPartnerNickname = null;
+            $('#activeChat').hide();
+            $('#noChatSelected').show();
+            loadChatRooms(); // 채팅방 목록 갱신
+        }
+
+        // 메시지 전송
+        function sendMessage(event) {
+            event.preventDefault(); // 폼 기본 제출 방지
+
+            var messageContent = $('#messageInput').val().trim();
+            if (messageContent && stompClient && stompClient.connected && currentRoomId) {
+                var chatMessage = {
+                    roomId: currentRoomId,
+                    type: 'TALK',
+                    senderId: currentUserId,
+                    senderNickname: currentUserNickname,
+                    receiverId: currentChatPartnerId,
+                    receiverNickname: currentChatPartnerNickname,
+                    message: messageContent
+                };
+                stompClient.send("/pub/chat/message", {}, JSON.stringify(chatMessage));
+                $('#messageInput').val(''); // 입력창 초기화
+            } else if (!stompClient || !stompClient.connected) {
+                alert('채팅방에 연결되어 있지 않습니다. 다시 연결해주세요.');
+            } else if (!currentRoomId) {
+                alert('채팅방이 선택되지 않았습니다.');
+            }
+        }
+
+        // 메시지 표시 함수
+        function displayMessage(chatMessage) {
+            var messagesDiv = $('#messages');
+            var messageBubble = $('<div>').addClass('message-bubble');
+
+            if (chatMessage.type === 'TALK') {
+                if (chatMessage.senderId === currentUserId) {
+                    messageBubble.addClass('my-message');
+                    messageBubble.text(chatMessage.message);
+                } else {
+                    messageBubble.addClass('other-message');
+                    messageBubble.html(`<strong><span class="math-inline">\{chatMessage\.senderNickname\}</strong\><br\></span>{chatMessage.message}`);
+                }
+            } else { // ENTER, LEAVE 등 시스템 메시지
+                messageBubble.addClass('system-message');
+                messageBubble.text(chatMessage.message);
+            }
+            messagesDiv.append(messageBubble);
+            messagesDiv.scrollTop(messagesDiv[0].scrollHeight); // 스크롤 하단으로
+        }
+
+        // 채팅방 메시지 기록 불러오기
+        function loadChatMessages(roomId) {
+            $.get('/api/chat/messages/' + roomId, function(messages) {
+                messages.forEach(function(msg) {
+                    displayMessage(msg);
+                });
+            }).fail(function(xhr, status, error) {
+                console.error('메시지 기록 로드 실패:', error);
+                alert('메시지 기록을 불러오지 못했습니다.');
+            });
+        }
+
+        // 메시지 '읽음' 처리 API 호출
+        function markMessagesAsRead(roomId) {
+            $.post('/api/chat/messages/' + roomId + '/read', function() {
+                console.log('Messages marked as read for room:', roomId);
+                // 읽지 않은 메시지 수 UI 업데이트를 위해 채팅방 목록 새로고침
+                loadChatRooms();
+            }).fail(function(xhr, status, error) {
+                console.error('메시지 읽음 처리 실패:', error);
+            });
+        }
+
+        // 채팅방 ID 생성 (백엔드와 동일한 로직)
+        function generateRoomId(user1Id, user2Id) {
+            return (user1Id < user2Id) ? user1Id + '_' + user2Id : user2Id + '_' + user1Id;
+        }
+
+        // 알림 뱃지 업데이트 (header.html의 알림 배지 연동)
+        function updateNotificationBadge() {
+             $.ajax({
+                url: "/api/notifications/unread", // header.html에 있는 API 재활용
+                method: "GET",
+                success: function (data) {
+                    const count = data.count; // 알림 API에서 count를 반환한다고 가정
+                    if (count > 0) {
+                        $("#notifBadge", window.parent.document).show().text(count > 9 ? '●' : count);
+                    } else {
+                        $("#notifBadge", window.parent.document).hide();
+                    }
+                },
+                error: function(xhr, status, error) {
+                    console.error("Failed to update notification badge:", error);
+                }
+            });
+        }
+        /*]]>*/
+    </script>
+</div>

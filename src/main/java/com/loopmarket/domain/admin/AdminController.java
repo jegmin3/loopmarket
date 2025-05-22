@@ -1,4 +1,4 @@
-package com.loopmarket.admin;
+package com.loopmarket.domain.admin;
 
 import javax.servlet.http.HttpServletRequest;
 
