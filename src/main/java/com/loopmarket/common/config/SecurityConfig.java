@@ -9,7 +9,7 @@ import org.springframework.security.web.SecurityFilterChain;
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
-	
+
 	// Spring Security 필터 설정
 	@Bean
 	SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
@@ -22,5 +22,5 @@ public class SecurityConfig {
 	        .formLogin(form -> form.disable());
 	    return http.build();
 	}
-	 
+
 }

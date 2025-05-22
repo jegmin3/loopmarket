@@ -1,0 +1,28 @@
+<!-- templates/product/productList.html -->
+<div th:fragment="content">
+  <div class="container my-5">
+    <h2 class="mb-4 text-center">📦 전체 상품 목록</h2>
+    <div class="text-end mb-3">
+      <a href="/products/new" class="btn btn-primary">상품 등록</a> <!-- 임시 버튼-->
+    </div>
+    <div class="row row-cols-1 row-cols-md-3 g-4">
+      <div class="col" th:each="product : ${productList}">
+        <div class="card h-100 shadow-sm">
+
+          <!-- 이미지 일단 임시 고정 -->
+          <img th:src="@{/images/sample.jpg}"
+               class="card-img-top"
+               alt="상품 이미지" style="height: 200px; object-fit: cover;" />
+
+          <div class="card-body">
+            <h5 class="card-title" th:text="${product.title}">상품명</h5>
+            <p class="card-text fw-bold" th:text="${#numbers.formatInteger(product.price, 3, 'COMMA') + '원'}">가격</p>
+            <!-- location 연관관계 아직 없으면 이 줄도 잠시 주석 -->
+            <!--<p class="text-muted" th:text="${product.location.dongName}">위치</p>-->
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
