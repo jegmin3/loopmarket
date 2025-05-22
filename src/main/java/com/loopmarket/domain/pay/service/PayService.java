@@ -15,4 +15,7 @@ public interface PayService {
     
     // 현재 유저의 잔액 조회 (존재하지 않으면 0 반환)
     int getBalance(Long userId);
+    
+    // 안전결제 처리 로직 (구매자 잔액 차감, 거래기록 생성, 상태 변경)
+    Long safePay(Long buyerId, Long sellerId, Long productId, int amount);
 }
