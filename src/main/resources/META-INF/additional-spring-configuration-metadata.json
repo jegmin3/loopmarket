@@ -1,0 +1,5 @@
+{"properties": [{
+  "name": "firebase.sdk.path",
+  "type": "java.lang.String",
+  "description": "A description for 'firebase.sdk.path'"
+}]}

@@ -1,68 +1,44 @@
 package com.loopmarket.domain.chat.controller;
 
-import java.util.List;
-
+import lombok.RequiredArgsConstructor;
+import org.springframework.messaging.handler.annotation.MessageMapping; // STOMP 메시지 매핑
+import org.springframework.messaging.handler.annotation.Payload; // 메시지 페이로드 주입
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.loopmarket.common.controller.BaseController;
-import com.loopmarket.domain.chat.entity.ChatRoom;
+import com.loopmarket.domain.chat.dto.ChatMessageDTO;
 import com.loopmarket.domain.chat.service.ChatService;
-import com.loopmarket.domain.member.MemberEntity;
 
-import lombok.RequiredArgsConstructor;
-
+/** 웹소켓(STOMP) 메시지를 처리하는 컨트롤러 */
 @Controller
-@RequestMapping("/chat")
 @RequiredArgsConstructor
 public class ChatController extends BaseController {
-	
-	private final ChatService chatService;
-	
-	// 채팅방 목록
-	@GetMapping
-	public String chatList(Model model, RedirectAttributes redirectAttributes) {
-		
-	    MemberEntity loginUser = getLoginUser();
-	    if (loginUser == null) {
-	        redirectAttributes.addFlashAttribute("errorMessage", "로그인 후 이용해 주세요.");
-	        return "redirect:/member/login";
-	    }
-	    
-	    Integer userId = getLoginUser().getUserId();
-	    List<ChatRoom> chatRooms = chatService.getRoomsByUser(userId); // 회원아이디 기준 조회
 
-	    model.addAttribute("chatRooms", chatRooms);
-	    return render("chat/chatList", model);
-	}
+    private final ChatService chatService;
 
-	// 1:1 채팅방
-    @GetMapping("/{roomId}")
-    public String chatRoom(@PathVariable String roomId,
-                           @RequestParam("target") String targetUserId,
-                           Model model) {
-        model.addAttribute("roomId", roomId);
-        model.addAttribute("targetUserId", targetUserId);
-		
-		return render("chat/chat", model);
-	}
+    /**
+     * 클라이언트가 "/pub/chat/message" 경로로 메시지를 발행할 때 처리합니다.
+     * 메시지 전송, 채팅방 입장/퇴장 등 모든 채팅 관련 메시지를 처리합니다.
+     *
+     * @param chatMessageDTO 클라이언트로부터 수신한 채팅 메시지 DTO
+     */
+    @MessageMapping("/chat/message") // /pub/chat/message 에 매핑 (WebSocketConfig에서 설정)
+    public void message(@Payload ChatMessageDTO chatMessageDTO) {
+        // ChatService를 통해 메시지 처리 (저장, 웹소켓 브로드캐스팅, FCM 알림 등)
+        chatService.handleChatMessage(chatMessageDTO);
+    }
     
-    // 채팅방 나가기
-    @PostMapping("/exit")
-    public String exitChat(@RequestParam Long roomId, RedirectAttributes redirectAttributes) {
-        MemberEntity user = getLoginUser();
-        //if (user == null) return "redirect:/member/login";
-
-        chatService.exitRoom(roomId, user.getUserId());
-
-        redirectAttributes.addFlashAttribute("successMessage", "채팅방에서 나갔습니다.");
-        return "redirect:/chat"; // 목록으로 이동
+    @GetMapping("/chat/page")
+    public String goChatPage(Model model, RedirectAttributes redirectAttributes) {
+    	redirectAttributes.addFlashAttribute("errorMessage", "로그인이 필요합니다.");
+    	return render("chat/chatRoom", model);
     }
 
+    // TODO: (선택 사항) 웹소켓 연결/연결 해제 이벤트를 처리하는 로직 추가 가능
+    // SimpAnnotationMethodMessageHandler 에서 WebSocketEventListener 등을 사용하여
+    // connect, disconnect 이벤트를 감지하여 사용자 온라인 상태 관리 로직을 구현할 수 있습니다.
+    // 이는 ChatService의 isReceiverOnline 로직과 연동될 수 있습니다.
 }

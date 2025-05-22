@@ -26,6 +26,9 @@ public interface MemberRepository extends JpaRepository<MemberEntity, Integer> {
     List<MemberEntity> findByStatus(Status status);
     // 관리자 계정 필터링
     List<MemberEntity> findByRole(Role role);
+    
+    // FCM 토큰으로 사용자 조회 (필요 시)
+    Optional<MemberEntity> findByFcmToken(String fcmToken);
 
     
     // 소셜 로그인 대비
