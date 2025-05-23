@@ -6,3 +6,10 @@
 # Datasource local storage ignored files
 /dataSources/
 /dataSources.local.xml
+
+#이미지 업로드 제한 - AWS 에서 따로 관리중
+/upload/
+
+
+
+pom.xml

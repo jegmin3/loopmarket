@@ -1,22 +1,28 @@
-<!-- templates/main/index.html -->
 <div th:fragment="content">
   <div class="container my-5">
 
-    <!-- 1. 검색창 + 위치 -->
+    <!-- 1. 검색창과 위치 정보 영역: fragment로 분리해 재사용 -->
     <div th:replace="fragment/searchAndLocation :: searchAndLocation"></div>
 
-    <!-- 2. 카테고리 카드 출력 -->
+    <!-- 2. 카테고리 카드 리스트 출력 -->
     <div class="container my-5">
       <div class="row row-cols-2 row-cols-md-4 g-4 justify-content-center">
+        <!-- mainCategories 리스트를 반복하며 카드 생성 -->
         <div class="col" th:each="category : ${mainCategories}">
           <div class="card text-center shadow-sm h-100">
             <div class="card-body">
+              <!-- 카테고리 이름 출력 -->
               <h5 class="card-title" th:text="${category.ctgName}">카테고리명</h5>
             </div>
           </div>
         </div>
       </div>
     </div>
+    <!-- 카카오 맵 SDK 추가 -->
+    <script type="text/javascript"
+            src="//dapi.kakao.com/v2/maps/sdk.js?appkey=d4ca8876da8e183543e1cfbbd669097d&libraries=services"></script>
+
+    <script th:src="@{/js/render.js}"></script>
 
   </div>
   
@@ -27,4 +33,14 @@
   <script th:src="@{/js/render.js}"></script>
   
   
+</div>
+
+<!-- 로그인 모달: 동적으로 내용이 로드되는 부분 -->
+<div class="modal fade" id="loginModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content" id="loginModalContent">
+      <!-- 로그인 폼 등의 조각 뷰가 여기에 들어감 -->
+    </div>
+  </div>
+
 </div>
