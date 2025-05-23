@@ -30,7 +30,18 @@ public class PayController extends BaseController {
 
 	private final ProductService productService;
     private final PaymentRepository paymentRepository;
+    
+    // 마이페이지 등 다른 페이지에 넣기 전 확인용 테스트 페이지 출력
+    @GetMapping("/test")
+    public String showPayWidgetTestPage(Model model) {
+    	MemberEntity loginUser = getLoginUser();
+    	if (loginUser == null)
+    		return "redirect:/member/login";
 
+    	model.addAttribute("loginUser", loginUser);
+    	return render("pay/pay-test", model);
+    }
+    
 	// 페이 충전 페이지
 	@GetMapping("/charge")
 	public String showChargePage(Model model) {

@@ -1,0 +1,30 @@
+<!-- 마이페이지에 포함할 페이 위젯 조각입니다. -->
+
+<script th:inline="javascript">
+  /*<![CDATA[*/
+  window.loginUserId = /*[[${loginUser.userId}]]*/ 0;
+  /*]]>*/
+</script>
+
+<div th:fragment="payWidget">
+  <div class="container">
+    <div class="row justify-content-center">
+      <div class="col-12 col-sm-10 col-md-8 col-lg-5">
+        <div class="card shadow-sm rounded-4 p-3 mb-3 w-100" id="pay-widget">
+          <div class="d-flex justify-content-between align-items-center mb-2 px-3">
+            <div class="d-flex align-items-center">
+              <img src="/img/pay/pay.png" alt="pay logo" class="img-fluid" style="max-height: 2rem;">
+            </div>
+            <div>
+              <strong id="pay-balance" class="fs-6 fw-semibold text-nowrap">0원</strong>
+            </div>
+          </div>
+          <div class="d-flex justify-content-between">
+			<button id="pay-charge-btn" class="btn btn-light w-50 me-1 rounded-3 border fw-semibold">충전</button>
+			<button id="pay-transfer-btn" class="btn btn-light w-50 ms-1 rounded-3 border fw-semibold">송금</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
