@@ -88,7 +88,7 @@ public class PayApiController {
 	 */
 	@PostMapping("/safe")
 	public ResponseEntity<SafePayResponse> safePay(@RequestBody SafePayRequest request) {
-	    Long paymentId = payService.safePay(request.getBuyerId(), request.getSellerId(), request.getProductId(), request.getAmount());
+	    Long paymentId = payService.safePay(request.getBuyerId(), request.getProductId());
 
 	    SafePayResponse response = new SafePayResponse(true, "안전결제 요청이 완료되었습니다.", paymentId);
 	    return ResponseEntity.ok(response);

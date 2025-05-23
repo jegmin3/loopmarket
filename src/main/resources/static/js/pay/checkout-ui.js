@@ -4,14 +4,13 @@
  */
 
 document.addEventListener('DOMContentLoaded', () => {
-  const tradeType = window.checkoutProduct.tradeType;
   const addressContainer = document.getElementById('addressContainer');
   const payBtn = document.getElementById('safePayBtn');
   const chargeBtn = document.getElementById('chargeBtn');
   const payBalanceText = document.getElementById('payBalanceText');
 
   // 택배 거래일 경우 배송지 입력 표시
-  if (tradeType === '택배거래' || tradeType === 'DELIVERY') {
+  if (window.checkoutProduct.isDelivery) {
     addressContainer.style.display = 'block';
   }
 
@@ -21,13 +20,18 @@ document.addEventListener('DOMContentLoaded', () => {
     .then(data => {
       if (data.success && data.balance !== undefined) {
         const balance = data.balance;
-        const price = window.checkoutProduct.price;
+        const productPrice = window.checkoutProduct.price;
+        const shippingFee = window.checkoutProduct.shippingFee || 0;
+
+        const totalPrice = window.checkoutProduct.isDelivery
+          ? productPrice + shippingFee
+          : productPrice;
 
         // 잔액 표시
         payBalanceText.textContent = `₩${balance.toLocaleString()}`;
 
         // 잔액 부족 시 처리
-        if (balance < price) {
+        if (balance < totalPrice) {
           payBtn.disabled = true;
           chargeBtn.style.display = 'block';
 

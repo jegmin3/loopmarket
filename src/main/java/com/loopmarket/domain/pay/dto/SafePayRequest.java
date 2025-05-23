@@ -12,7 +12,5 @@ import lombok.*;
 @AllArgsConstructor
 public class SafePayRequest {
     private Long buyerId;
-    private Long sellerId;
     private Long productId;
-    private int amount;
 }

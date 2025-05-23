@@ -9,6 +9,9 @@ import com.loopmarket.domain.pay.enums.TransactionType;
 import com.loopmarket.domain.pay.repository.MoneyTransactionRepository;
 import com.loopmarket.domain.pay.repository.PaymentRepository;
 import com.loopmarket.domain.pay.repository.UserMoneyRepository;
+import com.loopmarket.domain.product.entity.ProductEntity;
+import com.loopmarket.domain.product.service.ProductService;
+
 import lombok.RequiredArgsConstructor;
 
 import org.hibernate.type.TrueFalseType;
@@ -22,6 +25,7 @@ public class PayServiceImpl implements PayService {
 	private final UserMoneyRepository userMoneyRepository;
 	private final MoneyTransactionRepository moneyTransactionRepository;
     private final PaymentRepository paymentRepository;
+    private final ProductService productService;
 
 	/**
 	 * 페이 충전 : 포트원 결제 성공 이후 -> 잔액 증가 + 거래 기록
@@ -97,14 +101,20 @@ public class PayServiceImpl implements PayService {
 	 * 안전결제 처리
 	 */
 	@Override
-	@Transactional
-	public Long safePay(Long buyerId, Long sellerId, Long productId, int amount) {
-	    // 1. 구매자 잔액 조회 및 차감
+    @Transactional
+    public Long safePay(Long buyerId, Long productId) {
+        // 1. 상품 정보 조회
+        ProductEntity product = productService.getProductById(productId);
+
+        Long sellerId = product.getUserId();
+        int amount = product.getPrice();
+
+	    // 2. 구매자 잔액 조회 및 차감
 	    UserMoney userMoney = userMoneyRepository.findById(buyerId)
 	        .orElseThrow(() -> new IllegalArgumentException("잔액 정보가 존재하지 않습니다."));
 	    userMoney.refund(amount);
 
-	    // 2. 거래 기록 저장 (출금)
+	    // 3. 거래 기록 저장 (출금)
 	    MoneyTransaction tx = new MoneyTransaction(
 	        buyerId,
 	        TransactionType.SAFE_PAY,
@@ -114,7 +124,7 @@ public class PayServiceImpl implements PayService {
 	    );
 	    moneyTransactionRepository.save(tx);
 
-	    // 3. 결제 보류 정보 저장
+	    // 4. 결제 보류 정보 저장
 	    Payment payment = Payment.create(
 	        buyerId,
 	        sellerId,

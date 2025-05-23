@@ -10,15 +10,12 @@ document.addEventListener('DOMContentLoaded', () => {
     // 잔액 부족으로 비활성화된 경우 무시
     if (payBtn.disabled) return;
 
-    const userId = window.loginUser.id;
-    const sellerId = window.checkoutProduct.sellerId;
-    const productId = window.checkoutProduct.id;
+    const buyerId = window.loginUser.id;
+    const productId = window.checkoutProduct.productId;
     const amount = window.checkoutProduct.price;
-    const tradeType = window.checkoutProduct.tradeType;
-    const method = "PAY"; // 현재 자체페이 고정
 
     // 누락된 정보가 있는 경우 방어
-    if (!userId || !sellerId || !productId || !amount) {
+    if (!buyerId || !productId || !amount) {
       await Swal.fire({
         icon: 'error',
         title: '결제 불가',
@@ -28,7 +25,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // 배송지 입력 필요 시 → 주소 + 상세주소 모두 입력했는지 체크
-    if (tradeType === '택배거래' || tradeType === 'DELIVERY') {
+    if (window.checkoutProduct.isDelivery) {
       const address = document.getElementById('addressInput')?.value.trim();
       const detail = document.getElementById('addressDetailInput')?.value.trim();
       if (!address || !detail) {
@@ -55,7 +52,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const res = await fetch('/api/pay/safe', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ buyerId:userId, sellerId, productId, amount })
+        body: JSON.stringify({ buyerId, productId })
       });
 
       const data = await res.json();
@@ -66,7 +63,7 @@ document.addEventListener('DOMContentLoaded', () => {
           title: '결제 완료',
           text: data.message,
         });
-        location.href = '/mypage'; // 또는 상품 상세 페이지로
+        location.href = '/'; // 또는 상품 상세 페이지로 이동 가능
       } else {
         await Swal.fire({
           icon: 'error',
