@@ -27,7 +27,7 @@ public class ProductService {
   public void registerProductWithImages(ProductEntity product, List<MultipartFile> images, int mainImageIndex) {
     product.setCreatedAt(LocalDateTime.now());  // 상품 등록일 현재 시간 설정
     product.setUpdateAt(LocalDateTime.now());   // 상품 수정일 현재 시간 설정
-    product.setStatus("판매중");                 // 기본 상태 '판매중'으로 설정
+    product.setStatus("ONSALE");                 // 기본 상태 'ONSALE'으로 설정
     product.setIsHidden(true);                   // 상품 숨김 여부 true로 설정 (필요 시 수정)
 
     // 1. 상품 엔티티 먼저 저장

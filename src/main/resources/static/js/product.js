@@ -90,23 +90,26 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (score <= 14) {
       text = "🔧 수리가 필요해요";
-      status = "수리 필요";
+      status = "NEEDS_REPAIR";
     } else if (score <= 30) {
       text = "⚠ 상태가 좋지 않아요";
-      status = "상태 안좋음";
+      status = "BAD";
     } else if (score <= 69) {
       text = "👣 사용감 있어요";
-      status = "사용감 있음";
+      status = "USED";
     } else if (score <= 80) {
       text = "👍 중고지만, 상태 좋아요";
-      status = "상태 좋음";
+      status = "GOOD";
     } else if (score <= 94) {
       text = "✨ 거의 새 거예요";
-      status = "거의 새것";
+      status = "ALMOST_NEW";
     } else {
       text = "🆕 새 상품이에요";
-      status = "새상품";
+      status = "NEW";
     }
+    conditionText.textContent = text;
+    conditionHidden.value = status; // 여기만 영문으로 바꿔줘야 함
+
 
     conditionText.textContent = text;
     conditionHidden.value = status;
