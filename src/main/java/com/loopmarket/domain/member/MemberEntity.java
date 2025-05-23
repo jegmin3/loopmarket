@@ -68,7 +68,7 @@ public class MemberEntity {
     @Builder.Default
     private Status status = Status.ACTIVE;
 
-    private Integer profileImgId;
+    private String profileImgId;
 
     private String phoneNumber;
 
