@@ -35,6 +35,13 @@
 						<img th:src="${imageUrl}" alt="상품 이미지" width="80">
 					</div>
 				</div>
+				
+				<div class="mb-3">
+				  <label class="form-label fw-bold">배송비 포함 총 결제 금액</label>
+				  <div>
+				    <span id="totalPriceText" class="text-danger fw-bold">₩0</span>
+				  </div>
+				</div>
 
 				<div class="mb-3">
 					<label class="form-label fw-bold">거래 방식</label>
@@ -49,7 +56,7 @@
 					</div>
 					<input type="text" class="form-control" id="addressDetailInput" placeholder="상세 주소를 입력하세요">
 				</div>
-
+				
 				<div class="mb-3">
 					<label class="form-label fw-bold">페이 잔액</label>
 					<div>

@@ -2,20 +2,24 @@ package com.loopmarket.domain.pay.controller;
 
 import com.loopmarket.common.controller.BaseController;
 import com.loopmarket.domain.member.MemberEntity;
+import com.loopmarket.domain.pay.enums.PaymentStatus;
+import com.loopmarket.domain.pay.repository.PaymentRepository;
 import com.loopmarket.domain.pay.service.PayService;
 import com.loopmarket.domain.product.entity.ProductEntity;
 import com.loopmarket.domain.product.service.ProductService;
 
 import lombok.RequiredArgsConstructor;
 
+import org.springframework.http.HttpStatus;
+
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.server.ResponseStatusException;
 
-import java.util.Map;
+import java.util.List;
 
 /**
  * 결제 관련 화면 요청을 처리하는 컨트롤러입니다.
@@ -27,6 +31,7 @@ public class PayController extends BaseController {
 
 	private final PayService payService;
 	private final ProductService productService;
+    private final PaymentRepository paymentRepository;
 
 	// 페이 충전 페이지
 	@GetMapping("/charge")
@@ -56,17 +61,22 @@ public class PayController extends BaseController {
 		MemberEntity loginUser = getLoginUser();
 		if (loginUser == null)
 			return "redirect:/member/login";
-
+		
 		// 상품 정보 DB에서 조회
 		ProductEntity product = productService.getProductById(productId);
-
-		// 예외 상황 처리: 상품이 숨김 처리된 경우 등
-		if (product.getIsHidden() != null && product.getIsHidden()) {
-			model.addAttribute("errorMessage", "해당 상품은 더 이상 결제가 불가능합니다.");
-			return "error/404";
-		}
 		
-		//추후 변경 필요
+		// 거래 중(HOLD), 정산 완료(COMPLETED)된 경우 차단
+	    List<PaymentStatus> forbiddenStatuses = List.of(PaymentStatus.HOLD, PaymentStatus.COMPLETED);
+	    if (paymentRepository.existsByProductIdAndStatusIn(productId, forbiddenStatuses)) {
+	        throw new ResponseStatusException(HttpStatus.NOT_FOUND, "이미 거래 중이거나 완료된 상품입니다.");
+	    }
+
+	    // 숨김 처리된 상품 차단
+	    if (Boolean.TRUE.equals(product.getIsHidden())) {
+	        throw new ResponseStatusException(HttpStatus.NOT_FOUND, "해당 상품은 더 이상 결제가 불가능합니다.");
+	    }
+		
+		// 이미지 - 추후 변경 필요
 		String imageUrl = "/img/pay/sample.png";
 		//String imageUrl = (product.getImageUrl() != null) ? product.getImageUrl() : "/img/pay/sample.png";
 
