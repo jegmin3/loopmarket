@@ -19,7 +19,6 @@ import javax.servlet.http.HttpSession;
 
 import java.beans.PropertyEditorSupport;
 import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDate;
@@ -29,8 +28,7 @@ import java.time.format.DateTimeFormatter;
 @Controller
 public class ProfileController extends BaseController {
 
-    @Value("${upload.images.path}")
-    private String uploadPath;
+	private final String uploadPath = System.getProperty("user.dir") + "/upload/images/";
 
     private final MemberRepository memberRepository;
 
@@ -92,18 +90,11 @@ public class ProfileController extends BaseController {
 
         // 프로필 이미지가 업로드되었으면 저장 처리
         if (profileImage != null && !profileImage.isEmpty()) {
-            Path uploadDir = Paths.get(uploadPath).toAbsolutePath().normalize();
-            if (!Files.exists(uploadDir)) {
-                Files.createDirectories(uploadDir);
-            }
-
-            String filename = member.getUserId() + ".png";  // 파일명은 userId.png로 고정
-            Path targetLocation = uploadDir.resolve(filename);
-
-            profileImage.transferTo(targetLocation.toFile());
-
-            // 저장한 이미지 파일명 혹은 id를 엔티티에 반영
-            member.setProfileImgId(filename);
+        	String filename = member.getUserId() + "_profile.png";  // 예: user123_profile.png
+        	Path uploadDir = Paths.get(uploadPath).toAbsolutePath().normalize();
+        	Path targetLocation = uploadDir.resolve(filename);
+        	profileImage.transferTo(targetLocation.toFile());
+        	member.setProfileImgId(filename);
         }
 
         member.setUpdatedAt(LocalDateTime.now());
