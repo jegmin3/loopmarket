@@ -1,12 +1,17 @@
 package com.loopmarket.domain.pay.service;
 
 import com.loopmarket.domain.pay.entity.MoneyTransaction;
+import com.loopmarket.domain.pay.entity.Payment;
 import com.loopmarket.domain.pay.entity.UserMoney;
 import com.loopmarket.domain.pay.enums.PaymentMethod;
 import com.loopmarket.domain.pay.enums.TransactionStatus;
 import com.loopmarket.domain.pay.enums.TransactionType;
 import com.loopmarket.domain.pay.repository.MoneyTransactionRepository;
+import com.loopmarket.domain.pay.repository.PaymentRepository;
 import com.loopmarket.domain.pay.repository.UserMoneyRepository;
+import com.loopmarket.domain.product.entity.ProductEntity;
+import com.loopmarket.domain.product.service.ProductService;
+
 import lombok.RequiredArgsConstructor;
 
 import org.hibernate.type.TrueFalseType;
@@ -19,6 +24,8 @@ public class PayServiceImpl implements PayService {
 
 	private final UserMoneyRepository userMoneyRepository;
 	private final MoneyTransactionRepository moneyTransactionRepository;
+    private final PaymentRepository paymentRepository;
+    private final ProductService productService;
 
 	/**
 	 * 페이 충전 : 포트원 결제 성공 이후 -> 잔액 증가 + 거래 기록
@@ -88,5 +95,68 @@ public class PayServiceImpl implements PayService {
 	@Transactional(readOnly = true)
 	public int getBalance(Long userId) {
 		return userMoneyRepository.findById(userId).map(UserMoney::getBalance).orElse(0);
+	}
+	
+	/**
+	 * 안전결제 처리
+	 */
+	@Override
+    @Transactional
+    public Long safePay(Long buyerId, Long productId) {
+        // 1. 상품 정보 조회
+        ProductEntity product = productService.getProductById(productId);
+
+        Long sellerId = product.getUserId();
+        int amount = product.getPrice();
+
+	    // 2. 구매자 잔액 조회 및 차감
+	    UserMoney userMoney = userMoneyRepository.findById(buyerId)
+	        .orElseThrow(() -> new IllegalArgumentException("잔액 정보가 존재하지 않습니다."));
+	    userMoney.refund(amount);
+
+	    // 3. 거래 기록 저장 (출금)
+	    MoneyTransaction tx = new MoneyTransaction(
+	        buyerId,
+	        TransactionType.SAFE_PAY,
+	        amount,
+	        TransactionStatus.SUCCESS,
+	        PaymentMethod.PAY
+	    );
+	    moneyTransactionRepository.save(tx);
+
+	    // 4. 결제 보류 정보 저장
+	    Payment payment = Payment.create(
+	        buyerId,
+	        sellerId,
+	        productId,
+	        amount,
+	        tx.getTransactionId()
+	    );
+	    paymentRepository.save(payment);
+	    return payment.getPaymentId();
+	}
+	
+	/**
+	 * 구매 확정 처리
+	 */
+	@Override
+	@Transactional
+	public int completePay(Long paymentId) {
+	    // 1. 결제 정보 조회
+	    Payment payment = paymentRepository.findById(paymentId)
+	            .orElseThrow(() -> new IllegalArgumentException("결제 정보를 찾을 수 없습니다."));
+
+	    // 2. 상태 변경
+	    payment.complete();  // status → COMPLETED
+
+	    // 3. 판매자 잔액 업데이트
+	    UserMoney sellerMoney = userMoneyRepository.findById(payment.getSellerId())
+	            .orElse(new UserMoney(payment.getSellerId(), 0)); // 없으면 새로 생성
+	    sellerMoney.charge(payment.getAmount());
+
+	    userMoneyRepository.save(sellerMoney); // 신규일 경우 save 필요
+
+	    // 4. 판매자 잔액 반환
+	    return sellerMoney.getBalance();
 	}
 }

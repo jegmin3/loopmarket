@@ -1,0 +1,88 @@
+<th:block th:fragment="content">
+
+	<!-- 로그인/상품 정보 JS 전달 -->
+	<script th:inline="javascript">
+		/*<![CDATA[*/
+		window.loginUser = {
+			id: /*[[${loginUser.userId}]]*/ 0,
+			name: /*[[${loginUser.nickname}]]*/ "",
+			email: /*[[${loginUser.email}]]*/ ""
+		};
+
+		window.checkoutProduct = {
+			productId: /*[[${product.productId}]]*/ 0,
+			price: /*[[${product.price}]]*/ 0,
+			userId: /*[[${product.userId}]]*/ 0,
+			imageUrl: /*[['${imageUrl}']]*/ '',
+			isDelivery: /*[[${product.isDelivery}]]*/ false,
+			shippingFee: /*[[${product.shippingFee != null ? product.shippingFee : 0}]]*/ 0
+		};
+		/*]]>*/
+	</script>
+
+	<!-- 화면 UI 구성 -->
+	<div class="container py-5 text-start">
+		<div class="row justify-content-center">
+			<div class="col-12 col-sm-10 col-md-6 col-lg-5">
+				<h2 class="mb-4">안전결제</h2>
+
+				<div class="card mb-4">
+					<div class="card-body d-flex justify-content-between align-items-center">
+						<div>
+							<h5 th:text="${product.title}">상품 제목</h5>
+							<p class="mb-0 text-muted" th:text="'₩' + ${product.price}"></p>
+						</div>
+						<img th:src="${imageUrl}" alt="상품 이미지" width="80">
+					</div>
+				</div>
+				
+				<div class="mb-3">
+				  <label class="form-label fw-bold">배송비 포함 총 결제 금액</label>
+				  <div>
+				    <span id="totalPriceText" class="text-danger fw-bold">₩0</span>
+				  </div>
+				</div>
+
+				<div class="mb-3">
+					<label class="form-label fw-bold">거래 방식</label>
+					<input type="text" class="form-control" th:value="${tradeType}" readonly>
+				</div>
+
+				<div class="mb-3" id="addressContainer" style="display: none;">
+					<label class="form-label fw-bold">배송지 입력</label>
+					<div class="input-group mb-2">
+						<input type="text" class="form-control" id="addressInput" placeholder="주소를 입력하세요" readonly>
+						<button type="button" class="btn btn-outline-secondary" onclick="execDaumPostcode()">검색</button>
+					</div>
+					<input type="text" class="form-control" id="addressDetailInput" placeholder="상세 주소를 입력하세요">
+				</div>
+				
+				<div class="mb-3">
+					<label class="form-label fw-bold">페이 잔액</label>
+					<div>
+						<span id="payBalanceText" class="text-muted fw-bold">₩<span th:text="${balance}">0</span></span>
+					</div>
+				</div>
+
+				<button type="button" class="btn btn-dark w-100 mb-2" id="safePayBtn">결제하기</button>
+				<button type="button" class="btn btn-outline-danger w-100" id="chargeBtn"
+					style="display: none;">충전하기</button>
+			</div>
+		</div>
+	</div>
+
+	<!-- 외부 스크립트 -->
+	<script src="https://t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
+	<script>
+		function execDaumPostcode() {
+			new daum.Postcode({
+				oncomplete: function (data) {
+					document.getElementById('addressInput').value = data.address;
+				}
+			}).open();
+		}
+	</script>
+
+	<script src="/js/pay/checkout-ui.js"></script>
+	<script src="/js/pay/checkout.js"></script>
+</th:block>
