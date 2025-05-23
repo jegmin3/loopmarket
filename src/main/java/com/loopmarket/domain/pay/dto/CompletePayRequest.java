@@ -9,4 +9,5 @@ import lombok.Getter;
 @Getter
 public class CompletePayRequest {
     private Long paymentId;
+    private Long buyerId;
 }

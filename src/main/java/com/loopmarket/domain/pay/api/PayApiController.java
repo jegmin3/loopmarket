@@ -26,7 +26,7 @@ import com.loopmarket.domain.pay.service.PayService;
 import lombok.RequiredArgsConstructor;
 
 /**
- * 페이 관련 API 전용 컨트롤러 REST 방식으로 /api/pay/charge 같은 AJAX 요청 처리
+ * 페이, 결제 관련 API 전용 컨트롤러 REST 방식으로 /api/pay/charge 같은 AJAX 요청 처리
  */
 @RestController
 @RequestMapping("/api/pay")
@@ -100,8 +100,7 @@ public class PayApiController {
 	 */
 	@PostMapping("/complete")
 	public ResponseEntity<CompletePayResponse> completePay(@RequestBody CompletePayRequest request) {
-	    int sellerBalance = payService.completePay(request.getPaymentId());
-
+	    int sellerBalance = payService.completePay(request.getPaymentId(), request.getBuyerId());
 	    CompletePayResponse response = new CompletePayResponse(true, "구매 확정이 완료되었습니다.", sellerBalance);
 	    return ResponseEntity.ok(response);
 	}
