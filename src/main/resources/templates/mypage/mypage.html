@@ -1,0 +1,82 @@
+<div th:fragment="content">
+    <div class="container">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div class="d-flex align-items-center">
+                <img src="/profile/${loginUser.profileImgId}" class="rounded-circle" alt="프로필 이미지" width="100" height="100" />
+                <div class="ms-4">
+                    <h4 th:text="${users.nickname}">닉네임</h4>
+                    <p class="mb-1">
+                        <i class="bi bi-calendar-check"></i>
+                        가입일: <span th:text="${#temporals.format(users.createdAt, 'yyyy-MM-dd')}">2024-01-01</span>
+                    </p>
+                    <p class="mb-0">
+                        총 구매: <span th:text="${totalPurchaseCount}">0</span>건 /
+                        총 판매: <span th:text="${totalSalesCount}">0</span>건
+						<!--총 구매: <span>0</span>건 /
+				     	총 판매: <span>0</span>건-->
+                    </p>
+                </div>
+            </div>
+
+            <div>
+                <a href="/mypage/edit" class="btn btn-outline-secondary" >프로필 수정</a>
+                <a href="/payments/manage" class="btn btn-outline-primary">결제 수단 관리</a>
+            </div>
+        </div>
+
+        <!-- 탭 메뉴 -->
+        <ul class="nav nav-tabs mb-3" id="mypageTabs">
+            <li class="nav-item">
+                <a class="nav-link active" id="tab-selling-products" href="#">거래 중 상품</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" id="tab-wishlist" href="#">찜</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" id="tab-purchase-history" href="#">구매 내역</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" id="tab-sales-history" href="#">판매 내역</a>
+            </li>
+        </ul>
+
+        <!-- AJAX로 들어올 내용 -->
+        <div id="mypage-content">
+            <!-- 초기화면은 '거래 중 상품'을 불러옵니다 -->
+        </div>
+    </div>
+
+    <!-- JS 로드 (탭 클릭 시 AJAX 요청) -->
+    <!--<script src="https://code.jquery.com/jquery-3.7.1.min.js"
+            integrity="sha256-eKhayi8LEQwp4NKxN+CfCh+3qOVUtJn3QNZ0TciWLP4="
+            crossorigin="anonymous"></script>-->
+
+	<script src="js/mypage.js"></script>
+			
+    <!--<script>
+        $(document).ready(function () {
+            // 기본 탭 로드
+            $('#mypage-content').load('/mypage/products');
+
+            // 탭 클릭 핸들링
+            $('#tab-selling-products').on('click', function () {
+                loadTabContent('/mypage/products', this);
+            });
+            $('#tab-wishlist').on('click', function () {
+                loadTabContent('/mypage/wishlist', this);
+            });
+            $('#tab-purchase-history').on('click', function () {
+                loadTabContent('/mypage/purchases', this);
+            });
+            $('#tab-sales-history').on('click', function () {
+                loadTabContent('/mypage/sales', this);
+            });
+
+            function loadTabContent(url, tab) {
+                $('#mypageTabs .nav-link').removeClass('active');
+                $(tab).addClass('active');
+                $('#mypage-content').load(url);
+            }
+        });
+    </script>-->
+</div>

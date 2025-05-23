@@ -25,6 +25,7 @@ public class ProductEntity {
   private Boolean isDelivery;        // 택배 배송 가능 여부
   private Boolean isNonface;         // 비대면 거래 가능 여부
 
+
   private Long locationId;           // 거래 희망 위치 ID
 
   @Column(name = "`condition`", length = 30)
