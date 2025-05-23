@@ -1,0 +1,14 @@
+<!-- my_selling_items.html -->
+<div th:fragment="content">
+    <div class="row">
+        <div th:each="product : ${products}" class="col-md-4 mb-4">
+            <div class="card">
+                <img th:src="${product.imageUrl}" class="card-img-top" alt="상품 이미지">
+                <div class="card-body">
+                    <h5 class="card-title" th:text="${product.title}">상품명</h5>
+                    <p class="card-text" th:text="'₩' + ${product.price}">가격</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
