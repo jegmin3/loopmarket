@@ -3,17 +3,17 @@
 	
     하단에 외부 JS 스크립트 3개가 포함되어 있습니다.
       - iamport.payment.js: 포트원 결제창
-      - pay.js: 결제 요청 처리 (requestPay 함수)
-      - pay-ui.js: 충전 화면 전용 입력 로직 (금액 입력, 키패드, 버튼 이벤트 등)
+      - charge.js: 결제 요청 처리 (requestPay 함수)
+      - charge-ui.js: 충전 화면 전용 입력 로직 (금액 입력, 키패드, 버튼 이벤트 등)
 -->
 
 <th:block th:fragment="content">
 	<!-- Thymeleaf가 서버에서 사용자 정보를 렌더링해서 JS 전역변수로 넘겨주는 역할 -->
 	<script th:inline="javascript">
 		/*<![CDATA[*/
-		window.loginUserId = /*[[${userId}]]*/ 0;
-		window.loginUserName = /*[[${userName}]]*/ "";
-		window.loginUserEmail = /*[[${userEmail}]]*/ "";
+		window.loginUserId = /*[[${loginUser.userId}]]*/ 0;
+		window.loginUserName = /*[[${loginUser.nickname}]]*/ "";
+		window.loginUserEmail = /*[[${loginUser.email}]]*/ "";
 		/*]]>*/
 	</script>
 
@@ -58,6 +58,6 @@
 
 	<!-- 외부 스크립트 -->
 	<script src="https://cdn.iamport.kr/js/iamport.payment-1.1.8.js"></script>
-	<script src="/js/pay/pay.js"></script>
-	<script src="/js/pay/pay-ui.js"></script>
+	<script src="/js/pay/charge.js"></script>
+	<script src="/js/pay/charge-ui.js"></script>
 </th:block>

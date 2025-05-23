@@ -1,11 +1,8 @@
 package com.loopmarket.domain.admin.notice;
 
 import com.loopmarket.common.controller.BaseController;
-import com.loopmarket.domain.admin.notice.NoticeEntity;
-import com.loopmarket.domain.admin.notice.NoticeRepository;
 import com.loopmarket.domain.admin.notice.dto.NoticeDTO;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -20,7 +17,6 @@ public class NoticeAdminController extends BaseController {
 
     private final NoticeRepository noticeRepository;
 
-    @Autowired
     public NoticeAdminController(NoticeRepository noticeRepository) {
         this.noticeRepository = noticeRepository;
     }

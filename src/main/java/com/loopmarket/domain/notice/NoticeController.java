@@ -11,7 +11,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.server.ResponseStatusException;
 
 import com.loopmarket.common.controller.BaseController;
-import com.loopmarket.common.controller.LayoutController;
 import com.loopmarket.domain.admin.notice.NoticeEntity;
 import com.loopmarket.domain.admin.notice.NoticeRepository;
 

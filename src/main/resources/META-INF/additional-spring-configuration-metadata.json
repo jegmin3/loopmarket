@@ -1,5 +1,5 @@
 {"properties": [{
-  "name": "upload.images.path",
+  "name": "firebase.sdk.path",
   "type": "java.lang.String",
-  "description": "A description for 'upload.images.path'"
+  "description": "A description for 'firebase.sdk.path'"
 }]}
