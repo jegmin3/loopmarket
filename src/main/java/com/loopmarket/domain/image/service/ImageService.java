@@ -2,7 +2,7 @@ package com.loopmarket.domain.image.service;
 
 import com.loopmarket.domain.image.entity.ImageEntity;
 import com.loopmarket.domain.image.repository.ImageRepository;
-import com.loopmarket.common.util.FileStorageService;
+import com.loopmarket.common.service.FileStorageService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
