@@ -4,7 +4,6 @@ import com.loopmarket.common.controller.BaseController;
 import com.loopmarket.domain.member.MemberEntity;
 import com.loopmarket.domain.pay.enums.PaymentStatus;
 import com.loopmarket.domain.pay.repository.PaymentRepository;
-import com.loopmarket.domain.pay.service.PayService;
 import com.loopmarket.domain.product.entity.ProductEntity;
 import com.loopmarket.domain.product.service.ProductService;
 
@@ -29,7 +28,6 @@ import java.util.List;
 @RequestMapping("/pay")
 public class PayController extends BaseController {
 
-	private final PayService payService;
 	private final ProductService productService;
     private final PaymentRepository paymentRepository;
 

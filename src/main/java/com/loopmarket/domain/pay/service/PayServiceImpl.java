@@ -14,7 +14,6 @@ import com.loopmarket.domain.product.service.ProductService;
 
 import lombok.RequiredArgsConstructor;
 
-import org.hibernate.type.TrueFalseType;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -141,22 +140,25 @@ public class PayServiceImpl implements PayService {
 	 */
 	@Override
 	@Transactional
-	public int completePay(Long paymentId) {
+	public int completePay(Long paymentId, Long buyerId) {
 	    // 1. 결제 정보 조회
 	    Payment payment = paymentRepository.findById(paymentId)
 	            .orElseThrow(() -> new IllegalArgumentException("결제 정보를 찾을 수 없습니다."));
 
-	    // 2. 상태 변경
+	    // 2. 구매자 본인 인증 (보안 체크)
+	    if (!payment.getBuyerId().equals(buyerId)) {
+	        throw new SecurityException("구매자 정보가 일치하지 않습니다.");
+	    }
+
+	    // 3. 상태 변경
 	    payment.complete();  // status → COMPLETED
 
-	    // 3. 판매자 잔액 업데이트
+	    // 4. 판매자 잔액 업데이트
 	    UserMoney sellerMoney = userMoneyRepository.findById(payment.getSellerId())
-	            .orElse(new UserMoney(payment.getSellerId(), 0)); // 없으면 새로 생성
+	            .orElse(new UserMoney(payment.getSellerId(), 0));
 	    sellerMoney.charge(payment.getAmount());
+	    userMoneyRepository.save(sellerMoney);
 
-	    userMoneyRepository.save(sellerMoney); // 신규일 경우 save 필요
-
-	    // 4. 판매자 잔액 반환
 	    return sellerMoney.getBalance();
 	}
 }

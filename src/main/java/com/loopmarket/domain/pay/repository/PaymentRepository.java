@@ -3,6 +3,7 @@ package com.loopmarket.domain.pay.repository;
 import com.loopmarket.domain.pay.entity.Payment;
 import com.loopmarket.domain.pay.enums.PaymentStatus;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -11,5 +12,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
  */
 public interface PaymentRepository extends JpaRepository<Payment, Long> {
     boolean existsByProductIdAndStatusIn(Long productId, List<PaymentStatus> statuses);
-
+    List<Payment> findByStatusAndCreatedAtBefore(PaymentStatus status, LocalDateTime limit);
 }

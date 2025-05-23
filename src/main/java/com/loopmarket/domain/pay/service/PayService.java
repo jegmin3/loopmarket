@@ -20,5 +20,5 @@ public interface PayService {
     Long safePay(Long buyerId, Long productId);
     
     // 구매 확정 처리 (결제 상태 변경, 판매자 잔액에 금액 정산)
-    int completePay(Long paymentId);
+    int completePay(Long paymentId, Long buyerId);
 }
