@@ -25,5 +25,11 @@ public class ProductService {
   public List<ProductEntity> getAllProducts() {
     return productRepository.findAll();
   }
+  
+  //결제 페이지에 필요하여 추가했습니다
+  public ProductEntity getProductById(Long id) {
+	    return productRepository.findById(id)
+	        .orElseThrow(() -> new IllegalArgumentException("상품이 존재하지 않습니다."));
+	}
 }
 

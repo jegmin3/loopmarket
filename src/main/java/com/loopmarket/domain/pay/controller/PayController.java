@@ -3,6 +3,8 @@ package com.loopmarket.domain.pay.controller;
 import com.loopmarket.common.controller.BaseController;
 import com.loopmarket.domain.member.MemberEntity;
 import com.loopmarket.domain.pay.service.PayService;
+import com.loopmarket.domain.product.entity.ProductEntity;
+import com.loopmarket.domain.product.service.ProductService;
 
 import lombok.RequiredArgsConstructor;
 
@@ -24,12 +26,14 @@ import java.util.Map;
 public class PayController extends BaseController {
 
 	private final PayService payService;
+	private final ProductService productService;
 
 	// 페이 충전 페이지
 	@GetMapping("/charge")
 	public String showChargePage(Model model) {
 		MemberEntity loginUser = getLoginUser();
-		if (loginUser == null) return "redirect:/member/login";
+		if (loginUser == null)
+			return "redirect:/member/login";
 
 		model.addAttribute("loginUser", loginUser);
 		return render("pay/charge", model);
@@ -39,32 +43,44 @@ public class PayController extends BaseController {
 	@GetMapping("/refund")
 	public String showRefundPage(Model model) {
 		MemberEntity loginUser = getLoginUser();
-		if (loginUser == null) return "redirect:/member/login";
+		if (loginUser == null)
+			return "redirect:/member/login";
 
 		model.addAttribute("loginUser", loginUser);
 		return render("pay/refund", model);
 	}
-	
+
 	// 결제(안전결제) 화면 진입
 	@GetMapping("/checkout")
 	public String showCheckoutPage(@RequestParam("productId") Long productId, Model model) {
-	    MemberEntity loginUser = getLoginUser();
-	    if (loginUser == null) return "redirect:/member/login";
+		MemberEntity loginUser = getLoginUser();
+		if (loginUser == null)
+			return "redirect:/member/login";
 
-	    // 하드코딩된 상품 정보 (추후 productService.findById(...)로 대체 예정)
-	    //Product product = productService.findById(productId);
-	    Map<String, Object> product = Map.of(
-	        "id", 100,
-	        "title", "임시 상품 제목",
-	        "price", 15000,
-	        "imageUrl", "/img/pay/sample.png",
-	        "tradeType", "택배거래",
-	        "sellerId", 1L
-	    );
-	    
-	    model.addAttribute("loginUser", loginUser);
-	    model.addAttribute("product", product);
+		// 상품 정보 DB에서 조회
+		ProductEntity product = productService.getProductById(productId);
 
-	    return render("pay/checkout", model);
+		// 예외 상황 처리: 상품이 숨김 처리된 경우 등
+		if (product.getIsHidden() != null && product.getIsHidden()) {
+			model.addAttribute("errorMessage", "해당 상품은 더 이상 결제가 불가능합니다.");
+			return "error/404";
+		}
+		
+		//추후 변경 필요
+		String imageUrl = "/img/pay/sample.png";
+		//String imageUrl = (product.getImageUrl() != null) ? product.getImageUrl() : "/img/pay/sample.png";
+
+		String tradeType = product.getIsDelivery() != null && product.getIsDelivery()
+			    ? "택배거래"
+			    : product.getIsDirect() != null && product.getIsDirect()
+			      ? "직거래"
+			      : "기타";
+
+		model.addAttribute("loginUser", loginUser);
+		model.addAttribute("product", product);
+		model.addAttribute("imageUrl", imageUrl);
+		model.addAttribute("tradeType", tradeType);
+
+		return render("pay/checkout", model);
 	}
 }
