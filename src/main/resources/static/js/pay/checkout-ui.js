@@ -29,7 +29,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // 잔액 표시
         payBalanceText.textContent = `₩${balance.toLocaleString()}`;
-
+		
+		// 총 결제 금액 표시
+		const totalPriceText = document.getElementById('totalPriceText');
+		if (totalPriceText) {
+		  totalPriceText.textContent = `₩${totalPrice.toLocaleString()}`;
+		}
+		
         // 잔액 부족 시 처리
         if (balance < totalPrice) {
           payBtn.disabled = true;
