@@ -1,0 +1,15 @@
+<!-- 구매 확정 버튼 위젯 -->
+<script th:inline="javascript">
+	/*<![CDATA[*/
+	window.loginUserId = /*[[${loginUser.userId}]]*/ 0;
+	/*]]>*/
+</script>
+
+<div th:fragment="confirmWidget(paymentId, buyerId)">
+	<div class="text-center my-4">
+		<button class="btn btn-dark text-white px-4 py-2 rounded-pill fw-semibold" data-payment-id="[[${paymentId}]]"
+			data-buyer-id="[[${buyerId}]]" id="confirm-pay-btn">
+			구매 확정
+		</button>
+	</div>
+</div>

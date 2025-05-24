@@ -62,10 +62,18 @@ public class ProductService {
     return products;
   }
   
-  //결제 페이지에 필요하여 추가했습니다
+  // 결제 페이지에 필요하여 추가했습니다 - jw
   public ProductEntity getProductById(Long id) {
 	    return productRepository.findById(id)
 	        .orElseThrow(() -> new IllegalArgumentException("상품이 존재하지 않습니다."));
+	}
+  
+  // 결제 관련 상품 상태 변경을 위해 추가했습니다 - jw
+  public void updateProductStatus(Long productId, String newStatus) {
+	    ProductEntity product = getProductById(productId); // 기존 메서드 재사용
+	    product.setStatus(newStatus);
+	    product.setUpdateAt(LocalDateTime.now()); // 상태 변경 시 수정일도 갱신
+	    productRepository.save(product);
 	}
   
   // 이미지 가져올려고 썼습니다

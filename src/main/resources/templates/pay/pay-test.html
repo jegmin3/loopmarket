@@ -10,7 +10,9 @@
   <div class="container py-5 text-center">
     <h2 class="mb-4">Pay 위젯 테스트 페이지</h2>
     <div th:insert="pay/pay-widget :: payWidget"></div>
+	<div th:insert="pay/confirm-widget :: confirmWidget(${paymentId}, ${loginUser.userId})"></div>
   </div>
 
   <script src="/js/pay/pay-widget.js" defer></script>
+  <script src="/js/pay/confirm-widget.js" defer></script>
 </th:block>
