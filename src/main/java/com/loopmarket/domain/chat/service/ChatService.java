@@ -25,7 +25,7 @@ public class ChatService {
     private final ChatRoomRepository chatRoomRepository;
     private final MemberRepository memberRepository; // MemberEntity 조회용
     private final SimpMessageSendingOperations messagingTemplate; // 웹소켓 메시지 브로커로 메시지 전송
-    private final FCMService fcmService; // FCMService 주입 (아직 정의되지 않았지만 곧 추가될 예정)
+    //private final FCMService fcmService; // FCMService 주입 (아직 정의되지 않았지만 곧 추가될 예정)
 
     /**
      * 새로운 채팅 메시지를 처리하고 저장합니다.

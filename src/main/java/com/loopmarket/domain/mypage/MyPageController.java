@@ -1,10 +1,12 @@
 package com.loopmarket.domain.mypage;
 
+import com.loopmarket.domain.image.service.ImageService;
 import com.loopmarket.domain.member.MemberEntity;
 import com.loopmarket.domain.member.MemberRepository;
 import com.loopmarket.domain.member.dto.MemberDTO;
 import com.loopmarket.domain.product.entity.ProductEntity;
 import com.loopmarket.domain.product.repository.ProductRepository;
+import com.loopmarket.domain.product.service.ProductService;
 import com.loopmarket.domain.purchase.repository.PurchaseRepository;
 import com.loopmarket.common.controller.BaseController;
 
@@ -19,6 +21,7 @@ import javax.servlet.http.HttpSession;
 import java.io.IOException;
 import java.security.Principal;
 import java.util.List;
+import java.util.Arrays;
 
 import org.springframework.web.multipart.MultipartFile;
 
@@ -28,14 +31,21 @@ public class MyPageController extends BaseController {
 	
 	private final ProductRepository productRepository;
     private final PurchaseRepository purchaseRepository;
-
-//    @Autowired
-//    private MemberRepository memberRepository;
+    private final List<String> ongoingStatuses = List.of("ONSALE", "RESERVED");
+    private final ProductService productService;
+    private final ImageService imageService;
+    
     
     @Autowired
-    public MyPageController(ProductRepository productRepository, PurchaseRepository purchaseRepository) {
+    private MemberRepository memberRepository;
+    
+    @Autowired
+    public MyPageController(ProductRepository productRepository, PurchaseRepository purchaseRepository,
+                            ProductService productService, ImageService imageService) {
         this.productRepository = productRepository;
         this.purchaseRepository = purchaseRepository;
+        this.productService = productService;
+        this.imageService = imageService;
     }
     
 
@@ -51,18 +61,26 @@ public class MyPageController extends BaseController {
     @GetMapping
     public String myPageHome(Model model, HttpSession session) {
         MemberEntity member = (MemberEntity) session.getAttribute("loginUser");
-
         if (member == null) {
             return "redirect:/member/login";
         }
 
+        member = memberRepository.findById(member.getUserId())
+            .orElseThrow(() -> new IllegalStateException("사용자 정보가 없습니다."));
+
+        session.setAttribute("loginUser", member);
+
         model.addAttribute("users", member);
 
-        long totalSalesCount = productRepository.countByUserId((long)member.getUserId());
-        long totalPurchaseCount = purchaseRepository.countByBuyerId((long)member.getUserId());
+        long totalSalesCount = productRepository.countByUserId(member.getUserId().longValue());
+        long totalPurchaseCount = purchaseRepository.countByBuyerId(member.getUserId().longValue());
 
         model.addAttribute("totalSalesCount", totalSalesCount);
         model.addAttribute("totalPurchaseCount", totalPurchaseCount);
+
+        // 프로필 이미지 경로 생성 후 모델에 추가
+        String profileImagePath = productService.getProfileImagePath(member.getProfileImgId());
+        model.addAttribute("profileImagePath", profileImagePath);
 
         return render("mypage/mypage", model);
     }
@@ -74,14 +92,20 @@ public class MyPageController extends BaseController {
         if (member == null) {
             return "redirect:/member/login";
         }
-        
-        // 거래중 상태만 필터링 ('ON_SALE', 'RESERVED' 등 실제 DB 상태명 사용)
-        List<String> ongoingStatuses = List.of("ONSALE", "RESERVED");
-        
-        List<ProductEntity> myProducts = productRepository.findByUserIdAndStatusIn((long)member.getUserId(),ongoingStatuses);
+
+        List<ProductEntity> myProducts = productRepository.findByUserIdAndStatusIn(member.getUserId().longValue(), ongoingStatuses);
+
+        for (ProductEntity product : myProducts) {
+            String thumbnailPath = imageService.getThumbnailPath(product.getProductId());
+            product.setThumbnailPath(thumbnailPath);
+
+            List<String> imagePaths = imageService.getAllImagePaths(product.getProductId());
+            product.setImagePaths(imagePaths);
+        }
+
         model.addAttribute("products", myProducts);
 
-        return renderMypage(request , model, "mypage/my_selling_items");
+        return renderMypage(request, model, "mypage/my_selling_items");
     }
     
     @GetMapping("/sales")
@@ -91,7 +115,7 @@ public class MyPageController extends BaseController {
             return "redirect:/member/login";
         }
 
-        List<ProductEntity> soldProducts = productRepository.findByUserIdAndStatus((long) member.getUserId(), "SOLD"); // "판매완료"
+        List<ProductEntity> soldProducts = productService.getSoldProductsWithThumbnail(member.getUserId().longValue());
 
         model.addAttribute("soldProducts", soldProducts);
 
