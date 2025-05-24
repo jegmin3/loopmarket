@@ -1,5 +1,7 @@
 package com.loopmarket.domain.pay.service;
 
+import java.util.Map;
+
 import com.loopmarket.domain.pay.enums.PaymentMethod;
 
 /**
@@ -21,4 +23,7 @@ public interface PayService {
     
     // 구매 확정 처리 (결제 상태 변경, 판매자 잔액에 금액 정산)
     int completePay(Long paymentId, Long buyerId);
+    
+    // 로그인한 사용자의 구매 확정 가능한 결제 목록 반환
+    Map<Long, Long> getConfirmablePayments(Long buyerId);
 }
