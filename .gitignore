@@ -16,6 +16,9 @@ RemoteSystemsTempFiles/
 .project
 HELP.md
 
+# intelliJ
+.idea/
+
 # 파이어베이스 제이슨 파일
 fcmforchat123612s.json
 
