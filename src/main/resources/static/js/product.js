@@ -1,28 +1,43 @@
 // 이미지 슬라이드 좌우 버튼 클릭 시 이미지 이동 함수
 function slideImage(button, direction) {
-  const card = button.closest(".card");              // 버튼이 속한 카드 요소
-  const track = card.querySelector(".slider-track"); // 이미지 슬라이더 트랙 요소
-  const total = parseInt(track.dataset.count);       // 전체 이미지 개수
+  const wrapper = button.closest(".position-relative").parentElement; // wrapper 바꿈
+  const track = wrapper.querySelector(".slider-track");
   if (!track) return;
 
-  if (!track.dataset.index) track.dataset.index = "0"; // 현재 슬라이드 인덱스 초기화
+  const total = parseInt(track.dataset.count);
+  if (!track.dataset.index) track.dataset.index = "0";
   let currentIndex = parseInt(track.dataset.index);
 
-  // 새로운 인덱스 계산 (0 이상, 최대 total-1 이하)
   const newIndex = Math.max(0, Math.min(total - 1, currentIndex + direction));
   track.dataset.index = newIndex;
-
-  // 슬라이더 트랙 이동 (translateX)
   track.style.transform = `translateX(-${(100 / total) * newIndex}%)`;
 
-  // 점(dot) 상태 업데이트: 현재 인덱스 점은 진하게, 나머지는 연하게
-  const dots = card.querySelectorAll(".dot");
+  // dot 강조 업데이트
+  const dots = wrapper.querySelectorAll(".dot");
   dots.forEach((dot, idx) => {
     dot.style.opacity = idx === newIndex ? "1" : "0.4";
   });
 }
 
+// 페이지 처음 로드 시 dot 초기화
+document.addEventListener("DOMContentLoaded", () => {
+  document.querySelectorAll(".slider-track").forEach(track => {
+    const dots = track.closest(".col-md-6").querySelectorAll(".dot");
+    if (dots.length > 0) dots[0].style.opacity = "1";
+    track.dataset.index = "0";
+  });
+});
+
 window.slideImage = slideImage; // 전역에 등록
+
+document.addEventListener("DOMContentLoaded", () => {
+  document.querySelectorAll(".slider-track").forEach(track => {
+    const dots = track.closest(".position-relative").querySelectorAll(".dot");
+    if (dots.length > 0) dots[0].style.opacity = "1";
+    track.dataset.index = "0";
+  });
+});
+
 
 document.addEventListener("DOMContentLoaded", () => {
   // ---------------- 가격 입력 관련 ----------------
@@ -32,6 +47,76 @@ document.addEventListener("DOMContentLoaded", () => {
   const donationRadio = document.getElementById("donation");    // 기부 라디오 버튼
 
   let lastPriceValue = ''; // 마지막 정상 가격값 저장용
+
+  const buttons = document.querySelectorAll(".btn-group-vertical .btn");
+  buttons.forEach(btn => {
+    btn.addEventListener("click", () => {
+      // 모든 버튼에서 active 제거
+      buttons.forEach(b => b.classList.remove("active"));
+
+      // 클릭한 버튼에 active 추가
+      btn.classList.add("active");
+
+      // 페이지 이동
+      const value = btn.dataset.value;
+      if (!value) {
+        window.location.href = "/products";
+      } else {
+        window.location.href = `/products?category=${value}`;
+      }
+    });
+  });
+
+// 가격 필터 버튼 클릭 함수
+  function filterByPrice(min, max) {
+    const url = new URL(window.location.href);
+    url.searchParams.set("minPrice", min);
+    url.searchParams.set("maxPrice", max);
+    window.location.href = url.toString();
+  }
+
+// 직접 입력한 가격 적용
+  function applyPriceRange() {
+    const min = document.getElementById("minPrice").value || 0;
+    const max = document.getElementById("maxPrice").value || 0;
+
+    const url = new URL(window.location.href);
+    url.searchParams.set("minPrice", min);
+    url.searchParams.set("maxPrice", max);
+    window.location.href = url.toString();
+  }
+
+  // 페이지 로드 시 가격 필터 active 표시
+  const urlParams = new URLSearchParams(window.location.search);
+  const min = urlParams.get("minPrice");
+  const max = urlParams.get("maxPrice");
+
+  document.querySelectorAll("button[data-min][data-max]").forEach(btn => {
+    const btnMin = btn.getAttribute("data-min");
+    const btnMax = btn.getAttribute("data-max");
+
+    if (btnMin === min && btnMax === max) {
+      btn.classList.add("active");
+    }
+  });
+
+  //가격초기화
+  function resetPriceFilter() {
+    const url = new URL(window.location.href);
+    url.searchParams.delete("minPrice");
+    url.searchParams.delete("maxPrice");
+    window.location.href = url.toString();
+  }
+
+  window.resetPriceFilter = resetPriceFilter;
+
+
+
+// ✅ 버튼에서 호출할 수 있게 등록
+  window.filterByPrice = filterByPrice;
+  window.applyPriceRange = applyPriceRange;
+
+
 
   // 초기 점(dot) 표시: 첫 점만 진하게
   document.querySelectorAll(".card").forEach(card => {
@@ -292,6 +377,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
+
   // ---------------- Sortable.js 적용: 이미지 드래그로 순서 변경 ----------------
   new Sortable(previewContainer, {
     animation: 150,
@@ -307,4 +393,7 @@ document.addEventListener("DOMContentLoaded", () => {
       updatePreview(); // 순서 변경 후 미리보기 갱신 및 대표사진 재설정
     }
   });
+
 });
+
+window.handleCategoryChange = handleCategoryChange;
