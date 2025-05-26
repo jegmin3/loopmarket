@@ -28,13 +28,52 @@ public class ProductController {
    * @return 레이아웃 뷰 이름
    */
   @GetMapping("/products")
-  public String showProductList(Model model) {
-    List<ProductEntity> productList = productService.getAllProducts();  // 모든 상품 조회
-    model.addAttribute("productList", productList);                     // 모델에 상품 리스트 담기
+  public String showProductList(@RequestParam(value = "category", required = false) String category,
+                                @RequestParam(value = "minPrice", required = false) Integer minPrice,
+                                @RequestParam(value = "maxPrice", required = false) Integer maxPrice,
+                                Model model) {
+    // 1. 카테고리 목록 (사이드바용)
+    List<Category> mainCategories = categoryRepository.findMainCategories();
+    model.addAttribute("mainCategories", mainCategories);
 
-    model.addAttribute("viewName", "product/productList");              // 보여줄 뷰 지정
-    return "layout/layout";                                             // 레이아웃 템플릿 호출
+    List<ProductEntity> productList;
+    List<Category> subCategories = null;
+
+    // 기본값 설정 (가격 없으면 전체 범위)
+    if (minPrice == null) minPrice = 0;
+    if (maxPrice == null) maxPrice = Integer.MAX_VALUE;
+
+    if (category == null || category.equalsIgnoreCase("ALL") || category.isBlank()) {
+      // 가격만 필터링
+      productList = productService.getProductsByPriceRange(minPrice, maxPrice);
+    } else {
+      try {
+        Integer categoryCode = Integer.parseInt(category);
+        subCategories = categoryRepository.findByUpCtgCodeOrderBySeqAsc(categoryCode);
+
+        if (!subCategories.isEmpty()) {
+          // 대분류 → 여러 소분류 가져와서 필터링
+          productList = productService.getProductsByMainCategoryAndPrice(categoryCode, minPrice, maxPrice);
+        } else {
+          // 소분류 → 단일 코드 + 가격으로 필터링
+          productList = productService.getProductsByCategoryAndPrice(categoryCode, minPrice, maxPrice);
+        }
+
+        model.addAttribute("subCategories", subCategories);
+        model.addAttribute("selectedMainCategory", categoryCode);
+      } catch (NumberFormatException e) {
+        productList = productService.getProductsByPriceRange(minPrice, maxPrice);
+      }
+    }
+
+    model.addAttribute("productList", productList);
+    model.addAttribute("viewName", "product/productList");
+    return "layout/layout";
   }
+
+
+
+
 
   /**
    * 상품 등록 폼 페이지 요청 처리

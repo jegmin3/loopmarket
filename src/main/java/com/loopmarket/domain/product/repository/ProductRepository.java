@@ -18,8 +18,16 @@ public interface ProductRepository extends JpaRepository<ProductEntity, Long> {
     List<ProductEntity> findByUserId(Long userId);
 
     List<ProductEntity> findByUserIdAndStatus(long userId, String status);
-    
+
     // ✅ 거래중 상태들만 가져오기 위한 메서드 추가
     List<ProductEntity> findByUserIdAndStatusIn(Long userId, List<String> statuses);
-	
+
+    List<ProductEntity> findByCtgCode(Integer ctgCode);
+    // 🔹 여러 소분류 코드에 해당하는 상품들 검색
+    List<ProductEntity> findByCtgCodeIn(List<Integer> ctgCodes);
+
+    List<ProductEntity> findByPriceBetween(Integer min, Integer max);
+    List<ProductEntity> findByCtgCodeInAndPriceBetween(List<Integer> ctgCodes, Integer min, Integer max);
+    List<ProductEntity> findByCtgCodeAndPriceBetween(Integer ctgCode, Integer min, Integer max);
+
 }
