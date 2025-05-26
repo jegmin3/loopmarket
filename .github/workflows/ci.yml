@@ -1,0 +1,27 @@
+name: Java CI with Maven
+
+# PR 이벤트 트리
+on:
+  pull_request:
+    branches: [ main, dev ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+    # GitHub 저장소 코드를 runner 환경에 복사
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Set up JDK 11
+      uses: actions/setup-java@v3
+      with:
+        java-version: '11'
+        distribution: 'temurin'
+
+    - name: Build with Maven (skip tests)
+      run: mvn clean install -DskipTests
+
+    - name: Run tests
+      run: mvn test
