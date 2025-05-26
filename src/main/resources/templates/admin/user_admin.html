@@ -1,8 +1,46 @@
 <!-- 유저 관리 페이지 -->
 <div th:fragment="content">
-	<div class="container">
-	    <div class="text-center">
-	        <h2 class="userPage">유저 관리 페이지 입니다.</h2>
-	    </div>
-	</div>
+    <div class="container">
+        <div class="text-center mb-4">
+            <h2 class="userPage">유저 관리 페이지입니다.</h2>
+        </div>
+
+        <table class="table table-bordered table-hover">
+            <thead class="thead-light">
+                <tr class="text-center">
+                    <th>ID</th>
+                    <th>이메일</th>
+                    <th>닉네임</th>
+                    <th>이름</th>
+                    <th>가입일</th>
+                    <th>상태</th>
+                    <th>상태 변경</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:each="member : ${members}" class="text-center align-middle">
+                    <td th:text="${member.userId}">1</td>
+                    <td th:text="${member.email}">test@example.com</td>
+                    <td th:text="${member.nickname}">닉네임</td>
+                    <td th:text="${member.name}">홍길동</td>
+                    <td th:text="${#temporals.format(member.createdAt, 'yyyy-MM-dd HH:mm')}">2025-05-26</td>
+                    <td th:text="${userStatusMap[member.userId]}">ACTIVE</td>
+                    <td>
+						<form th:action="@{/admin/user/changeStatus}" method="post" class="d-flex justify-content-center user-status-form">
+						    <input type="hidden" name="userId" th:value="${member.userId}" />
+						    <select name="newStatus" class="form-control form-control-sm w-auto mx-1">
+						        <option value="ACTIVE" th:selected="${userStatusMap[member.userId] == 'ACTIVE'}">ACTIVE</option>
+						        <option value="SUSPENDED" th:selected="${userStatusMap[member.userId] == 'SUSPENDED'}">SUSPENDED</option>
+						        <option value="DELETED" th:selected="${userStatusMap[member.userId] == 'DELETED'}">DELETED</option>
+						    </select>
+						    <button type="submit" class="btn btn-sm btn-primary change-status-btn">변경</button>
+						</form>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+	
+	<script src="js/admin_user.js"></script>
+	
 </div>
