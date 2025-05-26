@@ -61,4 +61,33 @@ public class ProductService {
 
     return products;
   }
+  
+  //결제 페이지에 필요하여 추가했습니다
+  public ProductEntity getProductById(Long id) {
+	    return productRepository.findById(id)
+	        .orElseThrow(() -> new IllegalArgumentException("상품이 존재하지 않습니다."));
+	}
+  
+  // 이미지 가져올려고 썼습니다
+  public String getProfileImagePath(String profileImgId) {
+		if (profileImgId == null || profileImgId.trim().isEmpty()) {
+		    return "/images/default-profile.png";
+		}
+		return "/images/profiles/" + profileImgId;
+  }
+  
+  // 판매완료 정보 가져오기
+  public List<ProductEntity> getSoldProductsWithThumbnail(Long userId) {
+	    List<ProductEntity> soldProducts = productRepository.findByUserIdAndStatus(userId, "SOLD");
+
+	    for (ProductEntity product : soldProducts) {
+	        String thumbnailPath = imageService.getThumbnailPath(product.getProductId());
+	        product.setThumbnailPath(thumbnailPath);
+	    }
+
+	    return soldProducts;
+	}
+  
+  
+  
 }

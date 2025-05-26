@@ -8,9 +8,9 @@
 <th:block th:fragment="content">
 	<script th:inline="javascript">
 		/*<![CDATA[*/
-		window.loginUserId = /*[[${userId}]]*/ 0;
-		window.loginUserName = /*[[${userName}]]*/ "";
-		window.loginUserEmail = /*[[${userEmail}]]*/ "";
+		window.loginUserId = /*[[${loginUser.userId}]]*/ 0;
+		window.loginUserName = /*[[${loginUser.nickname}]]*/ "";
+		window.loginUserEmail = /*[[${loginUser.email}]]*/ "";
 		/*]]>*/
 	</script>
 
@@ -22,8 +22,6 @@
 				<div class="text-muted mb-3">
 					현재 잔액: <span id="balance"></span>원
 				</div>
-
-				<!-- 결제 수단 버튼 제거됨 (환불엔 필요 없음) -->
 
 				<input id="amountInput" class="form-control form-control-lg text-center mb-3" type="text" value="0"
 					readonly />

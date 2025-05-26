@@ -1,0 +1,16 @@
+<!-- my_sales_history.html -->
+<div th:fragment="content">
+    <div class="row">
+        <div th:each="product : ${soldProducts}" class="col-md-4 mb-4">
+            <div class="card border-success">
+                <img th:src="@{${product.thumbnailPath}}" class="card-img-top" alt="상품 이미지" />
+                <div class="card-body">
+                    <h5 class="card-title" th:text="${product.title}">상품명</h5>
+                    <p class="card-text" th:text="'₩' + ${product.price}">가격</p>
+                    <p class="text-success">판매 완료</p>
+                    <p class="text-muted" th:text="${#temporals.format(product.updateAt, 'yyyy-MM-dd')}">판매일</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
