@@ -1,4 +1,10 @@
-document.addEventListener("DOMContentLoaded", function () {
+/**
+ * 관련 뷰: /templates/pay/direct-check.html
+ * 즉시결제 요청을 /api/pay/direct API로 전송하고 응답을 처리합니다.
+ * SweetAlert을 사용해 사용자에게 결제 상태를 안내합니다.
+ */
+
+document.addEventListener("DOMContentLoaded", async function () {
   const payBtn = document.getElementById("directPayBtn");
   const chargeBtn = document.getElementById("chargeBtn");
   const totalText = document.getElementById("totalPriceText");
@@ -24,34 +30,60 @@ document.addEventListener("DOMContentLoaded", function () {
     chargeBtn.addEventListener("click", function () {
       location.href = "/pay/charge";
     });
+    return;
   }
 
-  // 💳 결제 버튼 클릭 이벤트
-  payBtn.addEventListener("click", function () {
+  // 결제 버튼 클릭 이벤트
+  payBtn.addEventListener("click", async function () {
     if (!buyerId || !productId || !sellerId) {
-      alert("결제에 필요한 정보가 부족합니다.");
+      await Swal.fire({
+        icon: "error",
+        title: "결제 불가",
+        text: "결제에 필요한 정보가 누락되었습니다.",
+      });
       return;
     }
 
-    fetch("/api/pay/direct", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ buyerId, sellerId, productId }),
-    })
-      .then((res) => res.json())
-      .then((data) => {
-        if (data.success) {
-          alert("즉시결제가 완료되었습니다.");
-          payBtn.disabled = true;
-          payBtn.innerText = "결제 완료";
-		  location.href = "/";
-        } else {
-          alert(data.message || "결제 중 오류가 발생했습니다.");
-        }
-      })
-      .catch((err) => {
-        console.error("즉시결제 실패", err);
-        alert("결제 요청 중 오류가 발생했습니다.");
+    const result = await Swal.fire({
+      icon: "question",
+      title: `${amount.toLocaleString()}원을 결제하시겠습니까?`,
+      showCancelButton: true,
+      confirmButtonText: "결제하기",
+      cancelButtonText: "취소",
+    });
+
+    if (!result.isConfirmed) return;
+
+    try {
+      const res = await fetch("/api/pay/direct", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ buyerId, sellerId, productId }),
       });
+
+      const data = await res.json();
+
+      if (data.success) {
+        await Swal.fire({
+          icon: "success",
+          title: "결제 완료",
+          text: data.message,
+        });
+        location.href = "/";
+      } else {
+        await Swal.fire({
+          icon: "error",
+          title: "결제 실패",
+          text: data.message || "결제 중 오류가 발생했습니다.",
+        });
+      }
+    } catch (err) {
+      console.error("즉시결제 실패", err);
+      await Swal.fire({
+        icon: "error",
+        title: "서버 오류",
+        text: "결제 요청 중 문제가 발생했습니다.",
+      });
+    }
   });
 });
