@@ -3,6 +3,7 @@ package com.loopmarket.domain.product.controller;
 import com.loopmarket.domain.category.entity.Category;
 import com.loopmarket.domain.category.repository.CategoryRepository;
 import com.loopmarket.domain.member.MemberEntity;
+import com.loopmarket.domain.member.MemberRepository;
 import com.loopmarket.domain.product.entity.ProductEntity;
 import com.loopmarket.domain.product.service.ProductService;
 import lombok.RequiredArgsConstructor;
@@ -12,6 +13,8 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpSession;
+import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Controller
@@ -20,6 +23,7 @@ public class ProductController {
 
   private final ProductService productService;       // 상품 관련 서비스
   private final CategoryRepository categoryRepository; // 카테고리 조회용 리포지토리
+  private final MemberRepository memberRepository;
 
   /**
    * 전체 상품 목록 페이지 요청 처리
@@ -74,7 +78,6 @@ public class ProductController {
 
 
 
-
   /**
    * 상품 등록 폼 페이지 요청 처리
    *
@@ -107,6 +110,8 @@ public class ProductController {
     @ModelAttribute ProductEntity product,
     @RequestParam("images") List<MultipartFile> images,
     @RequestParam("mainImageIndex") int mainImageIndex,
+    @RequestParam("latitude") Double latitude,
+    @RequestParam("longitude") Double longitude,
     HttpSession session) {
 
     // 로그인 사용자 정보 확인
@@ -117,9 +122,43 @@ public class ProductController {
 
     // 상품에 로그인한 사용자 ID 설정
     product.setUserId(loginUser.getUserId().longValue());
+    // 좌표 저장
+    product.setLatitude(latitude);
+    product.setLongitude(longitude);
     // 상품과 이미지 함께 저장 요청
     productService.registerProductWithImages(product, images, mainImageIndex);
 
     return "redirect:/products";          // 등록 후 상품 목록 페이지로 이동
   }
+
+
+  //상품 상세
+  public String formatRelativeTime(LocalDateTime createdAt) {
+    Duration duration = Duration.between(createdAt, LocalDateTime.now());
+    long hours = duration.toHours();
+    long days = duration.toDays();
+    if (hours < 1) return "방금 전";
+    else if (hours < 24) return hours + "시간 전";
+    else if (days < 2) return "1일 전";
+    else return days + "일 전";
+  }
+  @GetMapping("/products/{id}")
+  public String showProductDetail(@PathVariable Long id, Model model) {
+    ProductEntity product = productService.findById(id);
+
+    // 사용자 조회
+    MemberEntity seller = memberRepository.findById(product.getUserId().intValue()).orElse(null);
+    if (seller != null) {
+      product.setSellerNickname(seller.getNickname());
+    }
+
+    // 상대 시간 계산
+    product.setRelativeTime(formatRelativeTime(product.getCreatedAt()));
+
+    model.addAttribute("product", product);
+    model.addAttribute("viewName", "product/productDetail");
+    return "layout/layout";
+  }
+
+
 }

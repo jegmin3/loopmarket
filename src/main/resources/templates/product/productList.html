@@ -93,49 +93,51 @@
     <div class="row row-cols-1 row-cols-md-3 g-4">
       <!-- 상품 리스트 반복 출력 -->
       <div class="col" th:each="product : ${productList}">
-        <div class="card h-100 shadow-sm">
+        <a th:href="@{'/products/' + ${product.productId}}" class="text-decoration-none text-dark">
+          <div class="card h-100 shadow-sm">
 
-          <!-- 이미지 슬라이더 영역 -->
-          <div class="position-relative" style="height: 200px; overflow: hidden;">
-            <div class="slider-track d-flex"
-                 th:style="'width:' + (${#lists.size(product.imagePaths)} * 100) + '%; height: 100%; transition: transform 0.5s ease;'"
-                 th:attr="data-count=${product.imagePaths.size()}">
-              <!-- 각 상품 이미지 출력 -->
-              <img th:each="img : ${product.imagePaths}"
-                   th:if="${product.imagePaths != null}"
-                   th:src="@{${img}}"
-                   th:style="'width:' + (100 / ${#lists.size(product.imagePaths)}) + '%; height: 100%; object-fit: cover; flex-shrink: 0;'"
-              />
+            <!-- 이미지 슬라이더 영역 -->
+            <div class="position-relative" style="height: 200px; overflow: hidden;">
+              <div class="slider-track d-flex"
+                   th:style="'width:' + (${#lists.size(product.imagePaths)} * 100) + '%; height: 100%; transition: transform 0.5s ease;'"
+                   th:attr="data-count=${product.imagePaths.size()}">
+                <!-- 각 상품 이미지 출력 -->
+                <img th:each="img : ${product.imagePaths}"
+                     th:if="${product.imagePaths != null}"
+                     th:src="@{${img}}"
+                     th:style="'width:' + (100 / ${#lists.size(product.imagePaths)}) + '%; height: 100%; object-fit: cover; flex-shrink: 0;'"
+                />
+              </div>
+
+              <!-- 이전 버튼: 이미지 2장 이상일 때만 보임 -->
+              <button th:if="${product.imagePaths.size() > 1}"
+                      class="slider-prev btn position-absolute top-50 start-0 translate-middle-y"
+                      onclick="slideImage(this, -1)">❮</button>
+
+              <!-- 다음 버튼: 이미지 2장 이상일 때만 보임 -->
+              <button th:if="${product.imagePaths.size() > 1}"
+                      class="slider-next btn position-absolute top-50 end-0 translate-middle-y"
+                      onclick="slideImage(this, 1)">❯</button>
+
+              <!-- 점(dot) 네비게이션: 이미지 2장 이상일 때만 보임 -->
+              <div th:if="${product.imagePaths.size() > 1}"
+                   class="position-absolute bottom-0 start-50 translate-middle-x d-flex gap-1 mb-1">
+                  <span th:each="i : ${#numbers.sequence(0, #lists.size(product.imagePaths) - 1)}"
+                        class="dot bg-dark rounded-circle"
+                        th:attr="data-index=${i}"
+                        style="width: 6px; height: 6px; opacity: 0.4;"></span>
+              </div>
             </div>
 
-            <!-- 이전 버튼: 이미지 2장 이상일 때만 보임 -->
-            <button th:if="${product.imagePaths.size() > 1}"
-                    class="slider-prev btn position-absolute top-50 start-0 translate-middle-y"
-                    onclick="slideImage(this, -1)">❮</button>
-
-            <!-- 다음 버튼: 이미지 2장 이상일 때만 보임 -->
-            <button th:if="${product.imagePaths.size() > 1}"
-                    class="slider-next btn position-absolute top-50 end-0 translate-middle-y"
-                    onclick="slideImage(this, 1)">❯</button>
-
-            <!-- 점(dot) 네비게이션: 이미지 2장 이상일 때만 보임 -->
-            <div th:if="${product.imagePaths.size() > 1}"
-                 class="position-absolute bottom-0 start-50 translate-middle-x d-flex gap-1 mb-1">
-                <span th:each="i : ${#numbers.sequence(0, #lists.size(product.imagePaths) - 1)}"
-                      class="dot bg-dark rounded-circle"
-                      th:attr="data-index=${i}"
-                      style="width: 6px; height: 6px; opacity: 0.4;"></span>
+            <!-- 상품 정보 -->
+            <div class="card-body">
+              <h5 class="card-title" th:text="${product.title}">상품명</h5>
+              <p class="card-text fw-bold" th:text="${#numbers.formatInteger(product.price, 3, 'COMMA') + '원'}">가격</p>
+              <!-- 위치 정보 (추후 연관관계 생기면 활성화) -->
+              <!--<p class="text-muted" th:text="${product.location.dongName}">위치</p>-->
             </div>
           </div>
-
-          <!-- 상품 정보 -->
-          <div class="card-body">
-            <h5 class="card-title" th:text="${product.title}">상품명</h5>
-            <p class="card-text fw-bold" th:text="${#numbers.formatInteger(product.price, 3, 'COMMA') + '원'}">가격</p>
-            <!-- 위치 정보 (추후 연관관계 생기면 활성화) -->
-            <!--<p class="text-muted" th:text="${product.location.dongName}">위치</p>-->
-          </div>
-        </div>
+        </a>
       </div>
     </div>
   </div>
