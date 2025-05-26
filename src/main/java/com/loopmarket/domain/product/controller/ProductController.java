@@ -33,6 +33,7 @@ public class ProductController {
    */
   @GetMapping("/products")
   public String showProductList(@RequestParam(value = "category", required = false) String category,
+                                @RequestParam(value = "search", required = false) String search, // ✅ 검색 추가
                                 @RequestParam(value = "minPrice", required = false) Integer minPrice,
                                 @RequestParam(value = "maxPrice", required = false) Integer maxPrice,
                                 Model model) {
@@ -42,6 +43,14 @@ public class ProductController {
 
     List<ProductEntity> productList;
     List<Category> subCategories = null;
+
+    // ✅ 검색어가 있으면 검색 우선 처리
+    if (search != null && !search.isBlank()) {
+      productList = productService.searchProductsByKeyword(search);
+      model.addAttribute("productList", productList);
+      model.addAttribute("viewName", "product/productList");
+      return "layout/layout";
+    }
 
     // 기본값 설정 (가격 없으면 전체 범위)
     if (minPrice == null) minPrice = 0;
@@ -74,6 +83,7 @@ public class ProductController {
     model.addAttribute("viewName", "product/productList");
     return "layout/layout";
   }
+
 
 
 
