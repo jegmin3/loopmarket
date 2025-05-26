@@ -24,6 +24,7 @@ function slideImage(button, direction) {
 
 window.slideImage = slideImage; // 전역에 등록
 
+
 document.addEventListener("DOMContentLoaded", () => {
   // ---------------- 가격 입력 관련 ----------------
   const priceDisplay = document.getElementById("priceDisplay"); // 사용자 화면에 보여줄 가격 입력란
@@ -32,6 +33,76 @@ document.addEventListener("DOMContentLoaded", () => {
   const donationRadio = document.getElementById("donation");    // 기부 라디오 버튼
 
   let lastPriceValue = ''; // 마지막 정상 가격값 저장용
+
+  const buttons = document.querySelectorAll(".btn-group-vertical .btn");
+  buttons.forEach(btn => {
+    btn.addEventListener("click", () => {
+      // 모든 버튼에서 active 제거
+      buttons.forEach(b => b.classList.remove("active"));
+
+      // 클릭한 버튼에 active 추가
+      btn.classList.add("active");
+
+      // 페이지 이동
+      const value = btn.dataset.value;
+      if (!value) {
+        window.location.href = "/products";
+      } else {
+        window.location.href = `/products?category=${value}`;
+      }
+    });
+  });
+
+// 가격 필터 버튼 클릭 함수
+  function filterByPrice(min, max) {
+    const url = new URL(window.location.href);
+    url.searchParams.set("minPrice", min);
+    url.searchParams.set("maxPrice", max);
+    window.location.href = url.toString();
+  }
+
+// 직접 입력한 가격 적용
+  function applyPriceRange() {
+    const min = document.getElementById("minPrice").value || 0;
+    const max = document.getElementById("maxPrice").value || 0;
+
+    const url = new URL(window.location.href);
+    url.searchParams.set("minPrice", min);
+    url.searchParams.set("maxPrice", max);
+    window.location.href = url.toString();
+  }
+
+  // 페이지 로드 시 가격 필터 active 표시
+  const urlParams = new URLSearchParams(window.location.search);
+  const min = urlParams.get("minPrice");
+  const max = urlParams.get("maxPrice");
+
+  document.querySelectorAll("button[data-min][data-max]").forEach(btn => {
+    const btnMin = btn.getAttribute("data-min");
+    const btnMax = btn.getAttribute("data-max");
+
+    if (btnMin === min && btnMax === max) {
+      btn.classList.add("active");
+    }
+  });
+
+  //가격초기화
+  function resetPriceFilter() {
+    const url = new URL(window.location.href);
+    url.searchParams.delete("minPrice");
+    url.searchParams.delete("maxPrice");
+    window.location.href = url.toString();
+  }
+
+  window.resetPriceFilter = resetPriceFilter;
+
+
+
+// ✅ 버튼에서 호출할 수 있게 등록
+  window.filterByPrice = filterByPrice;
+  window.applyPriceRange = applyPriceRange;
+
+
 
   // 초기 점(dot) 표시: 첫 점만 진하게
   document.querySelectorAll(".card").forEach(card => {
@@ -292,6 +363,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
+
   // ---------------- Sortable.js 적용: 이미지 드래그로 순서 변경 ----------------
   new Sortable(previewContainer, {
     animation: 150,
@@ -308,3 +380,5 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 });
+
+window.handleCategoryChange = handleCategoryChange;
