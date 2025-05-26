@@ -1,6 +1,7 @@
 package com.loopmarket.domain.mypage;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.WebDataBinder;
@@ -10,6 +11,7 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.loopmarket.common.controller.BaseController;
 import com.loopmarket.domain.member.MemberEntity;
@@ -33,12 +35,13 @@ public class ProfileController extends BaseController {
     private final String uploadPath = System.getProperty("user.dir") + "/upload/images/profiles/";
 
     private final MemberRepository memberRepository;
-
+    private final PasswordEncoder passwordEncoder;
     private final ProductService productService;
 
-    public ProfileController(MemberRepository memberRepository, ProductService productService) {
+    public ProfileController(MemberRepository memberRepository, PasswordEncoder passwordEncoder, ProductService productService) {
         this.memberRepository = memberRepository;
         this.productService = productService;
+        this.passwordEncoder = passwordEncoder;
     }
     
     // 이 부분이 핵심: String → LocalDate 변환기 등록
@@ -83,42 +86,94 @@ public class ProfileController extends BaseController {
     public String updateProfile(
             @ModelAttribute MemberEntity formMember,
             @RequestParam(value = "profileImage", required = false) MultipartFile profileImage,
+            @RequestParam(value = "currentPassword", required = false) String currentPassword,
+            @RequestParam(value = "newPassword", required = false) String newPassword,
+            @RequestParam(value = "confirmPassword", required = false) String confirmPassword,
             HttpSession session,
-            Model model) throws IOException {
+            Model model,
+            RedirectAttributes redirectAttributes) throws IOException {
 
-        MemberEntity member = (MemberEntity) session.getAttribute("loginUser");
-        if (member == null) {
+        MemberEntity sessionUser = (MemberEntity) session.getAttribute("loginUser");
+        if (sessionUser == null) {
+            redirectAttributes.addFlashAttribute("errorMessage", "로그인이 필요합니다.");
             return "redirect:/member/login";
         }
 
-        member = memberRepository.findById(member.getUserId()).orElseThrow();
+        MemberEntity member = memberRepository.findById(sessionUser.getUserId()).orElse(null);
+        if (member == null) {
+            redirectAttributes.addFlashAttribute("errorMessage", "사용자 정보를 찾을 수 없습니다.");
+            return "redirect:/member/login";
+        }
 
+        // 1. 프로필 이미지 업데이트
+        if (profileImage != null && !profileImage.isEmpty()) {
+            String filename = member.getUserId() + "_profile.png";
+            Path uploadDir = Paths.get(uploadPath).toAbsolutePath().normalize();
+            if (!uploadDir.toFile().exists()) {
+                uploadDir.toFile().mkdirs();
+            }
+            Path targetLocation = uploadDir.resolve(filename);
+            profileImage.transferTo(targetLocation.toFile());
+            member.setProfileImgId(filename);
+        }
+
+        // 2. 일반 정보 업데이트
         member.setNickname(formMember.getNickname());
         member.setPhoneNumber(formMember.getPhoneNumber());
         member.setBirthdate(formMember.getBirthdate());
 
-        if (profileImage != null && !profileImage.isEmpty()) {
-            String filename = member.getUserId() + "_profile.png";
+        // 3. 비밀번호 변경 처리
+        // 새 비밀번호나 확인 비밀번호가 입력됐으면 비밀번호 변경 검증 시작
+        if ((newPassword != null && !newPassword.isEmpty()) || (confirmPassword != null && !confirmPassword.isEmpty())) {
 
-            Path uploadDir = Paths.get(uploadPath).toAbsolutePath().normalize();
-
-            if (!uploadDir.toFile().exists()) {
-                uploadDir.toFile().mkdirs();
+            // 현재 비밀번호가 없으면 에러
+            if (currentPassword == null || currentPassword.isEmpty()) {
+                model.addAttribute("users", member);
+                model.addAttribute("profileImagePath", productService.getProfileImagePath(member.getProfileImgId()));
+                model.addAttribute("errorMessage", "비밀번호를 변경하려면 현재 비밀번호를 입력해야 합니다.");
+                return render("mypage/edit_profile", model);
             }
-
-            Path targetLocation = uploadDir.resolve(filename);
-            profileImage.transferTo(targetLocation.toFile());
-
-            member.setProfileImgId(filename);
+            
+            // 현재 비밀번호가 맞는지 확인
+            if (!passwordEncoder.matches(currentPassword, member.getPassword())) {
+                model.addAttribute("users", member);
+                model.addAttribute("profileImagePath", productService.getProfileImagePath(member.getProfileImgId()));
+                model.addAttribute("errorMessage", "현재 비밀번호가 일치하지 않습니다.");
+                return render("mypage/edit_profile", model);
+            }
+            
+            // 새 비밀번호와 확인 비밀번호가 모두 입력됐는지 확인
+            if (newPassword == null || newPassword.isEmpty() || confirmPassword == null || confirmPassword.isEmpty()) {
+                model.addAttribute("users", member);
+                model.addAttribute("profileImagePath", productService.getProfileImagePath(member.getProfileImgId()));
+                model.addAttribute("errorMessage", "새 비밀번호와 새 비밀번호 확인을 모두 입력하세요.");
+                return render("mypage/edit_profile", model);
+            }
+            
+            // 새 비밀번호와 확인 비밀번호가 같은지 확인
+            if (!newPassword.equals(confirmPassword)) {
+                model.addAttribute("users", member);
+                model.addAttribute("profileImagePath", productService.getProfileImagePath(member.getProfileImgId()));
+                model.addAttribute("errorMessage", "새 비밀번호와 새 비밀번호 확인이 일치하지 않습니다.");
+                return render("mypage/edit_profile", model);
+            }
+            
+            // 비밀번호 변경
+            member.setPassword(passwordEncoder.encode(newPassword));
+            
+        } else if (currentPassword != null && !currentPassword.isEmpty()) {
+            // 새 비밀번호와 확인 비밀번호가 비었는데 현재 비밀번호만 입력된 경우 (변경할 비밀번호가 없으니 에러)
+            model.addAttribute("users", member);
+            model.addAttribute("profileImagePath", productService.getProfileImagePath(member.getProfileImgId()));
+            model.addAttribute("errorMessage", "비밀번호를 변경하려면 새 비밀번호와 새 비밀번호 확인을 모두 입력하세요.");
+            return render("mypage/edit_profile", model);
         }
 
         member.setUpdatedAt(LocalDateTime.now());
         memberRepository.save(member);
-
         session.setAttribute("loginUser", member);
 
-        model.addAttribute("users", member);
-
+        redirectAttributes.addFlashAttribute("successMessage", "프로필이 성공적으로 수정되었습니다.");
         return "redirect:/mypage";
     }
 }
