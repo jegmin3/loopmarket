@@ -12,11 +12,13 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.loopmarket.common.controller.BaseController;
 import com.loopmarket.domain.member.MemberEntity;
 import com.loopmarket.domain.member.MemberRepository;
+import com.loopmarket.domain.member.MemberService;
 import com.loopmarket.domain.member.dto.MemberDTO;
 
 import lombok.RequiredArgsConstructor;
@@ -28,6 +30,7 @@ public class MemberController extends BaseController {
 
 	private final MemberRepository memberRepository;
 	private final PasswordEncoder passwordEncoder;
+	private final MemberService memberService;
 
 	@GetMapping("/login")
 	public String loginGET(Model model) {
@@ -88,6 +91,28 @@ public class MemberController extends BaseController {
         memberRepository.save(newMember);
 
         return "redirect:/member/login";
+    }
+    
+    // 강제 비밀번호 변경
+    @GetMapping("force_change_password")
+    public String showForcePasswordChangeForm() {
+        return "/member/force_change_password"; // 템플릿 파일 위치
+    }
+    
+    @PostMapping("/force_change_password")
+    public String forceChangePassword(
+            @RequestParam("email") String email,
+            @RequestParam("newPassword") String newPassword,
+            Model model) {
+
+        boolean success = memberService.changePasswordByEmail(email, newPassword);
+        if(success) {
+            model.addAttribute("message", "비밀번호가 성공적으로 변경되었습니다.");
+            return "redirect:/member/login";  // 로그인 페이지로 이동
+        } else {
+            model.addAttribute("error", "비밀번호 변경에 실패했습니다.");
+            return "member/force_change_password"; // 다시 변경 폼으로
+        }
     }
 
 
