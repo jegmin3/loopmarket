@@ -1,7 +1,9 @@
 package com.loopmarket.domain.pay.controller;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.loopmarket.common.controller.BaseController;
 import com.loopmarket.domain.member.MemberEntity;
+import com.loopmarket.domain.pay.dto.DirectPayTokenDto;
 import com.loopmarket.domain.pay.enums.PaymentStatus;
 import com.loopmarket.domain.pay.repository.PaymentRepository;
 import com.loopmarket.domain.pay.service.PayService;
@@ -19,6 +21,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.nio.charset.StandardCharsets;
+import java.time.OffsetDateTime;
+import java.util.Base64;
 import java.util.List;
 
 /**
@@ -30,8 +35,9 @@ import java.util.List;
 public class PayController extends BaseController {
 
 	private final ProductService productService;
-    private final PaymentRepository paymentRepository;
-    
+	private final PaymentRepository paymentRepository;
+	private final PayService payService;
+
 	// 페이 충전 페이지
 	@GetMapping("/charge")
 	public String showChargePage(Model model) {
@@ -60,47 +66,101 @@ public class PayController extends BaseController {
 		MemberEntity loginUser = getLoginUser();
 		if (loginUser == null)
 			return "redirect:/member/login";
-		
-		// 상품 정보 DB에서 조회
+
 		ProductEntity product = productService.getProductById(productId);
-		
-		// 거래 중(HOLD), 정산 완료(COMPLETED)된 경우 차단
-	    List<PaymentStatus> forbiddenStatuses = List.of(PaymentStatus.HOLD, PaymentStatus.COMPLETED);
-	    if (paymentRepository.existsByProductIdAndStatusIn(productId, forbiddenStatuses)) {
-	        throw new ResponseStatusException(HttpStatus.NOT_FOUND, "이미 거래 중이거나 완료된 상품입니다.");
-	    }
 
-	    // 숨김 처리된 상품 차단
-	    if (Boolean.TRUE.equals(product.getIsHidden())) {
-	        throw new ResponseStatusException(HttpStatus.NOT_FOUND, "해당 상품은 더 이상 결제가 불가능합니다.");
-	    }
-		
-		// 이미지 - 추후 변경 필요
-		String imageUrl = "/img/pay/sample.png";
-		//String imageUrl = (product.getImageUrl() != null) ? product.getImageUrl() : "/img/pay/sample.png";
+		// 거래 방식 확인 (안전결제는 배송 상품만 가능)
+		if (!Boolean.TRUE.equals(product.getIsDelivery())) {
+			throw new ResponseStatusException(HttpStatus.NOT_FOUND, "안전결제는 택배거래에서만 가능합니다.");
+		}
 
-		String tradeType = product.getIsDelivery() != null && product.getIsDelivery()
-			    ? "택배거래"
-			    : product.getIsDirect() != null && product.getIsDirect()
-			      ? "직거래"
-			      : "기타";
+		// 거래 중(HOLD), 정산 완료(COMPLETED) 상품 차단
+		List<PaymentStatus> forbiddenStatuses = List.of(PaymentStatus.HOLD, PaymentStatus.COMPLETED);
+		if (paymentRepository.existsByProductIdAndStatusIn(productId, forbiddenStatuses)) {
+			throw new ResponseStatusException(HttpStatus.NOT_FOUND, "이미 거래 중이거나 완료된 상품입니다.");
+		}
+
+		// 숨김 상품 차단
+		if (Boolean.TRUE.equals(product.getIsHidden())) {
+			throw new ResponseStatusException(HttpStatus.NOT_FOUND, "해당 상품은 더 이상 결제가 불가능합니다.");
+		}
+
+		// 썸네일 이미지 경로 주입
+		String thumbnailPath = productService.getThumbnailPath(productId);
+		product.setThumbnailPath(thumbnailPath);
+
+		String tradeType = "택배거래"; // 어차피 isDelivery=true이므로 고정
 
 		model.addAttribute("loginUser", loginUser);
 		model.addAttribute("product", product);
-		model.addAttribute("imageUrl", imageUrl);
 		model.addAttribute("tradeType", tradeType);
 
 		return render("pay/checkout", model);
 	}
 	
-	// 마이페이지 등 다른 페이지에 넣기 전 확인용 테스트 페이지 출력
+	@GetMapping("/direct-check")
+	public String showDirectPayPage(@RequestParam("token") String token, Model model) {
+		MemberEntity loginUser = getLoginUser();
+		if (loginUser == null)
+			return "redirect:/member/login";
+
+		try {
+			// 1. Base64 디코딩
+			String decodedJson = new String(Base64.getDecoder().decode(token), StandardCharsets.UTF_8);
+
+			// 2. JSON 파싱
+			ObjectMapper objectMapper = new ObjectMapper();
+			DirectPayTokenDto payload = objectMapper.readValue(decodedJson, DirectPayTokenDto.class);
+
+			// 3. QR 유효성 검사
+			OffsetDateTime expiresAt = OffsetDateTime.parse(payload.getExpiresAt());
+			if (expiresAt.isBefore(OffsetDateTime.now())) {
+				throw new IllegalArgumentException("QR 코드가 만료되었습니다.");
+			}
+
+			// 4. 상품 정보 조회
+			ProductEntity product = productService.getProductById(payload.getProductId());
+
+			// 직거래 상품인지 확인 (즉시결제는 직거래만 가능)
+			if (!Boolean.TRUE.equals(product.getIsDirect())) {
+				throw new IllegalArgumentException("즉시결제는 직거래 상품에서만 가능합니다.");
+			}
+
+			// 썸네일 이미지 세팅
+			String thumbnailPath = productService.getThumbnailPath(product.getProductId());
+			product.setThumbnailPath(thumbnailPath);
+
+			// 5. 로그인 사용자 잔액 조회
+			int balance = payService.getBalance(loginUser.getUserId().longValue());
+
+			// 6. 모델에 담기
+			model.addAttribute("loginUser", loginUser);
+			model.addAttribute("product", product);
+			model.addAttribute("balance", balance);
+
+			return render("pay/direct-check", model);
+
+		} catch (Exception e) {
+			model.addAttribute("errorMessage", e.getMessage() != null ? e.getMessage() : "잘못된 QR 코드이거나 만료되었습니다.");
+			return render("pay/direct-error", model);
+		}
+	}
+
 	@GetMapping("/test")
 	public String showPayWidgetTestPage(Model model) {
 		MemberEntity loginUser = getLoginUser();
 		if (loginUser == null)
 			return "redirect:/member/login";
-		
+
 		model.addAttribute("loginUser", loginUser);
+
+		// 판매 중(ONSALE)인 상품만 가져오기 (QR 생성용)
+		List<ProductEntity> myProducts = productService.getMyProducts(loginUser.getUserId().longValue());
+		model.addAttribute("myProducts", myProducts);
+
+		// 구매확정 버튼 테스트용 dummy 값 (삭제 가능)
+		model.addAttribute("paymentId", 1L);
+
 		return render("pay/pay-test", model);
 	}
 }

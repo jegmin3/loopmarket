@@ -160,4 +160,53 @@ public class PayServiceImpl implements PayService {
 		// 상품 ID → 결제 ID 로 매핑
 		return payments.stream().collect(Collectors.toMap(Payment::getProductId, Payment::getPaymentId));
 	}
+	
+	/**
+	 * 즉시결제 처리
+	 * 구매자의 잔액을 차감하고, 판매자의 잔액을 증가시키며,
+	 * 거래 기록을 출금/입금으로 각각 저장한 뒤 상품 상태를 SOLD로 변경한다.
+	 *
+	 * - 사용처: QR 인식 후 /pay/direct-check → /api/pay/direct
+	 * - 거래 유형: TransactionType.BUY_NOW
+	 */
+	@Override
+	@Transactional
+	public int directPay(Long buyerId, Long sellerId, Long productId) {
+	    // 1. 구매자 잔액 조회 및 차감
+	    UserMoney buyerMoney = userMoneyRepository.findById(buyerId)
+	        .orElseThrow(() -> new IllegalArgumentException("구매자의 잔액 정보가 없습니다."));
+
+	    ProductEntity product = productService.getProductById(productId);
+	    int amount = product.getPrice();
+
+	    // 잔액 부족 시 예외
+	    if (buyerMoney.getBalance() < amount) {
+	        throw new IllegalArgumentException("잔액이 부족합니다.");
+	    }
+
+	    buyerMoney.refund(amount); // 내부적으로 잔액 차감
+	    userMoneyRepository.save(buyerMoney);
+
+	    // 2. 거래 기록 저장 (출금)
+	    MoneyTransaction outTx = new MoneyTransaction(buyerId, TransactionType.BUY_NOW, amount,
+	            TransactionStatus.SUCCESS, PaymentMethod.PAY);
+	    moneyTransactionRepository.save(outTx);
+
+	    // 3. 판매자 잔액 조회 및 충전
+	    UserMoney sellerMoney = userMoneyRepository.findById(sellerId)
+	        .orElse(new UserMoney(sellerId, 0));
+	    sellerMoney.charge(amount);
+	    userMoneyRepository.save(sellerMoney);
+
+	    // 4. 거래 기록 저장 (입금)
+	    MoneyTransaction inTx = new MoneyTransaction(sellerId, TransactionType.BUY_NOW, amount,
+	            TransactionStatus.SUCCESS, PaymentMethod.PAY);
+	    moneyTransactionRepository.save(inTx);
+
+	    // 5. 상품 상태를 SOLD로 변경
+	    productService.updateProductStatus(productId, "SOLD");
+
+	    // 6. 판매자 최종 잔액 반환
+	    return sellerMoney.getBalance();
+	}
 }

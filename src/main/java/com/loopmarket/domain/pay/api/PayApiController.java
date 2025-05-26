@@ -13,6 +13,8 @@ import com.loopmarket.domain.pay.dto.ChargeRequest;
 import com.loopmarket.domain.pay.dto.ChargeResponse;
 import com.loopmarket.domain.pay.dto.CompletePayRequest;
 import com.loopmarket.domain.pay.dto.CompletePayResponse;
+import com.loopmarket.domain.pay.dto.DirectPayRequest;
+import com.loopmarket.domain.pay.dto.DirectPayResponse;
 import com.loopmarket.domain.pay.dto.RefundRequest;
 import com.loopmarket.domain.pay.dto.RefundResponse;
 import com.loopmarket.domain.pay.dto.SafePayRequest;
@@ -100,5 +102,24 @@ public class PayApiController {
 	    int sellerBalance = payService.completePay(request.getPaymentId(), request.getBuyerId());
 	    CompletePayResponse response = new CompletePayResponse(true, "구매 확정이 완료되었습니다.", sellerBalance);
 	    return ResponseEntity.ok(response);
+	}
+	
+	/**
+	 * 즉시결제 처리 API
+	 * QR을 통해 전달된 상품/판매자 정보를 바탕으로 구매자가 바로 결제를 수행하는 경우 사용
+	 */
+	@PostMapping("/direct")
+	public ResponseEntity<DirectPayResponse> directPay(@RequestBody DirectPayRequest request) {
+	    try {
+	        int balance = payService.directPay(request.getBuyerId(), request.getSellerId(), request.getProductId());
+
+	        DirectPayResponse response = new DirectPayResponse(true, "즉시결제가 완료되었습니다.", balance);
+	        return ResponseEntity.ok(response);
+
+	    } catch (IllegalArgumentException e) {
+	        return ResponseEntity.badRequest().body(new DirectPayResponse(false, e.getMessage(), 0));
+	    } catch (Exception e) {
+	        return ResponseEntity.internalServerError().body(new DirectPayResponse(false, "결제 처리 중 오류가 발생했습니다.", 0));
+	    }
 	}
 }

@@ -1,0 +1,48 @@
+<!-- 결제 qr 생성 버튼, 모달 포함 위젯 입니다. -->
+<script th:inline="javascript">
+  /*<![CDATA[*/
+  window.loginUserId = /*[[${loginUser.userId}]]*/ 0;
+  /*]]>*/
+</script>
+
+<!-- QR 생성 버튼 + 모달 포함 위젯 -->
+<div th:fragment="qrWidget(myProducts)">
+  <!-- 1. 버튼 -->
+  <div class="text-center my-4">
+    <button class="btn btn-outline-primary px-4 py-2 rounded-pill fw-semibold"
+            data-bs-toggle="modal" data-bs-target="#qrModal">
+      결제 QR 생성
+    </button>
+  </div>
+
+  <!-- 2. 모달 -->
+  <div class="modal fade" id="qrModal" tabindex="-1" aria-labelledby="qrModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content p-3">
+        <div class="modal-header">
+          <h5 class="modal-title">결제 QR 생성하기</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+
+        <div class="modal-body text-center">
+          <label for="productSelect" class="form-label">상품 선택</label>
+          <select id="productSelect" class="form-select mb-3">
+            <option th:each="product : ${myProducts}"
+                    th:value="${product.productId}"
+                    th:text="${product.title}">
+              상품명
+            </option>
+          </select>
+
+		  <div id="qrCode" class="d-flex justify-content-center"></div>
+        </div>
+
+        <div class="modal-footer">
+          <button id="generateQRBtn" class="btn btn-dark w-100 rounded-pill">
+            QR 생성
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
