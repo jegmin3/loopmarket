@@ -100,5 +100,12 @@ if (!window.noticeScriptInitialized) {
                 });
             }
         });
+		// 페이징 링크 클릭 시 AJAX로 전체 페이지 불러오기
+		$(document).on('click', '.pagination a', function (e) {
+		    e.preventDefault();
+		    const url = $(this).attr('href');
+
+		    loadAdminPage(url);  // 위에 정의된 공용 AJAX 로더 함수
+		});
     });
 }

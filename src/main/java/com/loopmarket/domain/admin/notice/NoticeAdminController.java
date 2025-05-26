@@ -3,6 +3,10 @@ package com.loopmarket.domain.admin.notice;
 import com.loopmarket.common.controller.BaseController;
 import com.loopmarket.domain.admin.notice.dto.NoticeDTO;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -31,11 +35,18 @@ public class NoticeAdminController extends BaseController {
 
     // 공지사항 관리 페이지 진입
     @GetMapping
-    public String noticeAdminPage(HttpServletRequest request, Model model) {
-        List<NoticeEntity> noticeList = noticeRepository.findAll();
-        model.addAttribute("notices", noticeList);
-        //return "admin/notice_admin :: content"; // AJAX로 fragment만 로드
+    public String noticeAdminPage(HttpServletRequest request, Model model,
+                                 @RequestParam(defaultValue = "0") int page) {
+        int pageSize = 10;
+        Pageable pageable = PageRequest.of(page, pageSize, Sort.by("createdAt").descending());
+        Page<NoticeEntity> noticePage = noticeRepository.findAll(pageable);
+
+        model.addAttribute("notices", noticePage.getContent());       // 현재 페이지 데이터
+        model.addAttribute("currentPage", page);                      // 현재 페이지 번호
+        model.addAttribute("totalPages", noticePage.getTotalPages()); // 전체 페이지 수
+
         return renderAdminPage(request, model,"admin/notice_admin");
+        //return render("admin/notice_admin", model);
     }
 
     // 공지사항 등록 폼

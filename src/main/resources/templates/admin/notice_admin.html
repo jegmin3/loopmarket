@@ -30,12 +30,27 @@
 			    </tr>
             </tbody>
         </table>
-    </div>
-	
-	
-	<!-- jquery 추가 -->
-	<!--<script src="https://code.jquery.com/jquery-3.7.1.js" integrity="sha256-eKhayi8LEQwp4NKxN+CfCh+3qOVUtJn3QNZ0TciWLP4=" crossorigin="anonymous"></script>-->
+		
+		<!-- 페이징 네비게이션 -->
+        <nav aria-label="Page navigation" class="mt-4">
+            <ul class="pagination justify-content-center">
+                <li class="page-item" th:classappend="${currentPage == 0} ? 'disabled'">
+                    <a class="page-link" th:href="@{/admin/notice(page=${currentPage - 1})}">이전</a>
+                </li>
 
+                <li class="page-item"
+                    th:each="i : ${#numbers.sequence(0, totalPages - 1)}"
+                    th:classappend="${i == currentPage} ? 'active'">
+                    <a class="page-link" th:href="@{/admin/notice(page=${i})}" th:text="${i + 1}">1</a>
+                </li>
+
+                <li class="page-item" th:classappend="${currentPage + 1 >= totalPages} ? 'disabled'">
+                    <a class="page-link" th:href="@{/admin/notice(page=${currentPage + 1})}">다음</a>
+                </li>
+            </ul>
+        </nav>
+    </div>
+		
 	<script src="js/admin_notice.js"></script>
     
 </div>
