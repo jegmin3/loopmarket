@@ -1,0 +1,41 @@
+<!-- 공지사항 관리 페이지 -->
+<div th:fragment="content">
+    <div class="container">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2>공지사항 관리</h2>
+            <button class="btn btn-primary" id="createNoticeBtn">공지사항 등록</button>
+        </div>
+
+        <!-- 공지사항 목록 -->
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>제목</th>
+                    <th>작성일</th>
+                    <th>공개 여부</th>
+                    <th>관리</th>
+                </tr>
+            </thead>
+            <tbody id="noticeList">
+				<tr th:each="notice : ${notices}">
+			        <td th:text="${notice.noticeId}">1</td>
+			        <td th:text="${notice.title}">제목</td>
+			        <td th:text="${#temporals.format(notice.createdAt, 'yyyy-MM-dd HH:mm:ss')}"></td>
+			        <td th:text="${notice.published} ? '공개' : '비공개'">공개</td>
+			        <td>
+			            <a th:href="@{'/admin/notice/edit/' + ${notice.noticeId}}" class="btn btn-sm btn-warning">수정</a>
+						<button type="button" class="btn btn-sm btn-danger delete-btn" th:data-id="${notice.noticeId}">삭제</button>
+			        </td>
+			    </tr>
+            </tbody>
+        </table>
+    </div>
+	
+	
+	<!-- jquery 추가 -->
+	<!--<script src="https://code.jquery.com/jquery-3.7.1.js" integrity="sha256-eKhayi8LEQwp4NKxN+CfCh+3qOVUtJn3QNZ0TciWLP4=" crossorigin="anonymous"></script>-->
+
+	<script src="js/admin_notice.js"></script>
+    
+</div>

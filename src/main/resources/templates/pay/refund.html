@@ -1,0 +1,46 @@
+<!-- 
+	refund.html: 마이페이지 > 자체페이 환불 화면 (전체 페이지 렌더링용)
+
+	하단에 연결되는 JS 스크립트는 환불 처리 전용
+	  - refund-ui.js: 환불 입력 및 버튼 처리
+-->
+
+<th:block th:fragment="content">
+	<script th:inline="javascript">
+		/*<![CDATA[*/
+		window.loginUserId = /*[[${loginUser.userId}]]*/ 0;
+		window.loginUserName = /*[[${loginUser.nickname}]]*/ "";
+		window.loginUserEmail = /*[[${loginUser.email}]]*/ "";
+		/*]]>*/
+	</script>
+
+	<div class="container py-5 text-center">
+		<div class="row justify-content-center">
+			<div class="col-12 col-sm-10 col-md-6 col-lg-5">
+
+				<h2 class="mb-3">얼마를 환불할까요?</h2>
+				<div class="text-muted mb-3">
+					현재 잔액: <span id="balance"></span>원
+				</div>
+
+				<input id="amountInput" class="form-control form-control-lg text-center mb-3" type="text" value="0"
+					readonly />
+
+				<div class="d-flex justify-content-center gap-2 mb-3 pay-quick-buttons">
+					<button class="btn btn-dark rounded-pill px-4" data-amount="10000">1만원</button>
+					<button class="btn btn-dark rounded-pill px-4" data-amount="50000">5만원</button>
+					<button class="btn btn-dark rounded-pill px-4" data-amount="100000">10만원</button>
+				</div>
+
+				<div class="border rounded-4 p-3 shadow-sm mb-3">
+					<div class="row row-cols-3 g-2 text-center" id="keypad"></div>
+				</div>
+
+				<button class="btn btn-dark btn-lg w-100" id="refundBtn">환불하기</button>
+			</div>
+		</div>
+	</div>
+
+	<!-- 환불 전용 JS -->
+	<script src="/js/pay/refund-ui.js"></script>
+</th:block>

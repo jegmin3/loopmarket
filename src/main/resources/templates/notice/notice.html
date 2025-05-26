@@ -1,0 +1,28 @@
+<!-- 유저용 공지사항 목록 페이지 -->
+<div th:fragment="content">
+    <div class="container mt-5">
+		<div class="d-flex justify-content-between align-items-center mb-4">
+            <h2>공지사항</h2>
+        </div>
+
+        <table class="table table-bordered table-hover text-center table-striped">
+            <thead class="thead-light">
+                <tr>
+					<th style="width: 10%;">ID</th>
+                    <th style="width: 60%;">제목</th>
+                    <th style="width: 20%;">작성일</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:each="notice : ${notices}">
+					<td th:text="${notice.noticeId}">1</td>
+                    <td class="text-left">
+                        <a th:href="@{'/notice/view/' + ${notice.noticeId}}"
+                           th:text="${notice.title}"></a>
+                    </td>
+                    <td th:text="${#temporals.format(notice.createdAt, 'yyyy-MM-dd')}"></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>

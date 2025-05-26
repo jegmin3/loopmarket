@@ -1,0 +1,63 @@
+<!-- 
+	charge.html: 마이페이지 > 자체페이 충전 화면 (전체 페이지 렌더링용)
+	
+    하단에 외부 JS 스크립트 3개가 포함되어 있습니다.
+      - iamport.payment.js: 포트원 결제창
+      - charge.js: 결제 요청 처리 (requestPay 함수)
+      - charge-ui.js: 충전 화면 전용 입력 로직 (금액 입력, 키패드, 버튼 이벤트 등)
+-->
+
+<th:block th:fragment="content">
+	<!-- Thymeleaf가 서버에서 사용자 정보를 렌더링해서 JS 전역변수로 넘겨주는 역할 -->
+	<script th:inline="javascript">
+		/*<![CDATA[*/
+		window.loginUserId = /*[[${loginUser.userId}]]*/ 0;
+		window.loginUserName = /*[[${loginUser.nickname}]]*/ "";
+		window.loginUserEmail = /*[[${loginUser.email}]]*/ "";
+		/*]]>*/
+	</script>
+
+	<div class="container py-5 text-center">
+		<div class="row justify-content-center">
+			<div class="col-12 col-sm-10 col-md-6 col-lg-5">
+
+				<h2 class="mb-3">얼마를 충전할까요?</h2>
+				<div class="text-muted mb-3">
+					현재 잔액: <span id="balance"></span>원
+				</div>
+
+				<div class="d-flex justify-content-center gap-2 mb-3" id="pgButtons">
+					<button class="btn btn-outline-dark d-flex align-items-center gap-1" data-pg="kakaopay">
+						<img src="/img/pay/kakao.png" alt="kakaopay" width="20" height="20">카카오페이
+					</button>
+					<button class="btn btn-outline-dark d-flex align-items-center gap-1" data-pg="tosspay">
+						<img src="/img/pay/toss.png" alt="tosspay" width="20" height="20">토스페이
+					</button>
+					<button class="btn btn-outline-dark d-flex align-items-center gap-1" data-pg="html5_inicis">
+						<img src="/img/pay/inicis.png" alt="inicis" width="20" height="20">이니시스
+					</button>
+				</div>
+
+				<input id="amountInput" class="form-control form-control-lg text-center mb-3" type="text" value="0"
+					readonly />
+
+				<div class="d-flex justify-content-center gap-2 mb-3 pay-quick-buttons">
+					<button class="btn btn-dark rounded-pill px-4" data-amount="10000">+1만원</button>
+					<button class="btn btn-dark rounded-pill px-4" data-amount="50000">+5만원</button>
+					<button class="btn btn-dark rounded-pill px-4" data-amount="100000">+10만원</button>
+				</div>
+
+				<div class="border rounded-4 p-3 shadow-sm mb-3">
+					<div class="row row-cols-3 g-2 text-center" id="keypad"></div>
+				</div>
+
+				<button class="btn btn-dark btn-lg w-100" id="chargeBtn">충전하기</button>
+			</div>
+		</div>
+	</div>
+
+	<!-- 외부 스크립트 -->
+	<script src="https://cdn.iamport.kr/js/iamport.payment-1.1.8.js"></script>
+	<script src="/js/pay/charge.js"></script>
+	<script src="/js/pay/charge-ui.js"></script>
+</th:block>

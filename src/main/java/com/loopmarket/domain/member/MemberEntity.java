@@ -15,6 +15,8 @@ import javax.persistence.Table;
 import lombok.Getter;
 import lombok.*;
 
+/** 엔티티는 DB와 연결, 저장/조회만 하도록..
+ *  즉 내부용 입니다. */
 @Entity
 @Getter
 @Setter
@@ -30,7 +32,7 @@ public class MemberEntity {
 
     @Column(nullable = false, unique = true)
     private String email;
-    
+
     // 기본값을 builder에도 반영
     @Builder.Default
     private Boolean emailVerified = false;
@@ -66,11 +68,14 @@ public class MemberEntity {
     @Builder.Default
     private Status status = Status.ACTIVE;
 
-    private Integer profileImgId;
+    private String profileImgId;
 
     private String phoneNumber;
 
     private LocalDateTime lastLoginAt;
+
+    @Column(length = 255) // FCM 토큰은 긴 문자열이므로 충분한 길이 설정
+    private String fcmToken; // 사용자의 FCM 기기 토큰
 
     public enum LoginType {
         NORMAL, GOOGLE, KAKAO, NAVER

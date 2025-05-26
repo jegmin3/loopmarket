@@ -6,6 +6,7 @@
                     aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
             </button>
+			
 
             <div class="collapse navbar-collapse" id="navbarNav">
               <ul class="navbar-nav me-auto">
@@ -18,13 +19,32 @@
                 <li class="nav-item">
                   <a class="nav-link [[${#httpServletRequest.requestURI.startsWith('/mypage')} ? 'active' : '']]" th:href="@{/mypage}">마이페이지</a>
                 </li>
+				<li class="nav-item">
+				    <a class="nav-link" th:href="@{/chat/page}">나의 채팅</a>
+				</li>
               </ul>
-
-                <ul class="navbar-nav">
-                    <li class="nav-item">
-                        <a class="nav-link" href="/member/login">로그인</a>
-                    </li>
-                </ul>
+			
+			  <ul class="navbar-nav">
+				<!-- 알림 아이콘, 버튼 -->
+				<li class="nav-item dropdown" id="notificationDropdown" th:if="${session.loginUser != null}">
+				    <a class="nav-link position-relative" href="#" id="notifIcon" data-bs-toggle="modal" data-bs-target="#notifModal">
+				        <i class="bi bi-bell"></i>
+				        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" id="notifBadge" style="display:none;">
+				            0
+				        </span>
+				    </a>
+				</li>
+				<li class="nav-item" 
+				    th:if="${session.loginUser == null}">
+				    <a class="nav-link" th:href="@{/member/login}">로그인</a>
+				</li>
+				
+				<li class="nav-item" 
+				    th:if="${session.loginUser != null}">
+				    <a class="nav-link" th:href="@{/member/logout}">로그아웃</a>
+				</li>
+			  </ul>
+			  
             </div>
         </div>
     </nav>
