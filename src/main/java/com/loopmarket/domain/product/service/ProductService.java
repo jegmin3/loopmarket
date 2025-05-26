@@ -174,5 +174,18 @@ public class ProductService {
     return product;
   }
 
+  // 검색어 기반 상품 조회
+  public List<ProductEntity> searchProductsByKeyword(String keyword) {
+    List<ProductEntity> products =
+      productRepository.findByTitleContainingIgnoreCaseOrDescriptionContainingIgnoreCase(keyword, keyword);
+
+    for (ProductEntity product : products) {
+      Long productId = product.getProductId();
+      product.setThumbnailPath(imageService.getThumbnailPath(productId));
+      product.setImagePaths(imageService.getAllImagePaths(productId));
+    }
+
+    return products;
+  }
 
 }

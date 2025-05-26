@@ -1,37 +1,44 @@
 <div th:fragment="searchAndLocation">
   <div class="container my-5 text-center">
+
     <!-- 위치 기반 검색 제목 -->
     <h2 class="mb-3">📍 <span id="location-title">상봉동</span>에서 아이폰 찾고 계신가요?</h2>
 
-    <div class="d-flex justify-content-center align-items-center mt-4 gap-2">
+    <!-- 위치 + 검색창 한 줄로 정렬 -->
+    <div class="d-flex justify-content-center align-items-center gap-2 flex-wrap mt-4">
+
       <!-- 위치 변경 버튼 (모달 열기) -->
-      <div class="d-flex justify-content-center mt-3">
-        <button id="location-btn"
-                class="btn btn-dark rounded-pill px-4 py-2"
-                data-bs-toggle="modal" data-bs-target="#locationModal">
-          <span id="current-location">위치 찾는 중...</span>
-        </button>
-      </div>
+      <button id="location-btn"
+              class="btn btn-dark rounded-pill px-4 py-2"
+              type="button"
+              data-bs-toggle="modal" data-bs-target="#locationModal">
+        <span id="current-location">위치 찾는 중...</span>
+      </button>
 
       <!-- 검색 입력창과 검색 버튼 -->
-      <input type="text" class="form-control w-50" placeholder="검색어를 입력해주세요">
-      <button class="btn btn-dark">🔍</button>
-    </div>
-  </div>
+      <form th:action="@{/products}" method="get" class="d-flex gap-2 align-items-center">
+        <input type="text"
+               class="form-control"
+               style="width: 500px;"
+               name="search"
+               placeholder="검색어를 입력해주세요"
+               th:value="${param.search}" />
+        <button class="btn btn-dark" type="submit">🔍</button>
+      </form>
+
+    </div> <!-- ✅ 여기에 정렬 div 닫힘 -->
+
+  </div> <!-- ✅ container 닫힘 위치도 명확 -->
 
   <!-- 위치 변경용 모달창 -->
   <div class="modal fade" id="locationModal" tabindex="-1" aria-labelledby="locationModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
       <div class="modal-content">
-        <!-- 모달 헤더 -->
         <div class="modal-header">
           <h5 class="modal-title" id="locationModalLabel">지역 변경</h5>
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="닫기"></button>
         </div>
-
-        <!-- 모달 본문 -->
         <div class="modal-body" style="height: 500px; display: flex; flex-direction: column; overflow-y: hidden;">
-          <!-- 위치 검색창 -->
           <div class="input-group mb-3">
             <input type="text" id="locationSearchInput"
                    class="form-control"
@@ -40,18 +47,13 @@
                    onkeyup="handleLocationKey(event)">
             <button class="btn btn-outline-secondary" type="button" onclick="searchOrFilterLocation()">🔍</button>
           </div>
-
-          <!-- 현재 위치 사용 버튼 -->
           <div class="text-center mb-3">
             <button class="btn btn-outline-danger" onclick="getLocation()">📍 현재 내 위치 사용하기</button>
           </div>
-
-          <!-- 추천 동네 목록 -->
           <div style="flex: 1; overflow-y: auto;">
             <div id="recommendSection" class="mb-3">
               <div class="fw-bold text-primary">추천</div>
               <ul class="list-group" id="locationList">
-                <!-- 추천 동네 리스트 반복 출력 -->
                 <li class="list-group-item location-option"
                     th:each="dong : ${recommendedDongNames}"
                     th:text="${dong}"
@@ -60,8 +62,6 @@
                 </li>
               </ul>
             </div>
-
-            <!-- 검색 결과 리스트 (검색 시 보임) -->
             <ul id="searchResultList" class="list-group d-none"
                 style="min-height: 250px; max-height: 300px; overflow-y: auto;"></ul>
           </div>

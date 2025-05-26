@@ -30,4 +30,7 @@ public interface ProductRepository extends JpaRepository<ProductEntity, Long> {
     List<ProductEntity> findByCtgCodeInAndPriceBetween(List<Integer> ctgCodes, Integer min, Integer max);
     List<ProductEntity> findByCtgCodeAndPriceBetween(Integer ctgCode, Integer min, Integer max);
 
+     // 검색어가 제목이나 설명에 포함된 상품 조회
+    List<ProductEntity> findByTitleContainingIgnoreCaseOrDescriptionContainingIgnoreCase(String title, String description);
+
 }
