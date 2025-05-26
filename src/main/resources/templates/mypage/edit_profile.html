@@ -3,15 +3,16 @@
         <h2 class="mb-4">프로필 수정</h2>
 
         <form th:action="@{/mypage/edit}" method="post" enctype="multipart/form-data">
+            <!-- 🔹 기본 정보 수정 -->
             <div class="mb-3">
                 <label for="nickname" class="form-label">별명 <span class="text-danger">*</span></label>
                 <input type="text" id="nickname" th:field="*{nickname}" class="form-control" required />
             </div>
 
             <div class="mb-3">
-                <label for="phoneNumber" class="form-label">전화번호1</label>
-                <input type="tel" id="phoneNumber" th:field="*{phoneNumber}" 
-                       pattern="\d{2,3}-\d{3,4}-\d{4}" 
+                <label for="phoneNumber" class="form-label">전화번호</label>
+                <input type="tel" id="phoneNumber" th:field="*{phoneNumber}"
+                       pattern="\d{2,3}-\d{3,4}-\d{4}"
                        placeholder="010-1234-5678" class="form-control" />
                 <small class="form-text text-muted">형식: 010-1234-5678</small>
             </div>
@@ -26,14 +27,38 @@
                 <input type="file" id="profileImage" name="profileImage" accept="image/*" class="form-control" />
                 <div class="mt-2">
                     현재 이미지:<br />
-					<img th:if="${profileImagePath != null and profileImagePath != ''}" 
-					     th:src="@{${profileImagePath}}" 
-					     alt="프로필 이미지" width="100" height="100" class="rounded-circle mb-3" />
+                    <img th:if="${profileImagePath != null and profileImagePath != ''}"
+                         th:src="@{${profileImagePath}}"
+                         alt="프로필 이미지" width="100" height="100" class="rounded-circle mb-3" />
 
-					<img th:if="${profileImagePath == null or profileImagePath == ''}" 
-					     src="/images/default-profile.png" 
-					     alt="기본 프로필 이미지" width="100" height="100" class="rounded-circle mb-3" />
+                    <img th:if="${profileImagePath == null or profileImagePath == ''}"
+                         src="/images/default-profile.png"
+                         alt="기본 프로필 이미지" width="100" height="100" class="rounded-circle mb-3" />
                 </div>
+            </div>
+
+            <!-- 🔒 비밀번호 변경 섹션 -->
+            <hr class="my-4" />
+            <h4 class="mb-3">비밀번호 변경</h4>
+			<div th:if="${errorMessage}" style="color:red;" class="error-message" th:text="${errorMessage}"></div>
+			<br>
+            <div class="mb-3">
+                <label for="currentPassword" class="form-label">현재 비밀번호</label>
+                <input type="password" id="currentPassword" name="currentPassword" class="form-control" />
+            </div>
+
+            <div class="mb-3">
+                <label for="newPassword" class="form-label">새 비밀번호</label>
+                <input type="password" id="newPassword" name="newPassword" class="form-control" />
+            </div>
+
+            <div class="mb-3">
+                <label for="confirmPassword" class="form-label">새 비밀번호 확인</label>
+                <input type="password" id="confirmPassword" name="confirmPassword" class="form-control" />
+            </div>
+
+            <div class="text-muted mb-4">
+                비밀번호를 변경하지 않으려면 빈칸으로 두세요.
             </div>
 
             <button type="submit" class="btn btn-primary">저장</button>

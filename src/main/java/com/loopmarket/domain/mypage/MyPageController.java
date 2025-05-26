@@ -10,6 +10,7 @@ import com.loopmarket.domain.product.service.ProductService;
 import com.loopmarket.domain.purchase.repository.PurchaseRepository;
 import com.loopmarket.common.controller.BaseController;
 
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -24,6 +25,7 @@ import java.util.List;
 import java.util.Arrays;
 
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 @Controller
 @RequestMapping("/mypage")
@@ -34,18 +36,22 @@ public class MyPageController extends BaseController {
     private final List<String> ongoingStatuses = List.of("ONSALE", "RESERVED");
     private final ProductService productService;
     private final ImageService imageService;
-    
-    
-    @Autowired
-    private MemberRepository memberRepository;
+    private final PasswordEncoder passwordEncoder;    
+    private final MemberRepository memberRepository;
     
     @Autowired
-    public MyPageController(ProductRepository productRepository, PurchaseRepository purchaseRepository,
-                            ProductService productService, ImageService imageService) {
+    public MyPageController(ProductRepository productRepository,
+                            PurchaseRepository purchaseRepository,
+                            ProductService productService,
+                            ImageService imageService,
+                            PasswordEncoder passwordEncoder,
+                            MemberRepository memberRepository) {
         this.productRepository = productRepository;
         this.purchaseRepository = purchaseRepository;
         this.productService = productService;
         this.imageService = imageService;
+        this.passwordEncoder = passwordEncoder;
+        this.memberRepository = memberRepository;
     }
     
 
@@ -85,7 +91,7 @@ public class MyPageController extends BaseController {
         return render("mypage/mypage", model);
     }
 
-    
+    // 현재 판매중인 상품
     @GetMapping("/products")
     public String mySellingItems(HttpServletRequest request, HttpSession session, Model model) {
         MemberEntity member = (MemberEntity) session.getAttribute("loginUser");
@@ -107,7 +113,8 @@ public class MyPageController extends BaseController {
 
         return renderMypage(request, model, "mypage/my_selling_items");
     }
-    
+
+    // 판매완료상품 내역
     @GetMapping("/sales")
     public String mySalesHistory(HttpServletRequest request, HttpSession session, Model model) {
         MemberEntity member = (MemberEntity) session.getAttribute("loginUser");
@@ -120,6 +127,52 @@ public class MyPageController extends BaseController {
         model.addAttribute("soldProducts", soldProducts);
 
         return renderMypage(request, model, "mypage/my_sales_history");
+    }
+    
+    // 비밀번호 변경
+    @GetMapping("/change_password")
+    public String changePasswordForm(Model model, HttpSession session) {
+        MemberEntity member = (MemberEntity) session.getAttribute("loginUser");
+        if (member == null) {
+            return "redirect:/member/login";
+        }
+        return render("mypage/change_password", model);
+    }
+
+    @PostMapping("/change_password")
+    public String changePassword(
+            @RequestParam("currentPassword") String currentPassword,
+            @RequestParam("newPassword") String newPassword,
+            HttpSession session,
+            RedirectAttributes redirectAttributes) {
+
+        MemberEntity member = (MemberEntity) session.getAttribute("loginUser");
+        if (member == null) {
+            redirectAttributes.addFlashAttribute("errorMessage", "로그인이 필요합니다.");
+            return "redirect:/member/login";
+        }
+
+        MemberEntity dbMember = memberRepository.findById(member.getUserId())
+                .orElse(null);
+
+        if (dbMember == null) {
+            redirectAttributes.addFlashAttribute("errorMessage", "사용자 정보를 찾을 수 없습니다.");
+            return "redirect:/member/login";
+        }
+
+        if (!passwordEncoder.matches(currentPassword, dbMember.getPassword())) {
+            redirectAttributes.addFlashAttribute("errorMessage", "현재 비밀번호가 일치하지 않습니다.");
+            return "redirect:/mypage/change_password";
+        }
+
+        dbMember.setPassword(passwordEncoder.encode(newPassword));
+        memberRepository.save(dbMember);
+
+        // 세션에 최신 정보로 다시 세팅
+        session.setAttribute("loginUser", dbMember);
+
+        redirectAttributes.addFlashAttribute("successMessage", "비밀번호가 성공적으로 변경되었습니다.");
+        return "redirect:/mypage";
     }
     
     

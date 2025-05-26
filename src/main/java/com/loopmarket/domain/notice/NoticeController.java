@@ -1,13 +1,16 @@
 package com.loopmarket.domain.notice;
 
-import java.util.List;
-
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.server.ResponseStatusException;
 
 import com.loopmarket.common.controller.BaseController;
@@ -26,10 +29,17 @@ public class NoticeController extends BaseController{
 
     // 공지사항 목록 (유저용)
     @GetMapping
-    public String getNoticeList(Model model) {
-        List<NoticeEntity> publishedNotices = noticeRepository.findByPublishedTrueOrderByCreatedAtDesc();
-        model.addAttribute("notices", publishedNotices);
-        return render("notice/notice",model); // resources/templates/notice.html 렌더링
+    public String getNoticeList(Model model, @RequestParam(defaultValue = "0") int page) {
+        int pageSize = 10;
+
+        Pageable pageable = PageRequest.of(page, pageSize, Sort.by("createdAt").descending());
+        Page<NoticeEntity> noticePage = noticeRepository.findByPublishedTrue(pageable);
+
+        model.addAttribute("notices", noticePage.getContent());      // 현재 페이지 공지 목록
+        model.addAttribute("currentPage", page);                     // 현재 페이지 번호
+        model.addAttribute("totalPages", noticePage.getTotalPages()); // 전체 페이지 수
+
+        return render("notice/notice", model); // Thymeleaf에서 페이징 처리
     }
 
     // 공지 상세 보기
