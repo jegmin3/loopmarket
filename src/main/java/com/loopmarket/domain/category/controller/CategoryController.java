@@ -4,6 +4,7 @@ import com.loopmarket.domain.category.entity.Category;
 import com.loopmarket.domain.category.repository.CategoryRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -16,6 +17,14 @@ import java.util.List;
 public class CategoryController {
 
   private final CategoryRepository categoryRepository;
+
+  @GetMapping("/categories/filter")
+  public String getMainCategoryForFilter(Model model) {
+
+    List<Category> mainCategories = categoryRepository.findMainCategories();
+    model.addAttribute("mainCategories", mainCategories);
+    return "product/list";
+  }
 
   // [REST] 대분류 선택 → 소분류 목록 응답
   @GetMapping("/api/categories/{mainCode}")
