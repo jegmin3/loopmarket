@@ -5,6 +5,8 @@ import com.loopmarket.domain.chat.dto.ChatRoomDTO;
 import com.loopmarket.domain.chat.service.ChatService;
 import com.loopmarket.domain.member.MemberEntity; // 세션에서 사용자 정보 가져오기 위함
 import lombok.RequiredArgsConstructor;
+
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -47,7 +49,7 @@ public class ChatApiController {
     public ResponseEntity<List<ChatMessageDTO>> getChatMessages(@PathVariable String roomId, HttpSession session) {
         MemberEntity loginUser = (MemberEntity) session.getAttribute("loginUser");
         if (loginUser == null) {
-            return ResponseEntity.status(401).build(); // Unauthorized
+        	return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build(); // 401 Unauthorized
         }
 
         // TODO: (선택 사항) 실제 서비스에서는 roomId에 해당하는 채팅방에 loginUser가 접근 권한이 있는지 확인하는 로직이 필요합니다.
@@ -70,7 +72,7 @@ public class ChatApiController {
     public ResponseEntity<Void> markMessagesAsRead(@PathVariable String roomId, HttpSession session) {
         MemberEntity loginUser = (MemberEntity) session.getAttribute("loginUser");
         if (loginUser == null) {
-            return ResponseEntity.status(401).build(); // Unauthorized
+        	return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build(); // 401 Unauthorized
         }
 
         // TODO: (선택 사항) 여기도 접근 권한 확인 로직 추가 필요
@@ -78,4 +80,32 @@ public class ChatApiController {
         chatService.markMessagesAsRead(roomId, loginUser.getUserId());
         return ResponseEntity.ok().build(); // 성공 응답
     }
+    
+    /**
+     * 특정 채팅방과 관련된 모든 메시지 및 채팅방 엔티티를 삭제합니다.
+     *
+     * @param roomId 삭제할 채팅방 ID
+     * @param session HTTP 세션 (권한 확인)
+     * @return 성공 여부
+     */
+    @DeleteMapping("/rooms/{roomId}")
+    public ResponseEntity<Void> deleteChatRoomAndMessages(@PathVariable String roomId, HttpSession session) {
+        MemberEntity loginUser = (MemberEntity) session.getAttribute("loginUser");
+        if (loginUser == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build(); // 401 Unauthorized
+        }
+
+        // TODO: 로그인 사용자가 해당 채팅방의 참여자인지 확인하는 로직 추가
+        // chatService.isUserInChatRoom(roomId, loginUser.getUserId()); 와 같은 메서드 필요
+
+        try {
+            chatService.deleteChatRoomAndMessages(roomId);
+            return ResponseEntity.ok().build(); // 200 OK
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build(); // 404 Not Found (채팅방 없음)
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build(); // 500 Internal Server Error
+        }
+    }
+    
 }
