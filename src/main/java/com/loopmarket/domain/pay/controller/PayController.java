@@ -156,6 +156,13 @@ public class PayController extends BaseController {
 
 		// 판매 중(ONSALE)인 상품만 가져오기 (QR 생성용)
 		List<ProductEntity> myProducts = productService.getMyProducts(loginUser.getUserId().longValue());
+
+		// 썸네일 주입
+		for (ProductEntity product : myProducts) {
+			String thumbnailPath = productService.getThumbnailPath(product.getProductId());
+			product.setThumbnailPath(thumbnailPath);
+		}
+
 		model.addAttribute("myProducts", myProducts);
 
 		// 구매확정 버튼 테스트용 dummy 값 (삭제 가능)
