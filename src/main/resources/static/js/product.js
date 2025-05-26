@@ -1,28 +1,42 @@
 // 이미지 슬라이드 좌우 버튼 클릭 시 이미지 이동 함수
 function slideImage(button, direction) {
-  const card = button.closest(".card");              // 버튼이 속한 카드 요소
-  const track = card.querySelector(".slider-track"); // 이미지 슬라이더 트랙 요소
-  const total = parseInt(track.dataset.count);       // 전체 이미지 개수
+  const wrapper = button.closest(".position-relative").parentElement; // wrapper 바꿈
+  const track = wrapper.querySelector(".slider-track");
   if (!track) return;
 
-  if (!track.dataset.index) track.dataset.index = "0"; // 현재 슬라이드 인덱스 초기화
+  const total = parseInt(track.dataset.count);
+  if (!track.dataset.index) track.dataset.index = "0";
   let currentIndex = parseInt(track.dataset.index);
 
-  // 새로운 인덱스 계산 (0 이상, 최대 total-1 이하)
   const newIndex = Math.max(0, Math.min(total - 1, currentIndex + direction));
   track.dataset.index = newIndex;
-
-  // 슬라이더 트랙 이동 (translateX)
   track.style.transform = `translateX(-${(100 / total) * newIndex}%)`;
 
-  // 점(dot) 상태 업데이트: 현재 인덱스 점은 진하게, 나머지는 연하게
-  const dots = card.querySelectorAll(".dot");
+  // dot 강조 업데이트
+  const dots = wrapper.querySelectorAll(".dot");
   dots.forEach((dot, idx) => {
     dot.style.opacity = idx === newIndex ? "1" : "0.4";
   });
 }
 
+// 페이지 처음 로드 시 dot 초기화
+document.addEventListener("DOMContentLoaded", () => {
+  document.querySelectorAll(".slider-track").forEach(track => {
+    const dots = track.closest(".col-md-6").querySelectorAll(".dot");
+    if (dots.length > 0) dots[0].style.opacity = "1";
+    track.dataset.index = "0";
+  });
+});
+
 window.slideImage = slideImage; // 전역에 등록
+
+document.addEventListener("DOMContentLoaded", () => {
+  document.querySelectorAll(".slider-track").forEach(track => {
+    const dots = track.closest(".position-relative").querySelectorAll(".dot");
+    if (dots.length > 0) dots[0].style.opacity = "1";
+    track.dataset.index = "0";
+  });
+});
 
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -379,6 +393,7 @@ document.addEventListener("DOMContentLoaded", () => {
       updatePreview(); // 순서 변경 후 미리보기 갱신 및 대표사진 재설정
     }
   });
+
 });
 
 window.handleCategoryChange = handleCategoryChange;

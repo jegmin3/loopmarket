@@ -10,6 +10,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.NoSuchElementException;
 
 @RequiredArgsConstructor
 @Service
@@ -162,6 +163,16 @@ public class ProductService {
     return products;
   }
 
+  // 이미지 경로 셋팅
+  public ProductEntity findById(Long id) {
+    ProductEntity product = productRepository.findById(id)
+      .orElseThrow(() -> new NoSuchElementException("해당 상품을 찾을 수 없습니다: " + id));
+
+    product.setImagePaths(imageService.getAllImagePaths(id));
+    product.setThumbnailPath(imageService.getThumbnailPath(id));
+
+    return product;
+  }
 
 
 }
