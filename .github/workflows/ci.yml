@@ -25,3 +25,6 @@ jobs:
 
     - name: Run tests
       run: mvn test
+
+    - name: Run tests (ignore failure)
+      run: mvn test || true
