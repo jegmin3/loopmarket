@@ -6,11 +6,11 @@
  */
 
 document.addEventListener('DOMContentLoaded', () => {
+	const userId = window.loginUserId;
 	const amountInput = document.getElementById('amountInput');
 	const refundBtn = document.getElementById('refundBtn');
 	const keypad = document.getElementById('keypad');
 	const quickButtons = document.querySelectorAll('.pay-quick-buttons button');
-	const userId = window.loginUserId;
 
 	let currentAmount = 0;
 
