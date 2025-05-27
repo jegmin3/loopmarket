@@ -67,6 +67,94 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   });
 
+  //open ai 서비스 이용
+  document.getElementById("aiGenerateBtn").addEventListener("click", async () => {
+    if (selectedFiles.length === 0) {
+      alert("이미지를 먼저 업로드해주세요.");
+      return;
+    }
+
+    const aiBtn = document.getElementById("aiGenerateBtn");
+    aiBtn.disabled = true;
+    aiBtn.innerHTML = `<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span> AI로 작성중 입니다.`;
+
+    try {
+      const uploadedImageUrls = [];
+
+      for (const file of selectedFiles) {
+        const formData = new FormData();
+        formData.append("image", file);
+
+        const uploadRes = await fetch("/api/upload/temp", {
+          method: "POST",
+          body: formData,
+        });
+
+        const { imageUrl } = await uploadRes.json();
+        uploadedImageUrls.push(imageUrl);
+      }
+
+      // GPT 호출
+      const aiRes = await fetch("/api/products/ai-generate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ imageUrls: uploadedImageUrls })
+      });
+
+      if (!aiRes.ok) {
+        const errText = await aiRes.text();
+        throw new Error("GPT 응답 오류: " + errText);
+      }
+
+      const result = await aiRes.json();
+      document.querySelector("input[name='title']").value = result.title;
+      document.querySelector("textarea[name='description']").value = result.description.replace(/\\n/g, "\n");
+
+
+      // 카테고리 자동 반영
+      const ctgCode = result.ctgCode;
+      const categoryToMainMap = {
+        27: 5,
+        12: 2,
+        8: 1
+      };
+
+      const mainCode = categoryToMainMap[ctgCode];
+      const mainSelect = document.getElementById("main-category");
+      const subSelect = document.getElementById("sub-category");
+
+      if (mainCode && mainSelect && subSelect) {
+        mainSelect.value = mainCode;
+        mainSelect.dispatchEvent(new Event("change"));
+
+        setTimeout(() => {
+          const option = subSelect.querySelector(`option[value="${ctgCode}"]`);
+          if (option) {
+            subSelect.value = ctgCode;
+          } else {
+            console.warn("소분류 옵션이 아직 준비되지 않았습니다:", ctgCode);
+          }
+        }, 300);
+      }
+
+    } catch (err) {
+      alert("⚠ 오류 발생: " + err.message);
+      console.error(err);
+    } finally {
+      // 분석 끝났을 때 버튼 복구
+      aiBtn.disabled = false;
+      aiBtn.innerHTML = `<span class="spinner-border spinner-border-sm me-2 d-none" id="aiSpinner" role="status" aria-hidden="true"></span>작성 완료`;
+    }
+  });
+
+  function handleCategoryChange(e) {
+    const selectedMain = e.target.value;
+    // 이후 원하는 동작을 넣거나 아무것도 안해도 기본 오류는 안 나
+    console.log("대분류 선택됨:", selectedMain);
+  }
+  window.handleCategoryChange = handleCategoryChange;
+
+
 // 가격 필터 버튼 클릭 함수
   function filterByPrice(min, max) {
     const url = new URL(window.location.href);
