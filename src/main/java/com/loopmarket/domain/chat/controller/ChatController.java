@@ -1,6 +1,7 @@
 package com.loopmarket.domain.chat.controller;
 
 import lombok.RequiredArgsConstructor;
+
 import org.springframework.messaging.handler.annotation.MessageMapping; // STOMP 메시지 매핑
 import org.springframework.messaging.handler.annotation.Payload; // 메시지 페이로드 주입
 import org.springframework.stereotype.Controller;
@@ -11,6 +12,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import com.loopmarket.common.controller.BaseController;
 import com.loopmarket.domain.chat.dto.ChatMessageDTO;
 import com.loopmarket.domain.chat.service.ChatService;
+import com.loopmarket.domain.member.MemberEntity;
 
 /** 웹소켓(STOMP) 메시지를 처리하는 컨트롤러 */
 @Controller
@@ -33,7 +35,11 @@ public class ChatController extends BaseController {
     
     @GetMapping("/chat/page")
     public String goChatPage(Model model, RedirectAttributes redirectAttributes) {
-    	redirectAttributes.addFlashAttribute("errorMessage", "로그인이 필요합니다.");
+    	MemberEntity loginUser = getLoginUser();
+        if (loginUser == null) {
+        	redirectAttributes.addFlashAttribute("errorMessage", "로그인이 필요합니다.");
+        	return "redirect:/member/login";
+        }
     	return render("chat/chatRoom", model);
     }
 
