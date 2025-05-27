@@ -67,6 +67,94 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   });
 
+  //open ai 서비스 이용
+  document.getElementById("aiGenerateBtn").addEventListener("click", async () => {
+    if (selectedFiles.length === 0) {
+      alert("이미지를 먼저 업로드해주세요.");
+      return;
+    }
+
+    const aiBtn = document.getElementById("aiGenerateBtn");
+    aiBtn.disabled = true;
+    aiBtn.innerHTML = `<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span> AI로 작성중 입니다.`;
+
+    try {
+      const uploadedImageUrls = [];
+
+      for (const file of selectedFiles) {
+        const formData = new FormData();
+        formData.append("image", file);
+
+        const uploadRes = await fetch("/api/upload/temp", {
+          method: "POST",
+          body: formData,
+        });
+
+        const { imageUrl } = await uploadRes.json();
+        uploadedImageUrls.push(imageUrl);
+      }
+
+      // GPT 호출
+      const aiRes = await fetch("/api/products/ai-generate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ imageUrls: uploadedImageUrls })
+      });
+
+      if (!aiRes.ok) {
+        const errText = await aiRes.text();
+        throw new Error("GPT 응답 오류: " + errText);
+      }
+
+      const result = await aiRes.json();
+      document.querySelector("input[name='title']").value = result.title;
+      document.querySelector("textarea[name='description']").value = result.description.replace(/\\n/g, "\n");
+
+
+      // 카테고리 자동 반영
+      const ctgCode = result.ctgCode;
+      const categoryToMainMap = {
+        27: 5,
+        12: 2,
+        8: 1
+      };
+
+      const mainCode = categoryToMainMap[ctgCode];
+      const mainSelect = document.getElementById("main-category");
+      const subSelect = document.getElementById("sub-category");
+
+      if (mainCode && mainSelect && subSelect) {
+        mainSelect.value = mainCode;
+        mainSelect.dispatchEvent(new Event("change"));
+
+        setTimeout(() => {
+          const option = subSelect.querySelector(`option[value="${ctgCode}"]`);
+          if (option) {
+            subSelect.value = ctgCode;
+          } else {
+            console.warn("소분류 옵션이 아직 준비되지 않았습니다:", ctgCode);
+          }
+        }, 300);
+      }
+
+    } catch (err) {
+      alert("⚠ 오류 발생: " + err.message);
+      console.error(err);
+    } finally {
+      // 분석 끝났을 때 버튼 복구
+      aiBtn.disabled = false;
+      aiBtn.innerHTML = `<span class="spinner-border spinner-border-sm me-2 d-none" id="aiSpinner" role="status" aria-hidden="true"></span>작성 완료`;
+    }
+  });
+
+  function handleCategoryChange(e) {
+    const selectedMain = e.target.value;
+    // 이후 원하는 동작을 넣거나 아무것도 안해도 기본 오류는 안 나
+    console.log("대분류 선택됨:", selectedMain);
+  }
+  window.handleCategoryChange = handleCategoryChange;
+
+
 // 가격 필터 버튼 클릭 함수
   function filterByPrice(min, max) {
     const url = new URL(window.location.href);
@@ -305,22 +393,29 @@ document.addEventListener("DOMContentLoaded", () => {
   let selectedFiles = []; // 선택한 이미지 파일 리스트
 
   // 이미지 파일 선택 시 실행
+  // 이미지 선택 시 누적 업로드 되게 수정
   imageInput.addEventListener("change", () => {
     const files = Array.from(imageInput.files);
-    const maxImages = 8; // 최대 8장 제한
+    const maxImages = 8;
 
-    if (files.length > maxImages) {
+    // 🔁 이전 선택한 이미지에 새로 선택한 파일 추가
+    const combinedFiles = [...selectedFiles, ...files];
+
+    // ✅ 중복 제거 (파일명 기준)
+    const fileMap = new Map();
+    combinedFiles.forEach(file => fileMap.set(file.name, file));
+    selectedFiles = Array.from(fileMap.values());
+
+    // 최대 개수 제한
+    if (selectedFiles.length > maxImages) {
       alert("이미지는 최대 8장까지만 업로드할 수 있어요.");
-      imageInput.value = "";
-      selectedFiles = [];
-      updatePreview();
-      return;
+      selectedFiles = selectedFiles.slice(0, maxImages);
     }
 
-    selectedFiles = files;
-    mainImageIndexInput.value = 0; // 기본 대표 이미지 인덱스 0으로 초기화
-    updatePreview();
+    mainImageIndexInput.value = 0; // 대표 이미지 기본값 0
+    updatePreview();               // 미리보기 갱신
   });
+
 
   // 이미지 미리보기 및 삭제 버튼 생성 함수
   function updatePreview() {

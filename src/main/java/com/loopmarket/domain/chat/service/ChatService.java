@@ -1,6 +1,5 @@
 package com.loopmarket.domain.chat.service;
 
-import com.loopmarket.domain.alram.FCMService;
 import com.loopmarket.domain.chat.dto.ChatMessageDTO;
 import com.loopmarket.domain.chat.dto.ChatRoomDTO;
 import com.loopmarket.domain.chat.entity.ChatEntity;
@@ -14,6 +13,7 @@ import org.springframework.messaging.simp.SimpMessageSendingOperations; // 웹�
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional; // 트랜잭션 관리
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 /** 1:1 채팅 관련 비즈니스 로직을 처리하는 서비스 */
@@ -147,6 +147,40 @@ public class ChatService {
         chatRepository.saveAll(unreadMessages); // 변경된 메시지들을 한 번에 저장
     }
 
-    // TODO: FCMService는 별도 파일로 정의해야 합니다. (이전 답변에서 제공된 FCMService 클래스 사용)
+    // TODO: FCMService는 별도 파일로 정의해야 합니다. (FCMService 클래스 사용)
     // 현재는 FCMService가 이 파일에 없으므로 주석 처리하거나, 별도로 FCMService.java 파일을 생성해야 합니다.
+    /**
+     * 특정 채팅방과 관련된 모든 메시지 및 채팅방 자체를 삭제합니다.
+     *
+     * @param roomId 삭제할 채팅방 ID
+     */
+    @Transactional
+    public void deleteChatRoomAndMessages(String roomId) {
+        // 1. 해당 채팅방의 모든 메시지 삭제
+        // JPQL 쿼리나 deleteAll(Iterable<S>) 등을 사용할 수 있습니다.
+        // 여기서는 간단하게 먼저 조회 후 삭제합니다.
+        List<ChatEntity> messages = chatRepository.findByRoomIdOrderBySentAtAsc(roomId);
+        if (!messages.isEmpty()) {
+            chatRepository.deleteAll(messages);
+        }
+        System.out.println("Deleted messages for room: " + roomId);
+
+        // 2. 채팅방 엔티티 삭제
+        Optional<ChatRoomEntity> chatRoomOptional = chatRoomRepository.findByRoomId(roomId);
+        if (chatRoomOptional.isPresent()) {
+            chatRoomRepository.delete(chatRoomOptional.get());
+            System.out.println("Deleted chat room: " + roomId);
+        } else {
+            throw new IllegalArgumentException("Chat room not found with ID: " + roomId);
+        }
+    }
+
+    // TODO: (선택 사항) 사용자 온라인 상태를 체크하는 실제 로직 구현 (FCM 발송 조건으로 사용)
+    // 이 메서드는 예시이며, 실제로는 UserSessionService 같은 것을 만들어서 관리해야 함.
+    private boolean isUserOnline(Integer userId) {
+        // 실제 구현: 웹소켓 세션 정보를 관리하는 Map이나 Redis 등을 활용
+        // 예: return onlineUserSessions.containsKey(userId);
+        return false; // 현재는 항상 오프라인으로 간주하여 FCM 발송
+    }
+    
 }
