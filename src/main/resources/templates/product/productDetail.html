@@ -81,13 +81,24 @@
             <!-- 지도 -->
             <div id="map" style="width: 100%; height: 180px;" class="rounded my-3"></div>
 
-            <!-- 버튼 -->
-            <div class="d-flex gap-2 mt-4">
-              <button class="btn btn-outline-danger flex-grow-1" id="wishlist-btn" onclick="toggleWishlist()">
-                <i id="heart-icon" class="bi bi-heart"></i> 찜하기
-              </button>
-              <a th:href="@{/chat/start(productId=${product.productId})}" class="btn btn-primary flex-grow-1">채팅하기</a>
-            </div>
+			<div class="d-flex gap-2 mt-4">
+			  <!-- 찜하기 -->
+			  <button type="button" class="btn btn-outline-danger w-100" onclick="toggleWishlist()">
+			    <i id="heart-icon" class="bi bi-heart"></i> 찜하기
+			  </button>
+
+			  <!-- 채팅하기 -->
+			  <a th:href="@{/chat/start(productId=${product.productId})}" class="btn btn-outline-primary w-100 text-center">
+			    채팅하기
+			  </a>
+
+			  <!-- 택배로 구매하기 -->
+			  <a th:if="${product.isDelivery}"
+			     th:href="@{/pay/checkout(productId=${product.productId})}"
+			     class="btn btn-outline-success w-100 text-center">
+			    택배로 구매하기
+			  </a>
+			</div>
         </div>
       </div>
     </div>

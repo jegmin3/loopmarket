@@ -1,16 +1,26 @@
 <!-- my_sales_history.html -->
 <div th:fragment="content">
-    <div class="row">
-        <div th:each="product : ${soldProducts}" class="col-md-4 mb-4">
-            <div class="card border-success">
-                <img th:src="@{${product.thumbnailPath}}" class="card-img-top" alt="상품 이미지" />
-                <div class="card-body">
-                    <h5 class="card-title" th:text="${product.title}">상품명</h5>
-                    <p class="card-text" th:text="'₩' + ${product.price}">가격</p>
-                    <p class="text-success">판매 완료</p>
-                    <p class="text-muted" th:text="${#temporals.format(product.updateAt, 'yyyy-MM-dd')}">판매일</p>
-                </div>
-            </div>
-        </div>
+  <h6 class="mb-3" th:text="'판매 상품 수 : ' + ${#lists.size(soldProducts)}">판매 상품 수</h6>
+
+  <div class="d-flex flex-column gap-2">
+    <div th:each="product : ${soldProducts}"
+         class="card border-success shadow-sm rounded-4 p-2 d-flex flex-column flex-md-row align-items-center">
+
+      <!-- 썸네일 -->
+      <div class="ratio ratio-1x1 me-md-2 mb-2 mb-md-0 w-25" style="max-width: 120px;">
+        <img th:src="@{${product.thumbnailPath}}"
+             alt="상품 이미지"
+             class="img-fluid rounded-2 object-fit-cover" />
+      </div>
+
+      <!-- 판매 정보 -->
+      <div class="text-center text-md-start w-100">
+        <div class="fw-semibold small mb-0" th:text="${product.title}">상품명</div>
+        <div class="text-muted small" th:text="'₩' + ${product.price}">가격</div>
+        <div class="text-success small">판매 완료</div>
+        <div class="text-muted small" th:text="${#temporals.format(product.updateAt, 'yyyy-MM-dd')}">판매일</div>
+      </div>
+
     </div>
+  </div>
 </div>
