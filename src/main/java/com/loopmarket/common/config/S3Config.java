@@ -38,7 +38,7 @@ public class S3Config {
    * @return 초기화된 S3Client 객체
    */
   @Bean
-  public S3Client s3Client() {
+  S3Client s3Client() {
     // AWS 자격 증명 생성
     AwsBasicCredentials credentials = AwsBasicCredentials.create(accessKey, secretKey);
 
