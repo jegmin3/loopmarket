@@ -3,6 +3,10 @@
     <div class="w-100" style="max-width: 700px;">
 
       <h2 class="text-center mb-4">📦 상품 등록</h2>
+      <div class="d-flex justify-content-end align-items-center mb-3">
+        <label class="form-label me-2 mb-0"></label>
+        <button type="button" class="btn btn-outline-primary btn-sm" id="aiGenerateBtn">AI로 작성하기</button>
+      </div>
 
       <!-- 상품 등록 폼: 이미지 포함 multipart/form-data 전송 -->
       <form th:action="@{/products}" method="post" th:object="${product}" enctype="multipart/form-data">
@@ -83,7 +87,7 @@
         <!-- 상품 설명 -->
         <div class="mb-3">
           <label>상품 설명</label>
-          <textarea th:field="*{description}" class="form-control" minlength="10"></textarea>
+          <textarea th:field="*{description}" class="form-control" minlength="10" rows="5"></textarea>
         </div>
 
         <!-- 희망 거래 방식 체크박스 -->
