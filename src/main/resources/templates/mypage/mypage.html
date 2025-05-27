@@ -1,60 +1,63 @@
 <div th:fragment="content">
-    <div class="container">
-        <!-- 사용자 정보 -->
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <div class="d-flex align-items-center">
-                <img th:src="${profileImagePath}" class="rounded-circle" alt="프로필 이미지" width="100" height="100" />
-                <div class="ms-4">
-                    <h4 th:text="${users.nickname}">닉네임</h4>
-                    <p class="mb-1">
-                        <i class="bi bi-calendar-check"></i>
-                        가입일: <span th:text="${#temporals.format(users.createdAt, 'yyyy-MM-dd')}">2024-01-01</span>
-                    </p>
-                    <p class="mb-0">
-                        총 구매: <span th:text="${totalPurchaseCount}">0</span>건 /
-                        총 판매: <span th:text="${totalSalesCount}">0</span>건
-                    </p>
+  <div class="container py-4">
+    <div class="row justify-content-center">
+      <div class="col-12 col-lg-8">
+
+        <!-- 프로필 카드 -->
+        <div class="card shadow-sm rounded-4 p-4 mb-4">
+          <div class="d-flex justify-content-between align-items-center flex-wrap">
+            <div class="d-flex align-items-center flex-wrap">
+              <img th:src="${profileImagePath}" class="rounded-circle me-4 mb-2 mb-md-0" alt="프로필 이미지" width="80" height="80" />
+              <div>
+                <h4 class="fw-bold mb-1" th:text="${users.nickname}">닉네임</h4>
+                <div class="text-muted small">
+                  가입일: <span th:text="${#temporals.format(users.createdAt, 'yyyy-MM-dd')}">2024-01-01</span><br />
+                  총 구매 <span th:text="${totalPurchaseCount}">0</span>건 /
+                  총 판매 <span th:text="${totalSalesCount}">0</span>건
                 </div>
+              </div>
             </div>
-            <div>
-                <a href="/mypage/edit" class="btn btn-outline-secondary">프로필 수정</a>
-                <!-- <a href="/payments/manage" class="btn btn-outline-primary ms-2">결제 수단 관리</a> -->
+            <div class="mt-3 mt-md-0">
+              <a href="/mypage/edit" class="btn btn-outline-dark btn-sm">프로필 수정</a>
             </div>
+          </div>
         </div>
 
-        <!-- Pay 위젯 영역 -->
-        <div class="text-center my-4">
-			<div th:insert="pay/pay-widget :: payWidget(${loginUser})"></div>
-            <div th:insert="pay/confirm-widget :: confirmWidget(${confirmables})"></div>
-            <div th:insert="pay/qr-widget :: qrWidget(${myProducts})"></div>
-        </div>
+		<!-- Pay 위젯 (단독 배치) -->
+		<div class="text-center mb-4">
+		  <div th:insert="pay/pay-widget :: payWidget(${loginUser})"></div>
+		</div>
+
+		<!-- 구매 확정 + QR 위젯 카드 -->
+		<div th:insert="pay/widget-card :: widgetCard(${confirmables}, ${myProducts})"></div>
 
         <!-- 탭 메뉴 -->
-        <ul class="nav nav-tabs mb-3" id="mypageTabs">
-            <li class="nav-item">
-                <a class="nav-link active" id="tab-selling-products" href="#">거래 중 상품</a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" id="tab-wishlist" href="#">찜</a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" id="tab-purchase-history" href="#">구매 내역</a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" id="tab-sales-history" href="#">판매 내역</a>
-            </li>
+        <ul class="nav nav-tabs nav-fill mb-3 shadow-sm rounded-3 overflow-hidden" id="mypageTabs">
+          <li class="nav-item">
+            <a class="nav-link active" id="tab-selling-products" href="#">거래 중 상품</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" id="tab-wishlist" href="#">찜</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" id="tab-purchase-history" href="#">구매 내역</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" id="tab-sales-history" href="#">판매 내역</a>
+          </li>
         </ul>
 
-        <!-- 탭 콘텐츠 영역 -->
-        <div id="mypage-content">
-            <!-- 초기: 거래 중 상품 -->
-        </div>
-    </div>
+        <!-- 콘텐츠 영역 -->
+        <div id="mypage-content"></div>
 
-    <!-- 스크립트 -->
-    <script src="/js/mypage.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-    <script src="/js/pay/pay-widget.js" defer></script>
-    <script src="/js/pay/confirm-widget.js" defer></script>
-    <script src="/js/pay/qr-widget.js" defer></script>
+      </div>
+    </div>
+  </div>
+
+  <!-- 스크립트 -->
+  <script src="/js/mypage.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <script src="/js/pay/pay-widget.js" defer></script>
+  <script src="/js/pay/confirm-widget.js" defer></script>
+  <script src="/js/pay/qr-widget.js" defer></script>
 </div>
