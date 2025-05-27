@@ -31,10 +31,10 @@ public class AdminController extends BaseController {
 	    return renderAdminPage(request, model, "admin/product_admin");
 	}
 	
-	@GetMapping("user")
-	public String userAdmin(HttpServletRequest request, Model model) {
-	    return renderAdminPage(request, model, "admin/user_admin");
-	}
+//	@GetMapping("user")
+//	public String userAdmin(HttpServletRequest request, Model model) {
+//	    return renderAdminPage(request, model, "admin/user_admin");
+//	}
 	
 	@GetMapping("ads")
 	public String adsAdmin(HttpServletRequest request, Model model) {
