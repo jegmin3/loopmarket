@@ -305,22 +305,29 @@ document.addEventListener("DOMContentLoaded", () => {
   let selectedFiles = []; // 선택한 이미지 파일 리스트
 
   // 이미지 파일 선택 시 실행
+  // 이미지 선택 시 누적 업로드 되게 수정
   imageInput.addEventListener("change", () => {
     const files = Array.from(imageInput.files);
-    const maxImages = 8; // 최대 8장 제한
+    const maxImages = 8;
 
-    if (files.length > maxImages) {
+    // 🔁 이전 선택한 이미지에 새로 선택한 파일 추가
+    const combinedFiles = [...selectedFiles, ...files];
+
+    // ✅ 중복 제거 (파일명 기준)
+    const fileMap = new Map();
+    combinedFiles.forEach(file => fileMap.set(file.name, file));
+    selectedFiles = Array.from(fileMap.values());
+
+    // 최대 개수 제한
+    if (selectedFiles.length > maxImages) {
       alert("이미지는 최대 8장까지만 업로드할 수 있어요.");
-      imageInput.value = "";
-      selectedFiles = [];
-      updatePreview();
-      return;
+      selectedFiles = selectedFiles.slice(0, maxImages);
     }
 
-    selectedFiles = files;
-    mainImageIndexInput.value = 0; // 기본 대표 이미지 인덱스 0으로 초기화
-    updatePreview();
+    mainImageIndexInput.value = 0; // 대표 이미지 기본값 0
+    updatePreview();               // 미리보기 갱신
   });
+
 
   // 이미지 미리보기 및 삭제 버튼 생성 함수
   function updatePreview() {
