@@ -11,7 +11,7 @@
     <h2 class="mb-4">Pay 위젯 테스트 페이지</h2>
 
     <div th:insert="pay/pay-widget :: payWidget"></div>
-    <div th:insert="pay/confirm-widget :: confirmWidget(${paymentId}, ${loginUser.userId})"></div>
+	<div th:insert="pay/confirm-widget :: confirmWidget(${confirmables})"></div>
     <div th:insert="pay/qr-widget :: qrWidget(${myProducts})"></div>
   </div>
 

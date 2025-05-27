@@ -95,13 +95,18 @@ public class PayApiController {
 	
 	/**
 	 * 구매 확정 API
-	 * 구매자가 확정 → 판매자에게 금액 정산 + 상태 COMPLETED로 변경
+	 * 구매자가 결제를 확정 → 판매자에게 금액 정산 + 상태 COMPLETED로 변경
 	 */
 	@PostMapping("/complete")
 	public ResponseEntity<CompletePayResponse> completePay(@RequestBody CompletePayRequest request) {
-	    int sellerBalance = payService.completePay(request.getPaymentId(), request.getBuyerId());
-	    CompletePayResponse response = new CompletePayResponse(true, "구매 확정이 완료되었습니다.", sellerBalance);
-	    return ResponseEntity.ok(response);
+	    try {
+	        int sellerBalance = payService.completePay(request.getPaymentId(), request.getBuyerId());
+	        return ResponseEntity.ok(new CompletePayResponse(true, "구매 확정이 완료되었습니다.", sellerBalance));
+	    } catch (IllegalArgumentException | SecurityException e) {
+	        return ResponseEntity.badRequest().body(new CompletePayResponse(false, e.getMessage(), 0));
+	    } catch (Exception e) {
+	        return ResponseEntity.internalServerError().body(new CompletePayResponse(false, "서버 오류가 발생했습니다.", 0));
+	    }
 	}
 	
 	/**
