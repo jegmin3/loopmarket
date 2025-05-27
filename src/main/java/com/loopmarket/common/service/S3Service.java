@@ -38,4 +38,22 @@ public class S3Service {
       .key(fileName)
       .build()).toExternalForm();
   }
+
+  public String uploadFile(MultipartFile file, String folderName) throws IOException {
+    String fileName = folderName + "/" + UUID.randomUUID() + "_" + file.getOriginalFilename();
+
+    PutObjectRequest request = PutObjectRequest.builder()
+      .bucket(bucket)
+      .key(fileName)
+      .contentType(file.getContentType())
+      .build();
+
+    s3Client.putObject(request, RequestBody.fromInputStream(file.getInputStream(), file.getSize()));
+
+    return s3Client.utilities().getUrl(GetUrlRequest.builder()
+      .bucket(bucket)
+      .key(fileName)
+      .build()).toExternalForm();
+  }
+
 }

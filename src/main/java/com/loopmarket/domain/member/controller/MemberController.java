@@ -50,7 +50,7 @@ public class MemberController extends BaseController {
 
 	    if (!passwordEncoder.matches(dto.getPassword(), member.getPassword())) {
 	        redirectAttributes.addFlashAttribute("errorMessage", "비밀번호가 일치하지 않습니다.");
-	        return "redirect:/member/login";
+	        //return "redirect:/member/login";
 	    }
 
 	    // Entity → DTO 변환
@@ -78,7 +78,7 @@ public class MemberController extends BaseController {
 	}
 
     @PostMapping("/signup")
-    public String signupPOST(@ModelAttribute MemberDTO dto) {
+    public String signupPOST(@ModelAttribute MemberDTO dto, RedirectAttributes redirectAttributes) {
         // MemberEntity엔티티 객체를 Builder 패턴을 이용해 생성
         MemberEntity newMember = MemberEntity.builder()
                 .email(dto.getEmail())
@@ -87,9 +87,10 @@ public class MemberController extends BaseController {
                 .createdAt(LocalDateTime.now())
                 // 지금까지 설정한 값들을 바탕으로 MemberEntity 객체를 최종 생성
                 .build();
-
+        
         memberRepository.save(newMember);
-
+        
+        redirectAttributes.addFlashAttribute("successMessage", "회원가입 되었습니다! 로그인 해주세요.");
         return "redirect:/member/login";
     }
     
