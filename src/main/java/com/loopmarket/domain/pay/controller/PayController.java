@@ -3,6 +3,7 @@ package com.loopmarket.domain.pay.controller;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.loopmarket.common.controller.BaseController;
 import com.loopmarket.domain.member.MemberEntity;
+import com.loopmarket.domain.pay.dto.ConfirmableItem;
 import com.loopmarket.domain.pay.dto.DirectPayTokenDto;
 import com.loopmarket.domain.pay.enums.PaymentStatus;
 import com.loopmarket.domain.pay.repository.PaymentRepository;
@@ -25,6 +26,7 @@ import java.nio.charset.StandardCharsets;
 import java.time.OffsetDateTime;
 import java.util.Base64;
 import java.util.List;
+import java.util.Map;
 
 /**
  * 결제 관련 화면 요청을 처리하는 컨트롤러입니다.
@@ -148,26 +150,24 @@ public class PayController extends BaseController {
 
 	@GetMapping("/test")
 	public String showPayWidgetTestPage(Model model) {
-		MemberEntity loginUser = getLoginUser();
-		if (loginUser == null)
-			return "redirect:/member/login";
+	    MemberEntity loginUser = getLoginUser();
+	    if (loginUser == null)
+	        return "redirect:/member/login";
 
-		model.addAttribute("loginUser", loginUser);
+	    model.addAttribute("loginUser", loginUser);
 
-		// 판매 중(ONSALE)인 상품만 가져오기 (QR 생성용)
-		List<ProductEntity> myProducts = productService.getMyProducts(loginUser.getUserId().longValue());
+	    // QR용: 판매 중인 상품 + 썸네일 주입
+	    List<ProductEntity> myProducts = productService.getMyProducts(loginUser.getUserId().longValue());
+	    for (ProductEntity product : myProducts) {
+	        String thumbnailPath = productService.getThumbnailPath(product.getProductId());
+	        product.setThumbnailPath(thumbnailPath);
+	    }
+	    model.addAttribute("myProducts", myProducts);
 
-		// 썸네일 주입
-		for (ProductEntity product : myProducts) {
-			String thumbnailPath = productService.getThumbnailPath(product.getProductId());
-			product.setThumbnailPath(thumbnailPath);
-		}
+	    // 변경된 구매 확정용 confirmables: 상품 정보 + 썸네일 포함 DTO 리스트로 받기
+	    List<ConfirmableItem> confirmables = payService.getConfirmablePayments(loginUser.getUserId().longValue());
+	    model.addAttribute("confirmables", confirmables);
 
-		model.addAttribute("myProducts", myProducts);
-
-		// 구매확정 버튼 테스트용 dummy 값 (삭제 가능)
-		model.addAttribute("paymentId", 1L);
-
-		return render("pay/pay-test", model);
+	    return render("pay/pay-test", model);
 	}
 }

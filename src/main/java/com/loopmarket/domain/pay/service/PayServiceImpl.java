@@ -1,5 +1,6 @@
 package com.loopmarket.domain.pay.service;
 
+import com.loopmarket.domain.pay.dto.ConfirmableItem;
 import com.loopmarket.domain.pay.entity.MoneyTransaction;
 import com.loopmarket.domain.pay.entity.Payment;
 import com.loopmarket.domain.pay.entity.UserMoney;
@@ -11,6 +12,7 @@ import com.loopmarket.domain.pay.repository.MoneyTransactionRepository;
 import com.loopmarket.domain.pay.repository.PaymentRepository;
 import com.loopmarket.domain.pay.repository.UserMoneyRepository;
 import com.loopmarket.domain.product.entity.ProductEntity;
+import com.loopmarket.domain.product.repository.ProductRepository;
 import com.loopmarket.domain.product.service.ProductService;
 
 import lombok.RequiredArgsConstructor;
@@ -30,6 +32,7 @@ public class PayServiceImpl implements PayService {
 	private final MoneyTransactionRepository moneyTransactionRepository;
 	private final PaymentRepository paymentRepository;
 	private final ProductService productService;
+	private final ProductRepository productRepository;
 
 	/**
 	 * 페이 충전 : 포트원 결제 성공 이후 -> 잔액 증가 + 거래 기록
@@ -154,11 +157,21 @@ public class PayServiceImpl implements PayService {
 	 * 특정 구매자(buyerId)가 구매 확정을 진행할 수 있는 결제 목록을 반환
 	 */
 	@Override
-	public Map<Long, Long> getConfirmablePayments(Long buyerId) {
-		List<Payment> payments = paymentRepository.findByBuyerIdAndStatus(buyerId, PaymentStatus.HOLD);
+	public List<ConfirmableItem> getConfirmablePayments(Long buyerId) {
+	    List<Payment> payments = paymentRepository.findByBuyerIdAndStatus(buyerId, PaymentStatus.HOLD);
 
-		// 상품 ID → 결제 ID 로 매핑
-		return payments.stream().collect(Collectors.toMap(Payment::getProductId, Payment::getPaymentId));
+	    return payments.stream()
+	        .map(payment -> {
+	            ProductEntity product = productService.getProductById(payment.getProductId());
+	            return new ConfirmableItem(
+	                product.getProductId(),
+	                payment.getPaymentId(),
+	                product.getTitle(),
+	                product.getPrice(),
+	                product.getThumbnailPath() // 이미지 URL
+	            );
+	        })
+	        .collect(Collectors.toList());
 	}
 	
 	/**

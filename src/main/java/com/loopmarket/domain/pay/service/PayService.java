@@ -1,7 +1,9 @@
 package com.loopmarket.domain.pay.service;
 
+import java.util.List;
 import java.util.Map;
 
+import com.loopmarket.domain.pay.dto.ConfirmableItem;
 import com.loopmarket.domain.pay.enums.PaymentMethod;
 
 /**
@@ -25,7 +27,7 @@ public interface PayService {
 	int completePay(Long paymentId, Long buyerId);
 
 	// 로그인한 사용자의 구매 확정 가능한 결제 목록 반환
-	Map<Long, Long> getConfirmablePayments(Long buyerId);
+	List<ConfirmableItem> getConfirmablePayments(Long buyerId);
 
 	// 즉시결제 처리 (구매자 → 판매자에게 직접 결제)
 	// 상품 금액만큼 구매자 잔액 차감 + 거래 기록 저장 + 판매자 잔액 증가 + 상품 상태 변경

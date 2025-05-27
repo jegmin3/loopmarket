@@ -1,48 +1,76 @@
-// 구매 확정 버튼 위젯(confirm-widget.html)과 연결됩니다.
+// confirm-widget.html과 연결된 스크립트입니다.
 
-function initConfirmPayWidget() {
-	const confirmBtn = document.getElementById("confirm-pay-btn");
+document.addEventListener("DOMContentLoaded", () => {
+  const confirmBtn = document.getElementById("confirmPayBtn");
+  const hiddenInput = document.getElementById("selectedConfirmPaymentId");
 
-	if (!confirmBtn) return;
+  if (!confirmBtn || !hiddenInput) return;
 
-	confirmBtn.addEventListener("click", () => {
-		const paymentId = confirmBtn.dataset.paymentId;
-		const buyerId = confirmBtn.dataset.buyerId;
+  // 카드 클릭 시 → 선택된 카드 강조 + hidden input 저장
+  window.selectConfirmItem = function (card) {
+    document.querySelectorAll("#confirmCardList .card").forEach(el => {
+      el.classList.remove("border-success", "shadow-sm");
+    });
+    card.classList.add("border-success", "shadow-sm");
 
-		if (!paymentId || !buyerId) {
-			alert("구매 확정에 필요한 정보가 없습니다.");
-			return;
-		}
+    const paymentId = card.getAttribute("data-id");
+    hiddenInput.value = paymentId;
+  };
 
-		fetch("/api/pay/complete", {
-			method: "POST",
-			headers: {
-				"Content-Type": "application/json"
-			},
-			body: JSON.stringify({
-				paymentId: parseInt(paymentId),
-				buyerId: parseInt(buyerId)
-			})
-		})
-			.then((res) => res.json())
-			.then((data) => {
-				if (data.success) {
-					alert("구매 확정 완료! 판매자에게 정산이 완료되었습니다.");
-					confirmBtn.disabled = true;
-					confirmBtn.innerText = "구매 확정 완료";
-				} else {
-					alert(data.message || "구매 확정 처리 중 오류가 발생했습니다.");
-				}
-			})
-			.catch((err) => {
-				console.error("구매 확정 실패", err);
-				alert("요청 중 오류가 발생했습니다.");
-			});
-	});
-}
+  // 구매 확정 버튼 클릭
+  confirmBtn.addEventListener("click", async () => {
+    const paymentId = hiddenInput.value;
+    const buyerId = window.loginUserId;
 
-if (document.readyState === "loading") {
-	document.addEventListener("DOMContentLoaded", initConfirmPayWidget);
-} else {
-	initConfirmPayWidget();
-}
+    if (!paymentId || !buyerId) {
+      await Swal.fire({
+        icon: "warning",
+        title: "선택 필요",
+        text: "구매 확정할 상품을 선택해주세요.",
+      });
+      return;
+    }
+
+    const result = await Swal.fire({
+      icon: "question",
+      title: "이 상품을 구매 확정하시겠습니까?",
+      showCancelButton: true,
+      confirmButtonText: "확정",
+      cancelButtonText: "취소"
+    });
+
+    if (!result.isConfirmed) return;
+
+    try {
+      const res = await fetch("/api/pay/complete", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ paymentId: parseInt(paymentId), buyerId: parseInt(buyerId) })
+      });
+
+      const data = await res.json();
+
+      if (data.success) {
+        await Swal.fire({
+          icon: "success",
+          title: "구매 확정 완료",
+          text: data.message || "판매자에게 금액이 정산되었습니다."
+        });
+        location.reload();
+      } else {
+        await Swal.fire({
+          icon: "error",
+          title: "실패",
+          text: data.message || "구매 확정 중 오류가 발생했습니다."
+        });
+      }
+    } catch (err) {
+      console.error("구매 확정 요청 실패", err);
+      await Swal.fire({
+        icon: "error",
+        title: "오류 발생",
+        text: "서버와의 통신 중 문제가 발생했습니다."
+      });
+    }
+  });
+});
