@@ -4,15 +4,19 @@ $(document).ready(function() {
 
 	// 탭 클릭 핸들링
 	$('#tab-selling-products').on('click', function() {
+		event.preventDefault();
 		loadTabContent('/mypage/products', this);
 	});
 	$('#tab-wishlist').on('click', function() {
+		event.preventDefault();
 		loadTabContent('/mypage/wishlist', this);
 	});
 	$('#tab-purchase-history').on('click', function() {
+		event.preventDefault();
 		loadTabContent('/mypage/purchase', this);
 	});
 	$('#tab-sales-history').on('click', function() {
+		event.preventDefault();
 		loadTabContent('/mypage/sales', this);
 	});
 
