@@ -12,7 +12,7 @@ public class FirebaseConfig {
   public static void initializeFirebase() throws IOException {
     InputStream serviceAccount = FirebaseConfig.class
       .getClassLoader()
-      .getResourceAsStream("firebase/firebase-service-key.json");
+      .getResourceAsStream("config/firebase-service-key.json");
 
     FirebaseOptions options = FirebaseOptions.builder()
       .setCredentials(GoogleCredentials.fromStream(serviceAccount))
