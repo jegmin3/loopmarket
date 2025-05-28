@@ -1,24 +1,24 @@
 <div th:fragment="content" style="height: 100vh; display: flex; flex-direction: column; margin: 0;">
   <div class="container-fluid flex-grow-1 d-flex p-0" style="height: 100%;">
-    <nav class="sidebar bg-light p-3">
-      <ul class="nav flex-column">
-        <li class="nav-item"><a class="nav-link admin-link" href="#" data-url="/admin/product">상품 관리</a></li>
-        <li class="nav-item"><a class="nav-link admin-link" href="#" data-url="/admin/user">사용자 관리</a></li>
-        <li class="nav-item"><a class="nav-link admin-link" href="#" data-url="/admin/report">신고 관리</a></li>
-        <li class="nav-item"><a class="nav-link admin-link" href="#" data-url="/admin/ads">사이드 바 광고 관리</a></li>
-        <li class="nav-item"><a class="nav-link admin-link" href="#" data-url="/admin/notifications">알림 전송</a></li>
-        <li class="nav-item"><a class="nav-link admin-link" href="#" data-url="/admin/notice">공지사항 관리</a></li>
-        <li class="nav-item"><a class="nav-link admin-link" href="#" data-url="/admin/dashboard">통계 대시보드</a></li>
-      </ul>
-    </nav>
+    <!-- 사이드바 -->
+    <div class="sidebar p-3 border-end" style="width: 200px; background-color: #f8f9fa;">
+      <h5 class="mb-4">관리자 메뉴</h5>
+      <div class="btn-group-vertical w-100" role="group">
+        <button class="btn btn-outline-secondary text-start w-100 admin-link" data-url="/admin/dashboard">대시보드</button>
+        <button class="btn btn-outline-secondary text-start w-100 admin-link" data-url="/admin/user">사용자 관리</button>
+        <button class="btn btn-outline-secondary text-start w-100 admin-link" data-url="/admin/product">상품 관리</button>
+        <button class="btn btn-outline-secondary text-start w-100 admin-link" data-url="/admin/report">신고 관리</button>
+        <button class="btn btn-outline-secondary text-start w-100 admin-link" data-url="/admin/ads">광고 관리</button>
+        <button class="btn btn-outline-secondary text-start w-100 admin-link" data-url="/admin/notice">공지사항 관리</button>
+        <button class="btn btn-outline-secondary text-start w-100 admin-link" data-url="/admin/notifications">알림 전송</button>
+      </div>
+    </div>
 
+    <!-- 콘텐츠 영역 -->
     <main id="admin-content">
       <!-- AJAX 콘텐츠 로드 -->
     </main>
   </div>
-
-  <!--<script src="https://code.jquery.com/jquery-3.7.1.js" 
-      integrity="sha256-eKhayi8LEQwp4NKxN+CfCh+3qOVUtJn3QNZ0TciWLP4=" crossorigin="anonymous"></script>-->
 
   <script th:inline="javascript">
     $(document).ready(function() {
@@ -38,33 +38,36 @@
         });
       }
 
+      // 기본 페이지 로드
       loadAdminPage('/admin/dashboard');
 
+      // 버튼 클릭 시 AJAX 요청
       $(document).on('click', '.admin-link', function (e) {
         e.preventDefault();
         const url = $(this).data('url');
+
+        // active 클래스 처리
+        $('.admin-link').removeClass('active');
+        $(this).addClass('active');
+
+        // AJAX 로드
         loadAdminPage(url);
       });
     });
   </script>
-  
+
   <style>
-      .container-fluid.flex-grow-1 {
-        height: 100%;
-      }
-      .sidebar {
-        flex: 0 0 250px; /* 고정 너비 */
-        height: 100vh;
-        position: sticky;
-        top: 0;
-        overflow-y: auto;
-      }
-      #admin-content {
-        flex-grow: 1;
-        overflow-y: auto;
-        padding: 2rem;
-        background-color: #fff;
-        height: 100vh;
-      }
-    </style>
+    .sidebar .btn.active {
+      background-color: #e2e6ea;
+      font-weight: bold;
+    }
+
+    #admin-content {
+      flex-grow: 1;
+      overflow-y: auto;
+      padding: 2rem;
+      background-color: #fff;
+      height: 100vh;
+    }
+  </style>
 </div>

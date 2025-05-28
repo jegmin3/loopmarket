@@ -17,6 +17,12 @@
       <div class="text-center text-md-start w-100">
         <div class="fw-semibold small mb-0" th:text="${product.title}">상품명</div>
         <div class="text-muted small" th:text="'₩' + ${product.price}">가격</div>
+		
+		<!-- 수정 버튼 -->
+		<div class="mt-2 text-end">
+		  <a th:href="@{'/products/edit/' + ${product.productId}}" class="btn btn-sm btn-outline-secondary">수정</a>
+		</div>
+		
       </div>
 
     </div>
