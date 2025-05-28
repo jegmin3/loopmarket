@@ -16,4 +16,10 @@ public interface CategoryRepository extends JpaRepository<Category, Integer> {
 
   // 소분류: 특정 대분류의 하위 항목
   List<Category> findByUpCtgCodeOrderBySeqAsc(Integer upCtgCode);
+
+  // 🔹 특정 대분류(upCtgCode)의 하위 소분류 코드 리스트만 뽑기
+  @Query("SELECT c.ctgCode FROM Category c WHERE c.upCtgCode = :mainCode")
+  List<Integer> findSubCategoryCodesByMainCode(Integer mainCode);
+
+
 }
