@@ -1,0 +1,22 @@
+<!-- pay/widget-card.html -->
+<div th:fragment="widgetCard(confirmables, myProducts)">
+  <div class="card shadow-sm rounded-4 p-4 mb-4">
+
+    <!-- 안내 문구 + 버튼 영역 -->
+    <div class="d-flex justify-content-center flex-wrap gap-5">
+
+      <!-- QR 위젯 -->
+      <div class="text-center">
+        <div class="text-muted small mb-0">직거래로 물건을 판매하시나요?</div>
+        <div th:insert="pay/qr-widget :: qrWidget(${myProducts})"></div>
+      </div>
+	  
+      <!-- 구매 확정 위젯 -->
+      <div class="text-center">
+        <div class="text-muted small mb-0">택배로 구매한 물건이 있으신가요?</div>
+        <div th:insert="pay/confirm-widget :: confirmWidget(${confirmables})"></div>
+      </div>
+
+    </div>
+  </div>
+</div>

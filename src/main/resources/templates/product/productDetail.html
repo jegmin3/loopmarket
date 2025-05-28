@@ -1,0 +1,136 @@
+<div th:fragment="content">
+  <div class="container my-5">
+    <div class="row justify-content-center">
+      <div class="col-md-10">
+        <div class="row g-4">
+          <!-- 왼쪽: 상품 이미지 슬라이더 -->
+          <div class="col-md-6">
+            <div class="mb-2">
+              <a th:href="@{/products}" class="btn btn-outline-secondary btn-sm">← 목록으로</a>
+            </div>
+            <div class="position-relative" style="height: 300px; overflow: hidden;">
+              <div class="slider-track d-flex"
+                   th:if="${product.imagePaths != null}"
+                   th:style="${#lists.size(product.imagePaths) == 1} ?
+                   'width: 100%; height: 100%; transition: transform 0.5s ease;' :
+                   'width:' + (${#lists.size(product.imagePaths)} * 100) + '%; height: 100%; transition: transform 0.5s ease;'"
+                   th:attr="data-count=${product.imagePaths.size()}">
+
+                <!-- 이미지 감싸는 wrapper -->
+                <div th:each="img : ${product.imagePaths}"
+                     th:style="${#lists.size(product.imagePaths) == 1} ?
+                     'width: 100%; height: 100%; display: flex; align-items: center; justify-content: center;' :
+                     'width:' + (100 / ${#lists.size(product.imagePaths)}) + '%; height: 100%; display: flex; align-items: center; justify-content: center; flex-shrink: 0;'">
+                  <img th:src="@{${img}}"
+                       style="max-width: 100%; max-height: 100%; object-fit: contain;" />
+                </div>
+              </div>
+
+              <!-- 이전 버튼 -->
+              <button th:if="${product.imagePaths.size() > 1}"
+                      class="slider-prev btn position-absolute top-50 start-0 translate-middle-y"
+                      onclick="slideImage(this, -1)">❮</button>
+
+              <!-- 다음 버튼 -->
+              <button th:if="${product.imagePaths.size() > 1}"
+                      class="slider-next btn position-absolute top-50 end-0 translate-middle-y"
+                      onclick="slideImage(this, 1)">❯</button>
+            </div>
+
+            <!-- 이미지 아래에 점(dot) 네비게이션 -->
+            <div th:if="${product.imagePaths.size() > 1}"
+                 class="d-flex justify-content-center gap-1 mt-2">
+    <span th:each="i : ${#numbers.sequence(0, #lists.size(product.imagePaths) - 1)}"
+          class="dot bg-dark rounded-circle"
+          th:attr="data-index=${i}"
+          style="width: 6px; height: 6px; opacity: 0.4;"></span>
+            </div>
+
+            <!-- 이미지 아래에 판매자 + 시간 -->
+            <div class="text-start text-muted small mt-2">
+              판매자: <span class="fw-semibold" th:text="${product.sellerNickname}">정민</span> ·
+              <span th:text="${product.relativeTime}">3일 전</span>
+            </div>
+          </div>
+
+
+          <!-- 오른쪽: 상품 정보 -->
+          <div class="col-md-6">
+            <h4 class="fw-bold mb-1" th:text="${product.title}">상품 제목</h4>
+            <h3 class="text-danger fw-bold mb-3" th:text="${#numbers.formatInteger(product.price, 3, 'COMMA')} + '원'">20,000원</h3>
+
+            <ul class="list-unstyled small">
+              <li class="mb-2"><strong>설명:</strong><br>
+                <span th:text="${product.description}">상태나쁘지 않아요</span>
+              </li>
+              <li><strong>상품 상태:</strong> <span th:text="${product.condition}">USED</span></li>
+              <li><strong>거래 방식:</strong>
+                <span th:if="${product.saleType == 'SALE'}">판매</span>
+                <span th:if="${product.saleType == 'DONATION'}">나눔</span>
+              </li>
+              <li><strong>희망 방식:</strong>
+                <span th:if="${product.isDirect}">직거래 </span>
+                <span th:if="${product.isDelivery}">택배 </span>
+                <span th:if="${product.isNonface}">비대면</span>
+              </li>
+              <li><strong>거래 위치:</strong><br>
+                <span th:text="${product.locationText}"></span>
+              </li>
+            </ul>
+
+            <!-- 지도 -->
+            <div id="map" style="width: 100%; height: 180px;" class="rounded my-3"></div>
+
+			<div class="d-flex gap-2 mt-4">
+			  <!-- 찜하기 -->
+			  <button type="button" class="btn btn-outline-danger w-100" onclick="toggleWishlist()">
+			    <i id="heart-icon" class="bi bi-heart"></i> 찜하기
+			  </button>
+
+			  <!-- 채팅하기 -->
+			  <a th:href="@{/chat/start(productId=${product.productId})}" class="btn btn-outline-primary w-100 text-center">
+			    채팅하기
+			  </a>
+
+			  <!-- 택배로 구매하기 -->
+			  <a th:if="${product.isDelivery}"
+			     th:href="@{/pay/checkout(productId=${product.productId})}"
+			     class="btn btn-outline-success w-100 text-center">
+			    택배로 구매하기
+			  </a>
+			</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Kakao 지도 -->
+  <script src="//dapi.kakao.com/v2/maps/sdk.js?appkey=d4ca8876da8e183543e1cfbbd669097d&libraries=services"></script>
+  <script type="text/javascript" th:inline="javascript">
+    var mapContainer = document.getElementById('map');
+    var mapOption = {
+      center: new kakao.maps.LatLng([[${product.latitude}]], [[${product.longitude}]]),
+      level: 3
+    };
+    var map = new kakao.maps.Map(mapContainer, mapOption);
+    var marker = new kakao.maps.Marker({ position: map.getCenter() });
+    marker.setMap(map);
+  </script>
+  <script th:src="@{/js/product.js}"></script>
+
+  <!-- 찜하기 토글 -->
+  <script>
+    function toggleWishlist() {
+      const icon = document.getElementById("heart-icon");
+      if (icon.classList.contains("bi-heart")) {
+        icon.classList.remove("bi-heart");
+        icon.classList.add("bi-heart-fill");
+      } else {
+        icon.classList.remove("bi-heart-fill");
+        icon.classList.add("bi-heart");
+      }
+      // TODO: 서버 전송
+    }
+  </script>
+</div>
+</div>

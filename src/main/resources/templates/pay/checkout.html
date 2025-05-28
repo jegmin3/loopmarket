@@ -13,7 +13,7 @@
 			productId: /*[[${product.productId}]]*/ 0,
 			price: /*[[${product.price}]]*/ 0,
 			userId: /*[[${product.userId}]]*/ 0,
-			imageUrl: /*[['${imageUrl}']]*/ '',
+			imageUrl: /*[['${product.thumbnailPath}']]*/ '',
 			isDelivery: /*[[${product.isDelivery}]]*/ false,
 			shippingFee: /*[[${product.shippingFee != null ? product.shippingFee : 0}]]*/ 0
 		};
@@ -32,7 +32,7 @@
 							<h5 th:text="${product.title}">상품 제목</h5>
 							<p class="mb-0 text-muted" th:text="'₩' + ${product.price}"></p>
 						</div>
-						<img th:src="${imageUrl}" alt="상품 이미지" width="80">
+						<img th:src="${product.thumbnailPath}" alt="상품 이미지" width="80">
 					</div>
 				</div>
 				

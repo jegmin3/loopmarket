@@ -23,7 +23,7 @@
 
 			<button type="submit" class="btn btn-primary" 
 			    th:text="${notice.noticeId != null} ? '수정' : '등록'">등록</button>
-            <button type="button" class="btn btn-secondary" onclick="history.back()">취소</button>
+            <button type="button" class="btn btn-secondary" onclick="loadAdminPage('/admin/notice')">취소</button>
         </form>
     </div>
 </div>

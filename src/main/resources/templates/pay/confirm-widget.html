@@ -1,0 +1,73 @@
+<!-- 구매 확정 버튼 위젯 (모달 포함) -->
+<script th:inline="javascript">
+  /*<![CDATA[*/
+  window.loginUserId = /*[[${loginUser.userId}]]*/ 0;
+  /*]]>*/
+</script>
+
+<div th:fragment="confirmWidget(confirmables)">
+  <!-- 1. 버튼 -->
+  <div class="text-center my-2">
+    <button class="btn btn-outline-success px-4 py-2 rounded-pill fw-semibold"
+            data-bs-toggle="modal" data-bs-target="#confirmModal">
+      구매 확정하기
+    </button>
+  </div>
+
+  <!-- 2. 모달 -->
+  <div class="modal fade" id="confirmModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" style="max-width: 480px;">
+      <div class="modal-content p-4 rounded-4 shadow">
+        <div class="modal-header border-0">
+          <h5 class="modal-title fw-bold">구매 확정할 상품 선택</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+
+        <div class="modal-body">
+
+          <!-- 상품이 있을 때만 레이블 출력 -->
+          <th:block th:if="${confirmables != null and confirmables.size() > 0}">
+            <label class="form-label fw-bold" id="confirmLabel">상품 선택</label>
+          </th:block>
+
+          <div class="row row-cols-1 g-2" id="confirmCardList">
+            <!-- 상품이 있을 때 -->
+            <th:block th:if="${confirmables != null and confirmables.size() > 0}">
+              <div class="col" th:each="item : ${confirmables}">
+                <div class="card p-2 h-100" style="cursor: pointer;"
+                     th:attr="data-id=${item.paymentId}"
+                     onclick="selectConfirmItem(this)">
+                  <div class="d-flex align-items-center">
+                    <img th:src="${item.thumbnailPath}" alt="상품 이미지"
+                         width="60" height="60" class="me-3 rounded">
+                    <div>
+                      <div class="fw-bold" th:text="${item.title}">상품명</div>
+                      <div class="text-muted small" th:text="'₩' + ${item.price}">가격</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </th:block>
+
+            <!-- 상품이 없을 때 -->
+            <th:block th:if="${confirmables == null or confirmables.size() == 0}">
+              <div class="text-center text-muted py-3">
+                구매 확정할 상품이 없습니다.
+              </div>
+            </th:block>
+          </div>
+
+          <!-- 선택된 결제 ID 저장 -->
+          <input type="hidden" id="selectedConfirmPaymentId">
+        </div>
+
+        <!-- 3. 구매 확정 버튼 (상품 있을 때만 출력) -->
+        <div class="modal-footer border-0" th:if="${confirmables != null and confirmables.size() > 0}">
+          <button id="confirmPayBtn" class="btn btn-dark w-100 rounded-pill">
+            구매 확정하기
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

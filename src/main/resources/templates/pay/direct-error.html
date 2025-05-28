@@ -1,0 +1,7 @@
+<th:block th:fragment="content">
+  <div class="container text-center py-5">
+    <h2 class="text-danger">❌ QR 오류</h2>
+    <p th:text="${errorMessage}">잘못된 QR 코드이거나 만료되었습니다.</p>
+    <a href="/" class="btn btn-outline-dark mt-4">홈으로 이동</a>
+  </div>
+</th:block>
