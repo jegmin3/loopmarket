@@ -1,0 +1,24 @@
+<!-- 마이페이지 등 다른 페이지에 들어갈 페이 관련 위젯 출력 확인용 테스트 페이지 입니다. -->
+
+<th:block th:fragment="content">
+  <script th:inline="javascript">
+    /*<![CDATA[*/
+    window.loginUserId = /*[[${loginUser.userId}]]*/ 0;
+    /*]]>*/
+  </script>
+
+  <div class="container py-5 text-center">
+    <h2 class="mb-4">Pay 위젯 테스트 페이지</h2>
+
+    <div th:insert="pay/pay-widget :: payWidget"></div>
+	<div th:insert="pay/confirm-widget :: confirmWidget(${confirmables})"></div>
+    <div th:insert="pay/qr-widget :: qrWidget(${myProducts})"></div>
+  </div>
+
+  <!-- QRCode.js는 가장 먼저 로드 -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
+  <script src="/js/pay/pay-widget.js" defer></script>
+  <script src="/js/pay/confirm-widget.js" defer></script>
+  <script src="/js/pay/qr-widget.js" defer></script>
+</th:block>

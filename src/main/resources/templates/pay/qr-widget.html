@@ -1,0 +1,66 @@
+<!-- 결제 qr 생성 버튼, 모달 포함 위젯입니다. -->
+<script th:inline="javascript">
+  /*<![CDATA[*/
+  window.loginUserId = /*[[${loginUser.userId}]]*/ 0;
+  /*]]>*/
+</script>
+
+<!-- QR 생성 버튼 + 모달 포함 위젯 -->
+<div th:fragment="qrWidget(myProducts)">
+  <!-- 1. 버튼 -->
+  <div class="text-center my-2">
+    <button class="btn btn-outline-primary px-4 py-2 rounded-pill fw-semibold"
+            data-bs-toggle="modal" data-bs-target="#qrModal">
+      결제 QR 생성
+    </button>
+  </div>
+
+  <!-- 2. 모달 -->
+  <div class="modal fade" id="qrModal" tabindex="-1" aria-labelledby="qrModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content p-3">
+        <div class="modal-header">
+          <h5 class="modal-title">결제 QR 생성하기</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+
+        <div class="modal-body">
+          <!-- 상품 카드형 UI -->
+		  <label class="form-label fw-bold" id="productLabel">상품 선택</label>
+          <div class="row row-cols-1 g-2" id="productCardList">
+            <div class="col" th:each="product : ${myProducts}">
+              <div class="card p-2 h-100" style="cursor: pointer;"
+                   th:attr="data-id=${product.productId}"
+                   onclick="selectProduct(this)">
+                <div class="d-flex align-items-center">
+                  <img th:src="${product.thumbnailPath}" alt="상품 이미지" width="60" height="60" class="me-3 rounded">
+                  <div>
+                    <div class="fw-bold" th:text="${product.title}">상품명</div>
+                    <div class="text-muted small" th:text="'₩' + ${product.price}">가격</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 선택된 상품 ID 저장용 hidden input -->
+          <input type="hidden" id="selectedProductId">
+
+          <!-- QR 코드 출력 영역 -->
+          <div id="qrCode" class="d-flex justify-content-center mt-3"></div>
+        </div>
+
+        <div class="modal-footer">
+          <button id="generateQRBtn" class="btn btn-dark w-100 rounded-pill">
+            QR 생성
+          </button>
+		  
+		  <!-- 다른 상품 선택하기 버튼 -->
+		    <button id="resetQRSelectionBtn" class="btn btn-outline-secondary w-100 rounded-pill" style="display: none;">
+		      다른 상품 선택하기
+		    </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
