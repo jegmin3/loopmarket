@@ -1,7 +1,6 @@
 package com.loopmarket.domain.pay.service;
 
 import java.util.List;
-import java.util.Map;
 
 import com.loopmarket.domain.pay.dto.ConfirmableItem;
 import com.loopmarket.domain.pay.enums.PaymentMethod;

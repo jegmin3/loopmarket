@@ -26,7 +26,6 @@ import java.nio.charset.StandardCharsets;
 import java.time.OffsetDateTime;
 import java.util.Base64;
 import java.util.List;
-import java.util.Map;
 
 /**
  * 결제 관련 화면 요청을 처리하는 컨트롤러입니다.

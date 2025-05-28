@@ -12,13 +12,11 @@ import com.loopmarket.domain.pay.repository.MoneyTransactionRepository;
 import com.loopmarket.domain.pay.repository.PaymentRepository;
 import com.loopmarket.domain.pay.repository.UserMoneyRepository;
 import com.loopmarket.domain.product.entity.ProductEntity;
-import com.loopmarket.domain.product.repository.ProductRepository;
 import com.loopmarket.domain.product.service.ProductService;
 
 import lombok.RequiredArgsConstructor;
 
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
@@ -32,7 +30,6 @@ public class PayServiceImpl implements PayService {
 	private final MoneyTransactionRepository moneyTransactionRepository;
 	private final PaymentRepository paymentRepository;
 	private final ProductService productService;
-	private final ProductRepository productRepository;
 
 	/**
 	 * 페이 충전 : 포트원 결제 성공 이후 -> 잔액 증가 + 거래 기록
