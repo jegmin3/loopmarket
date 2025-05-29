@@ -1,24 +1,31 @@
 <!-- my_selling_items.html -->
 <div th:fragment="content">
-  <h6 class="mb-3" th:text="'거래 중인 상품 수 : ' + ${#lists.size(products)}">상품 수 확인</h6>
+  <h6 class="mb-3" th:text="'판매 중인 상품 수 : ' + ${#lists.size(products)}">상품 수 확인</h6>
 
-  <div class="d-flex flex-column gap-2">
-    <div th:each="product : ${products}"
-         class="card shadow-sm rounded-4 p-2 d-flex flex-column flex-md-row align-items-center">
-
-      <!-- 썸네일 (더 작게) -->
-      <div class="ratio ratio-1x1 me-md-2 mb-2 mb-md-0 w-25" style="max-width: 120px;">
-        <img th:src="${product.thumbnailPath != null} ? ${product.thumbnailPath} : '/images/no-image.png'"
-             alt="상품 이미지"
-             class="img-fluid rounded-2 object-fit-cover" />
-      </div>
-
-      <!-- 상품 정보 -->
-      <div class="text-center text-md-start w-100">
-        <div class="fw-semibold small mb-0" th:text="${product.title}">상품명</div>
-        <div class="text-muted small" th:text="'₩' + ${product.price}">가격</div>
-      </div>
-
-    </div>
+  <div class="table-responsive shadow-sm">
+    <table class="table align-middle table-bordered text-center mb-0">
+      <thead class="table-light">
+        <tr>
+          <th style="width: 100px;">상품</th>
+          <th>상품명</th>
+          <th>가격</th>
+          <th>등록일</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr th:each="product : ${products}">
+          <td>
+            <div class="ratio ratio-1x1" style="max-width: 80px;">
+              <img th:src="${product.thumbnailPath != null} ? ${product.thumbnailPath} : '/images/no-image.png'"
+                   alt="상품 이미지"
+                   class="img-fluid object-fit-cover" />
+            </div>
+          </td>
+          <td th:text="${product.title}">상품명</td>
+          <td th:text="'₩' + ${product.price}">가격</td>
+          <td th:text="${#temporals.format(product.createdAt, 'yyyy-MM-dd')}">등록일</td>
+        </tr>
+      </tbody>
+    </table>
   </div>
 </div>
