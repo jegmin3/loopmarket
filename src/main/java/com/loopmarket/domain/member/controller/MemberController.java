@@ -16,6 +16,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.loopmarket.common.controller.BaseController;
+import com.loopmarket.domain.admin.dashboard.Entity.LoginHistory;
+import com.loopmarket.domain.admin.dashboard.repository.LoginHistoryRepository;
 import com.loopmarket.domain.member.MemberEntity;
 import com.loopmarket.domain.member.MemberRepository;
 import com.loopmarket.domain.member.MemberService;
@@ -31,6 +33,9 @@ public class MemberController extends BaseController {
 	private final MemberRepository memberRepository;
 	private final PasswordEncoder passwordEncoder;
 	private final MemberService memberService;
+	
+	// 로그인 시간기록용
+	private final LoginHistoryRepository loginHistoryRepository;
 
 	@GetMapping("/login")
 	public String loginGET(Model model) {
@@ -41,12 +46,19 @@ public class MemberController extends BaseController {
 	public String login(@ModelAttribute MemberDTO dto, HttpSession session, RedirectAttributes redirectAttributes) {
 	    Optional<MemberEntity> optionalMember = memberRepository.findByEmail(dto.getEmail());
 
+	    // 기본값
+	    Integer userId = null;
+	    String result = "FAIL";
+	    
 	    if (optionalMember.isEmpty()) {
 	        redirectAttributes.addFlashAttribute("errorMessage", "존재하지 않는 이메일입니다.");
 	        //return "redirect:/member/login";
 	    }
 
 	    MemberEntity member = optionalMember.get();
+	    
+	    // 로그인 기록용
+	    userId = member.getUserId();
 
 	    if (!passwordEncoder.matches(dto.getPassword(), member.getPassword())) {
 	        redirectAttributes.addFlashAttribute("errorMessage", "비밀번호가 일치하지 않습니다.");
@@ -59,6 +71,16 @@ public class MemberController extends BaseController {
 	    session.setAttribute("loginUser", member);
 
 	    redirectAttributes.addFlashAttribute("successMessage", "로그인 성공!");
+	    result = "SUCCESS";
+	    
+	    // 로그인 이력 저장
+	    if (userId != null) {
+	        LoginHistory history = new LoginHistory();
+	        history.setUserId(userId);
+	        history.setLoginResult(result);
+	        loginHistoryRepository.save(history);
+	    }
+	    
 	    return "redirect:/";
 	}
 
