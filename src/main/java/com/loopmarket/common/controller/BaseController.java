@@ -38,8 +38,4 @@ public class BaseController {
         return loginUser != null ? loginUser.getNickname() : null;
     }
     
-    public String renderError(String viewName, Model model) {
-        model.addAttribute("viewName", viewName);
-        return "layout/layout";
-    }
 }
