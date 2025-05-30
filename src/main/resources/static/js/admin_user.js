@@ -3,6 +3,7 @@ function bindUserStatusFormEvents() {
         form.addEventListener('submit', function (e) {
             e.preventDefault();
 
+
             const formData = new FormData(form);
 
             fetch(form.getAttribute('action'), {
@@ -24,6 +25,7 @@ function bindUserStatusFormEvents() {
                     }).then(() => {
                         // AJAX로 유저 관리 페이지 다시 로드
                         loadAdminPage('/admin/user');
+
                     });
                 } else {
                     Swal.fire({
@@ -43,7 +45,6 @@ function bindUserStatusFormEvents() {
             });
         });
     });
-}
 
 function loadAdminPage(url) {
     fetch(url, {

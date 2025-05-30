@@ -16,8 +16,10 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.loopmarket.common.controller.BaseController;
+
 import com.loopmarket.domain.admin.dashboard.Entity.LoginHistory;
 import com.loopmarket.domain.admin.dashboard.repository.LoginHistoryRepository;
+
 import com.loopmarket.domain.member.MemberEntity;
 import com.loopmarket.domain.member.MemberRepository;
 import com.loopmarket.domain.member.MemberService;
@@ -36,6 +38,7 @@ public class MemberController extends BaseController {
 	
 	// 로그인 시간기록용
 	private final LoginHistoryRepository loginHistoryRepository;
+
 
 	@GetMapping("/login")
 	public String loginGET(Model model) {
@@ -71,6 +74,7 @@ public class MemberController extends BaseController {
 	    session.setAttribute("loginUser", member);
 
 	    redirectAttributes.addFlashAttribute("successMessage", "로그인 성공!");
+
 	    result = "SUCCESS";
 	    
 	    // 로그인 이력 저장

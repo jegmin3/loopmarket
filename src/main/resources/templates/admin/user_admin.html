@@ -29,6 +29,7 @@
 						<form th:action="@{/admin/user/changeStatus}" method="post" class="d-flex justify-content-center user-status-form">
 						    <input type="hidden" name="userId" th:value="${member.userId}" />
 						    <input type="hidden" name="page" th:value="${currentPage}" />
+
 						    <select name="newStatus" class="form-control form-control-sm w-auto mx-1">
 						        <option value="ACTIVE" th:selected="${userStatusMap[member.userId] == 'ACTIVE'}">ACTIVE</option>
 						        <option value="SUSPENDED" th:selected="${userStatusMap[member.userId] == 'SUSPENDED'}">SUSPENDED</option>
@@ -58,8 +59,8 @@
                     <a class="page-link" th:href="@{/admin/user(page=${currentPage + 1})}">다음</a>
                 </li>
             </ul>
-		</nav>
-		
+		    </nav>
+      
     </div>
 	
 	<script src="js/admin_user.js"></script>
