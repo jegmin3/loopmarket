@@ -1,40 +1,73 @@
 package com.loopmarket.domain.wishlist.api;
 
+import com.loopmarket.common.controller.BaseController;
+import com.loopmarket.domain.member.MemberEntity;
 import com.loopmarket.domain.wishlist.service.WishlistService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.security.Principal;
+import java.util.List;
 
 /**
  * 관심목록(Wishlist) API 컨트롤러
- *
- * 사용자가 상품에 대해 찜을 토글하는 기능을 제공합니다.
  */
 @RestController
 @RequestMapping("/api/wishlist")
 @RequiredArgsConstructor
-public class WishlistApiController {
+public class WishlistApiController extends BaseController {
 
     private final WishlistService wishlistService;
 
-    /**
-     * 찜하기 토글 API
-     *
-     * @param productId 찜할 상품 ID
-     * @param principal 로그인 사용자 정보
-     * @return true = 찜됨 / false = 찜 해제됨
-     */
+    // 찜 토글 API
     @PostMapping("/toggle")
-    public ResponseEntity<Boolean> toggleWishlist(@RequestParam Long productId, Principal principal) {
-        // 세션 로그인 사용자 ID 가져오기
-        Long userId = Long.valueOf(principal.getName());
+    public ResponseEntity<?> toggleWishlist(@RequestParam Long productId) {
+        MemberEntity loginUser = getLoginUser();
+        if (loginUser == null) {
+            return ResponseEntity.status(401).body("로그인이 필요합니다.");
+        }
 
-        // 서비스 호출 (찜 추가 or 해제)
+        Long userId = loginUser.getUserId().longValue();
         boolean isWished = wishlistService.toggleWishlist(userId, productId);
-
-        // true = 찜됨 / false = 해제됨
         return ResponseEntity.ok(isWished);
+    }
+
+    // 찜 여부 확인 API
+    @GetMapping("/is-wished")
+    public ResponseEntity<?> isWished(@RequestParam Long productId) {
+        MemberEntity loginUser = getLoginUser();
+        if (loginUser == null) {
+            return ResponseEntity.status(401).body("로그인이 필요합니다.");
+        }
+
+        Long userId = loginUser.getUserId().longValue();
+        boolean isWished = wishlistService.isWished(userId, productId);
+        return ResponseEntity.ok(isWished);
+    }
+
+    // 사용자의 찜한 상품 목록 조회 API
+    @GetMapping("/list")
+    public ResponseEntity<?> getWishlistProductIds() {
+        MemberEntity loginUser = getLoginUser();
+        if (loginUser == null) {
+            return ResponseEntity.status(401).body("로그인이 필요합니다.");
+        }
+
+        Long userId = loginUser.getUserId().longValue();
+        List<Long> productIds = wishlistService.getWishlistProductIds(userId);
+        return ResponseEntity.ok(productIds);
+    }
+
+    // 찜 해제 전용 API
+    @DeleteMapping("/remove")
+    public ResponseEntity<?> removeWishlist(@RequestParam Long productId) {
+        MemberEntity loginUser = getLoginUser();
+        if (loginUser == null) {
+            return ResponseEntity.status(401).body("로그인이 필요합니다.");
+        }
+
+        Long userId = loginUser.getUserId().longValue();
+        wishlistService.removeWishlist(userId, productId);
+        return ResponseEntity.ok("찜 해제가 완료되었습니다.");
     }
 }

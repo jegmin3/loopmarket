@@ -2,6 +2,8 @@ package com.loopmarket.domain.product.service;
 
 import com.loopmarket.domain.category.repository.CategoryRepository;
 import com.loopmarket.domain.image.service.ImageService;
+import com.loopmarket.domain.product.dto.CategoryProductStatsDTO;
+import com.loopmarket.domain.product.dto.WeeklyProductStatsDTO;
 import com.loopmarket.domain.product.entity.ProductEntity;
 import com.loopmarket.domain.product.repository.ProductRepository;
 import lombok.RequiredArgsConstructor;
@@ -11,6 +13,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
 @Service
@@ -195,15 +198,40 @@ public class ProductService {
 
 	// 검색어 기반 상품 조회
 	public List<ProductEntity> searchProductsByKeyword(String keyword) {
-		List<ProductEntity> products = productRepository
-				.findByTitleContainingIgnoreCaseOrDescriptionContainingIgnoreCase(keyword, keyword);
+	    List<ProductEntity> products = productRepository
+	            .findByTitleContainingIgnoreCaseOrDescriptionContainingIgnoreCase(keyword, keyword);
 
-		for (ProductEntity product : products) {
-			Long productId = product.getProductId();
-			product.setThumbnailPath(imageService.getThumbnailPath(productId));
-			product.setImagePaths(imageService.getAllImagePaths(productId));
-		}
+	    for (ProductEntity product : products) {
+	        Long productId = product.getProductId();
+	        product.setThumbnailPath(imageService.getThumbnailPath(productId));
+	        product.setImagePaths(imageService.getAllImagePaths(productId));
+	    }
 
-		return products;
+	    return products;
+	}
+
+	// 상품 등록 수 통계용 - 최근 4주 주차별 통계
+	public List<WeeklyProductStatsDTO> getWeeklyProductStats() {
+	    List<Object[]> result = productRepository.countProductByWeekLastMonth();
+	    return result.stream()
+	            .map((Object[] row) -> new WeeklyProductStatsDTO((String) row[0], ((Number) row[1]).intValue()))
+	            .collect(Collectors.toList());
+	}
+
+	// 상품 등록 수 통계용 - 최근 한 달 전체 상품 등록 수
+	public int countTotalProductsLastMonth() {
+	    LocalDateTime oneMonthAgo = LocalDateTime.now().minusMonths(1);
+	    return productRepository.countByCreatedAtAfter(oneMonthAgo);
+	}
+
+	// 카테고리별 상품 등록 통계
+	public List<CategoryProductStatsDTO> getCategoryProductStats() {
+	    List<Object[]> raw = productRepository.countProductsByCategory();
+	    return raw.stream()
+	            .map(row -> new CategoryProductStatsDTO(
+	                    ((Number) row[0]).intValue(),      // categoryCode
+	                    (String) row[1],                   // categoryName
+	                    ((Number) row[2]).intValue()))    // count
+	            .collect(Collectors.toList());
 	}
 }
