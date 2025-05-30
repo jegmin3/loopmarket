@@ -1,59 +1,42 @@
 package com.loopmarket.domain.mypage;
 
+import com.loopmarket.common.controller.BaseController;
 import com.loopmarket.domain.image.service.ImageService;
 import com.loopmarket.domain.member.MemberEntity;
 import com.loopmarket.domain.member.MemberRepository;
-import com.loopmarket.domain.member.dto.MemberDTO;
 import com.loopmarket.domain.pay.dto.ConfirmableItem;
 import com.loopmarket.domain.pay.service.PayService;
 import com.loopmarket.domain.product.entity.ProductEntity;
 import com.loopmarket.domain.product.repository.ProductRepository;
 import com.loopmarket.domain.product.service.ProductService;
 import com.loopmarket.domain.purchase.repository.PurchaseRepository;
-import com.loopmarket.common.controller.BaseController;
+import com.loopmarket.domain.wishlist.dto.WishlistDto;
+import com.loopmarket.domain.wishlist.service.WishlistService;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
-
-import java.io.IOException;
-import java.security.Principal;
 import java.util.List;
-import java.util.Arrays;
-
-import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 @Controller
 @RequestMapping("/mypage")
+@RequiredArgsConstructor
 public class MyPageController extends BaseController {
 
 	private final ProductRepository productRepository;
 	private final PurchaseRepository purchaseRepository;
-	private final List<String> ongoingStatuses = List.of("ONSALE", "RESERVED");
 	private final ProductService productService;
 	private final ImageService imageService;
 	private final PasswordEncoder passwordEncoder;
 	private final MemberRepository memberRepository;
 	private final PayService payService;
-
-	@Autowired
-	public MyPageController(ProductRepository productRepository, PurchaseRepository purchaseRepository,
-			ProductService productService, ImageService imageService, PasswordEncoder passwordEncoder,
-			MemberRepository memberRepository, PayService payService) {
-		this.productRepository = productRepository;
-		this.purchaseRepository = purchaseRepository;
-		this.productService = productService;
-		this.imageService = imageService;
-		this.passwordEncoder = passwordEncoder;
-		this.memberRepository = memberRepository;
-		this.payService = payService;
-	}
+	private final WishlistService wishlistService;
 
 	private String renderMypage(HttpServletRequest request, Model model, String viewName) {
 		if ("XMLHttpRequest".equals(request.getHeader("X-Requested-With"))) {
@@ -73,23 +56,18 @@ public class MyPageController extends BaseController {
 
 		member = memberRepository.findById(member.getUserId())
 				.orElseThrow(() -> new IllegalStateException("사용자 정보가 없습니다."));
-
 		session.setAttribute("loginUser", member);
-
 		model.addAttribute("users", member);
 		// 추가 - jw
-		model.addAttribute("loginUser", member); 
+		model.addAttribute("loginUser", member);
 
-		long totalSalesCount = productRepository.countByUserId(member.getUserId().longValue());
-		long totalPurchaseCount = purchaseRepository.countByBuyerId(member.getUserId().longValue());
-
-		model.addAttribute("totalSalesCount", totalSalesCount);
-		model.addAttribute("totalPurchaseCount", totalPurchaseCount);
+		model.addAttribute("totalSalesCount", productRepository.countByUserId(member.getUserId().longValue()));
+		model.addAttribute("totalPurchaseCount", purchaseRepository.countByBuyerId(member.getUserId().longValue()));
 
 		// 프로필 이미지 경로 생성 후 모델에 추가
 		String profileImagePath = productService.getProfileImagePath(member.getProfileImgId());
 		model.addAttribute("profileImagePath", profileImagePath);
-		
+
 		// 구매 확정 가능한 상품 목록 confirmables 추가 - jw
 		List<ConfirmableItem> confirmables = payService.getConfirmablePayments(member.getUserId().longValue());
 		model.addAttribute("confirmables", confirmables);
@@ -105,22 +83,15 @@ public class MyPageController extends BaseController {
 	@GetMapping("/products")
 	public String mySellingItems(HttpServletRequest request, HttpSession session, Model model) {
 		MemberEntity member = (MemberEntity) session.getAttribute("loginUser");
-		if (member == null) {
+		if (member == null)
 			return "redirect:/member/login";
-		}
 
 		List<ProductEntity> myProducts = productService.getOngoingProducts(member.getUserId().longValue());
-
 		for (ProductEntity product : myProducts) {
-			String thumbnailPath = imageService.getThumbnailPath(product.getProductId());
-			product.setThumbnailPath(thumbnailPath);
-
-			List<String> imagePaths = imageService.getAllImagePaths(product.getProductId());
-			product.setImagePaths(imagePaths);
+			product.setThumbnailPath(imageService.getThumbnailPath(product.getProductId()));
+			product.setImagePaths(imageService.getAllImagePaths(product.getProductId()));
 		}
-
 		model.addAttribute("products", myProducts);
-
 		return renderMypage(request, model, "mypage/my_selling_items");
 	}
 
@@ -128,24 +99,30 @@ public class MyPageController extends BaseController {
 	@GetMapping("/sales")
 	public String mySalesHistory(HttpServletRequest request, HttpSession session, Model model) {
 		MemberEntity member = (MemberEntity) session.getAttribute("loginUser");
-		if (member == null) {
+		if (member == null)
 			return "redirect:/member/login";
-		}
 
-		List<ProductEntity> soldProducts = productService.getSoldProductsWithThumbnail(member.getUserId().longValue());
-
-		model.addAttribute("soldProducts", soldProducts);
-
+		model.addAttribute("soldProducts", productService.getSoldProductsWithThumbnail(member.getUserId().longValue()));
 		return renderMypage(request, model, "mypage/my_sales_history");
+	}
+
+	// 구매 내역
+	@GetMapping("/purchase")
+	public String myPurchaseHistory(HttpServletRequest request, HttpSession session, Model model) {
+		MemberEntity member = (MemberEntity) session.getAttribute("loginUser");
+		if (member == null)
+			return "redirect:/member/login";
+
+		model.addAttribute("purchasedProducts", payService.getMyPurchaseHistory(member.getUserId().longValue()));
+		return renderMypage(request, model, "mypage/mypage-purchase");
 	}
 
 	// 비밀번호 변경
 	@GetMapping("/change_password")
 	public String changePasswordForm(Model model, HttpSession session) {
 		MemberEntity member = (MemberEntity) session.getAttribute("loginUser");
-		if (member == null) {
+		if (member == null)
 			return "redirect:/member/login";
-		}
 		return render("mypage/change_password", model);
 	}
 
@@ -153,7 +130,6 @@ public class MyPageController extends BaseController {
 	public String changePassword(@RequestParam("currentPassword") String currentPassword,
 			@RequestParam("newPassword") String newPassword, HttpSession session,
 			RedirectAttributes redirectAttributes) {
-
 		MemberEntity member = (MemberEntity) session.getAttribute("loginUser");
 		if (member == null) {
 			redirectAttributes.addFlashAttribute("errorMessage", "로그인이 필요합니다.");
@@ -161,42 +137,31 @@ public class MyPageController extends BaseController {
 		}
 
 		MemberEntity dbMember = memberRepository.findById(member.getUserId()).orElse(null);
-
-		if (dbMember == null) {
-			redirectAttributes.addFlashAttribute("errorMessage", "사용자 정보를 찾을 수 없습니다.");
-			return "redirect:/member/login";
-		}
-
-		if (!passwordEncoder.matches(currentPassword, dbMember.getPassword())) {
+		if (dbMember == null || !passwordEncoder.matches(currentPassword, dbMember.getPassword())) {
 			redirectAttributes.addFlashAttribute("errorMessage", "현재 비밀번호가 일치하지 않습니다.");
 			return "redirect:/mypage/change_password";
 		}
 
 		dbMember.setPassword(passwordEncoder.encode(newPassword));
 		memberRepository.save(dbMember);
-
-		// 세션에 최신 정보로 다시 세팅
 		session.setAttribute("loginUser", dbMember);
-
 		redirectAttributes.addFlashAttribute("successMessage", "비밀번호가 성공적으로 변경되었습니다.");
 		return "redirect:/mypage";
 	}
 	
-	// 구매 내역
-	@GetMapping("/purchase")
-	public String myPurchaseHistory(HttpServletRequest request, HttpSession session, Model model) {
+	// 찜한 상품 목록 보기
+	@GetMapping("/wishlist")
+	public String myWishlist(HttpServletRequest request, HttpSession session, Model model) {
 		MemberEntity member = (MemberEntity) session.getAttribute("loginUser");
 		if (member == null) {
 			return "redirect:/member/login";
 		}
 
-		// 구매자 ID 기준으로 결제 상태가 COMPLETED 또는 HOLD인 상품 가져오기
-		List<ConfirmableItem> purchasedProducts = payService.getMyPurchaseHistory(member.getUserId().longValue());
-		model.addAttribute("purchasedProducts", purchasedProducts);
+		List<WishlistDto> wishlistItems = wishlistService.getWishlistDtos(member.getUserId().longValue());
+		model.addAttribute("wishlistItems", wishlistItems);
 
-		return renderMypage(request, model, "mypage/mypage-purchase");
+		return renderMypage(request, model, "mypage/my_wishlist");
 	}
-
 
 //    @PostMapping("/edit") 
 //    public String updateProfile(@ModelAttribute MemberEntity formMember, HttpSession session, Model model) {
@@ -226,9 +191,9 @@ public class MyPageController extends BaseController {
 
 	/*
 	 * // 상품 삭제 (AJAX)
-	 * 
+	 *
 	 * @PostMapping("/selling/delete/{id}")
-	 * 
+	 *
 	 * @ResponseBody public String deleteMyProduct(@PathVariable("id") Long id,
 	 * Principal principal) { ProductEntity product =
 	 * productRepository.findById(id).orElse(null); if (product != null &&

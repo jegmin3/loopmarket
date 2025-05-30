@@ -59,8 +59,8 @@ public class WishlistApiController extends BaseController {
     }
 
     // 찜 해제 전용 API
-    @DeleteMapping("/remove")
-    public ResponseEntity<?> removeWishlist(@RequestParam Long productId) {
+    @DeleteMapping("/{productId}")
+    public ResponseEntity<?> removeWishlist(@PathVariable Long productId) {
         MemberEntity loginUser = getLoginUser();
         if (loginUser == null) {
             return ResponseEntity.status(401).body("로그인이 필요합니다.");

@@ -1,11 +1,13 @@
 package com.loopmarket.domain.wishlist.service;
 
+import com.loopmarket.domain.image.service.ImageService;
 import com.loopmarket.domain.product.repository.ProductRepository;
 import com.loopmarket.domain.wishlist.dto.WishlistDto;
 import com.loopmarket.domain.wishlist.entity.Wishlist;
 import com.loopmarket.domain.wishlist.repository.WishlistRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
@@ -22,6 +24,7 @@ public class WishlistService {
 
     private final WishlistRepository wishlistRepository;
     private final ProductRepository productRepository;
+    private final ImageService imageService;
 
     // 찜 토글 처리: 이미 있으면 제거, 없으면 추가
     public boolean toggleWishlist(Long userId, Long prodId) {
@@ -52,7 +55,8 @@ public class WishlistService {
                 .map(Wishlist::getProdId)
                 .collect(Collectors.toList()); // Java 11 호환
     }
-
+    
+    @Transactional
     // 찜 해제 전용 API 처리용 메서드
     public void removeWishlist(Long userId, Long prodId) {
         wishlistRepository.deleteByUserIdAndProdId(userId, prodId);
@@ -66,9 +70,15 @@ public class WishlistService {
                 .map(p -> WishlistDto.builder()
                         .productId(p.getProductId())
                         .title(p.getTitle())
-                        .thumbnailPath(p.getThumbnailPath())
+                        .thumbnailPath(getThumbnail(p.getProductId()))
                         .price(p.getPrice())
+                        .status(p.getStatus())
                         .build())
                 .collect(Collectors.toList());
+    }
+
+    private String getThumbnail(Long productId) {
+        String path = imageService.getThumbnailPath(productId);
+        return path != null ? path : "/images/no-image.png";
     }
 }

@@ -17,4 +17,5 @@ public class WishlistDto {
     private String title;
     private String thumbnailPath;
     private int price;
+    private String status;
 }
