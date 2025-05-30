@@ -33,11 +33,16 @@
                      th:attr="data-id=${item.paymentId}"
                      onclick="selectConfirmItem(this)">
                   <div class="d-flex align-items-center">
-                    <img th:src="${item.thumbnailPath}" alt="상품 이미지"
-                         width="60" height="60" class="me-3 rounded">
+                    
+                    <!-- 썸네일이 있을 때만 이미지 출력 -->
+                    <th:block th:if="${item.thumbnailPath != null}">
+                      <img th:src="${item.thumbnailPath}" alt="상품 이미지"
+                           width="60" height="60" class="me-3 rounded">
+                    </th:block>
+
                     <div>
-                      <div class="fw-bold" th:text="${item.title}">상품명</div>
-                      <div class="text-muted small" th:text="'₩' + ${item.price}">가격</div>
+                      <div class="fw-bold" th:text="${item.title ?: '제목없음'}">상품명</div>
+                      <div class="text-muted small" th:text="'₩' + (${item.price} ?: 0)">가격</div>
                     </div>
                   </div>
                 </div>
