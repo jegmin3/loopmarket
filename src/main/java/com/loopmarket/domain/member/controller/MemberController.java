@@ -19,7 +19,8 @@ import com.loopmarket.common.controller.BaseController;
 
 import com.loopmarket.domain.admin.dashboard.Entity.LoginHistory;
 import com.loopmarket.domain.admin.dashboard.repository.LoginHistoryRepository;
-
+import com.loopmarket.domain.admin.user.UserStatusEntity;
+import com.loopmarket.domain.admin.user.UserStatusRepository;
 import com.loopmarket.domain.member.MemberEntity;
 import com.loopmarket.domain.member.MemberRepository;
 import com.loopmarket.domain.member.MemberService;
@@ -35,6 +36,7 @@ public class MemberController extends BaseController {
 	private final MemberRepository memberRepository;
 	private final PasswordEncoder passwordEncoder;
 	private final MemberService memberService;
+	private final UserStatusRepository userStatusRepository;
 	
 	// 로그인 시간기록용
 	private final LoginHistoryRepository loginHistoryRepository;
@@ -62,7 +64,16 @@ public class MemberController extends BaseController {
 	    
 	    // 로그인 기록용
 	    userId = member.getUserId();
+	    
+	    // 계정 상태 확인
+	    UserStatusEntity status = userStatusRepository.findById(userId).orElse(null);
+	    if (status != null && status.getAccountStatus() == UserStatusEntity.AccountStatus.SUSPENDED) {
+	        redirectAttributes.addFlashAttribute("errorMessage", "정지된 계정입니다. 관리자에게 문의하세요.");
+	        
+	        return "redirect:/member/login";
+	    }
 
+	    // 비밀번호 체크
 	    if (!passwordEncoder.matches(dto.getPassword(), member.getPassword())) {
 	        redirectAttributes.addFlashAttribute("errorMessage", "비밀번호가 일치하지 않습니다.");
 	        //return "redirect:/member/login";
@@ -72,6 +83,7 @@ public class MemberController extends BaseController {
 	    //MemberDTO loginUser = MemberDTO.fromEntity(member);
 
 	    session.setAttribute("loginUser", member);
+	    session.setAttribute("userRole", member.getRole().name());
 
 	    redirectAttributes.addFlashAttribute("successMessage", "로그인 성공!");
 
