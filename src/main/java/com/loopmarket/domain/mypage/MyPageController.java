@@ -94,12 +94,8 @@ public class MyPageController extends BaseController {
 		List<ConfirmableItem> confirmables = payService.getConfirmablePayments(member.getUserId().longValue());
 		model.addAttribute("confirmables", confirmables);
 
-		// 판매 중인 상품 목록 (QR 생성용) myProducts 추가 - jw
-		List<ProductEntity> myProducts = productService.getMyProducts(member.getUserId().longValue());
-		for (ProductEntity product : myProducts) {
-			String thumbnailPath = productService.getThumbnailPath(product.getProductId());
-			product.setThumbnailPath(thumbnailPath);
-		}
+		// 판매중 상태만 필터링 (ONSALE, RESERVED)
+		List<ProductEntity> myProducts = productService.getOngoingProducts(member.getUserId().longValue());
 		model.addAttribute("myProducts", myProducts);
 
 		return render("mypage/mypage", model);
@@ -113,8 +109,7 @@ public class MyPageController extends BaseController {
 			return "redirect:/member/login";
 		}
 
-		List<ProductEntity> myProducts = productRepository.findByUserIdAndStatusIn(member.getUserId().longValue(),
-				ongoingStatuses);
+		List<ProductEntity> myProducts = productService.getOngoingProducts(member.getUserId().longValue());
 
 		for (ProductEntity product : myProducts) {
 			String thumbnailPath = imageService.getThumbnailPath(product.getProductId());
