@@ -186,6 +186,22 @@ public class MyPageController extends BaseController {
 		redirectAttributes.addFlashAttribute("successMessage", "비밀번호가 성공적으로 변경되었습니다.");
 		return "redirect:/mypage";
 	}
+	
+	// 구매 내역
+	@GetMapping("/purchase")
+	public String myPurchaseHistory(HttpServletRequest request, HttpSession session, Model model) {
+		MemberEntity member = (MemberEntity) session.getAttribute("loginUser");
+		if (member == null) {
+			return "redirect:/member/login";
+		}
+
+		// 구매자 ID 기준으로 결제 상태가 COMPLETED 또는 HOLD인 상품 가져오기
+		List<ConfirmableItem> purchasedProducts = payService.getMyPurchaseHistory(member.getUserId().longValue());
+		model.addAttribute("purchasedProducts", purchasedProducts);
+
+		return renderMypage(request, model, "mypage/mypage-purchase");
+	}
+
 
 //    @PostMapping("/edit") 
 //    public String updateProfile(@ModelAttribute MemberEntity formMember, HttpSession session, Model model) {

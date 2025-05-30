@@ -2,25 +2,36 @@
 <div th:fragment="content">
   <h6 class="mb-3" th:text="'판매 상품 수 : ' + ${#lists.size(soldProducts)}">판매 상품 수</h6>
 
-  <div class="d-flex flex-column gap-2">
-    <div th:each="product : ${soldProducts}"
-         class="card border-success shadow-sm rounded-4 p-2 d-flex flex-column flex-md-row align-items-center">
-
-      <!-- 썸네일 -->
-      <div class="ratio ratio-1x1 me-md-2 mb-2 mb-md-0 w-25" style="max-width: 120px;">
-        <img th:src="@{${product.thumbnailPath}}"
-             alt="상품 이미지"
-             class="img-fluid rounded-2 object-fit-cover" />
-      </div>
-
-      <!-- 판매 정보 -->
-      <div class="text-center text-md-start w-100">
-        <div class="fw-semibold small mb-0" th:text="${product.title}">상품명</div>
-        <div class="text-muted small" th:text="'₩' + ${product.price}">가격</div>
-        <div class="text-success small">판매 완료</div>
-        <div class="text-muted small" th:text="${#temporals.format(product.updateAt, 'yyyy-MM-dd')}">판매일</div>
-      </div>
-
-    </div>
+  <div class="table-responsive shadow-sm">
+    <table class="table align-middle table-bordered text-center mb-0">
+      <thead class="table-light">
+        <tr>
+          <th style="width: 100px;">상품</th>
+          <th>상품명</th>
+          <th>가격</th>
+          <th>상태</th>
+          <th>판매일</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr th:each="product : ${soldProducts}">
+          <td>
+            <div class="ratio ratio-1x1" style="max-width: 80px;">
+              <img th:src="@{${product.thumbnailPath}}"
+                   alt="상품 이미지"
+                   class="img-fluid rounded object-fit-cover" />
+            </div>
+          </td>
+          <td th:text="${product.title}">상품명</td>
+          <td th:text="'₩' + ${product.price}">가격</td>
+          <td><span class="text-success">판매 완료</span></td>
+          <td th:text="${#temporals.format(product.updateAt, 'yyyy-MM-dd')}">판매일</td>
+        </tr>
+        <!-- 판매 내역이 없을 경우 -->
+        <tr th:if="${#lists.isEmpty(soldProducts)}">
+          <td colspan="5" class="text-center text-muted py-4">판매한 상품이 없습니다.</td>
+        </tr>
+      </tbody>
+    </table>
   </div>
 </div>

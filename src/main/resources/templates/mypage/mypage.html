@@ -7,7 +7,10 @@
         <div class="card shadow-sm rounded-4 p-4 mb-4">
           <div class="d-flex justify-content-between align-items-center flex-wrap">
             <div class="d-flex align-items-center flex-wrap">
-              <img th:src="${profileImagePath}" class="rounded-circle me-4 mb-2 mb-md-0" alt="프로필 이미지" width="80" height="80" />
+				<img th:src="${profileImagePath}"
+				     alt="프로필 이미지"
+				     class="rounded-circle border me-4 mb-2 mb-md-0"
+				     style="width: 80px; height: 80px; object-fit: cover; aspect-ratio: 1 / 1;" />
               <div>
                 <h4 class="fw-bold mb-1" th:text="${users.nickname}">닉네임</h4>
                 <div class="text-muted small">
@@ -32,20 +35,20 @@
 		<div th:insert="pay/widget-card :: widgetCard(${confirmables}, ${myProducts})"></div>
 
         <!-- 탭 메뉴 -->
-        <ul class="nav nav-tabs nav-fill mb-3 shadow-sm rounded-3 overflow-hidden" id="mypageTabs">
-          <li class="nav-item">
-            <a class="nav-link active" id="tab-selling-products" href="#">거래 중 상품</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" id="tab-wishlist" href="#">찜</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" id="tab-purchase-history" href="#">구매 내역</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" id="tab-sales-history" href="#">판매 내역</a>
-          </li>
-        </ul>
+		<ul class="nav nav-tabs nav-fill mb-3 shadow-sm rounded-3 overflow-hidden" id="mypageTabs">
+		  <li class="nav-item w-25">
+		    <a class="nav-link custom-tab active text-center" id="tab-selling-products" href="#">판매 중 상품</a>
+		  </li>
+		  <li class="nav-item w-25">
+		    <a class="nav-link custom-tab text-center" id="tab-wishlist" href="#">찜</a>
+		  </li>
+		  <li class="nav-item w-25">
+		    <a class="nav-link custom-tab text-center" id="tab-purchase-history" href="#">구매 내역</a>
+		  </li>
+		  <li class="nav-item w-25">
+		    <a class="nav-link custom-tab text-center" id="tab-sales-history" href="#">판매 내역</a>
+		  </li>
+		</ul>
 
         <!-- 콘텐츠 영역 -->
         <div id="mypage-content"></div>
@@ -53,6 +56,26 @@
       </div>
     </div>
   </div>
+
+  <!-- 커스텀 탭 스타일 -->
+  <style>
+    .nav-link.custom-tab {
+      color: #333;
+      background-color: #f8f9fa;
+      transition: background-color 0.2s, color 0.2s;
+    }
+
+    .nav-link.custom-tab:hover {
+      background-color: #e2e6ea;
+      color: #212529;
+    }
+
+    .nav-link.custom-tab.active {
+      background-color: #212529; /* 헤더와 동일 색상 */
+      color: white;
+      font-weight: bold;
+    }
+  </style>
 
   <!-- 스크립트 -->
   <script src="/js/mypage.js"></script>

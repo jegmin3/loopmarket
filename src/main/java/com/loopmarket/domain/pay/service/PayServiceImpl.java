@@ -12,13 +12,11 @@ import com.loopmarket.domain.pay.repository.MoneyTransactionRepository;
 import com.loopmarket.domain.pay.repository.PaymentRepository;
 import com.loopmarket.domain.pay.repository.UserMoneyRepository;
 import com.loopmarket.domain.product.entity.ProductEntity;
-import com.loopmarket.domain.product.repository.ProductRepository;
 import com.loopmarket.domain.product.service.ProductService;
 
 import lombok.RequiredArgsConstructor;
 
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
@@ -32,7 +30,6 @@ public class PayServiceImpl implements PayService {
 	private final MoneyTransactionRepository moneyTransactionRepository;
 	private final PaymentRepository paymentRepository;
 	private final ProductService productService;
-	private final ProductRepository productRepository;
 
 	/**
 	 * 페이 충전 : 포트원 결제 성공 이후 -> 잔액 증가 + 거래 기록
@@ -168,7 +165,8 @@ public class PayServiceImpl implements PayService {
 	                payment.getPaymentId(),
 	                product.getTitle(),
 	                product.getPrice(),
-	                product.getThumbnailPath() // 이미지 URL
+	                product.getThumbnailPath(),
+	                payment.getCreatedAt()
 	            );
 	        })
 	        .collect(Collectors.toList());
@@ -221,5 +219,30 @@ public class PayServiceImpl implements PayService {
 
 	    // 6. 판매자 최종 잔액 반환
 	    return sellerMoney.getBalance();
+	}
+	
+	/**
+	 * 구매 내역 조회: 결제 완료(HOLD 또는 COMPLETED) 상태인 결제 리스트 반환
+	 */
+	@Override
+	@Transactional(readOnly = true)
+	public List<ConfirmableItem> getMyPurchaseHistory(Long buyerId) {
+	    List<Payment> payments = paymentRepository.findByBuyerIdAndStatusIn(
+	        buyerId, List.of(PaymentStatus.HOLD, PaymentStatus.COMPLETED)
+	    );
+
+	    return payments.stream()
+	        .map(payment -> {
+	            ProductEntity product = productService.getProductById(payment.getProductId());
+	            return new ConfirmableItem(
+	                product.getProductId(),
+	                payment.getPaymentId(),
+	                product.getTitle(),
+	                product.getPrice(),
+	                product.getThumbnailPath(),
+	                payment.getCreatedAt()
+	            );
+	        })
+	        .collect(Collectors.toList());
 	}
 }

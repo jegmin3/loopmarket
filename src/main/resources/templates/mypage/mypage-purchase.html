@@ -1,0 +1,34 @@
+<!-- templates/mypage/mypage-purchase.html -->
+<div th:fragment="content">
+  <h6 class="mb-3" th:text="'구매한 상품 수 : ' + ${#lists.size(purchasedProducts)}">상품 수 확인</h6>
+
+  <div class="table-responsive shadow-sm">
+    <table class="table align-middle table-bordered text-center mb-0">
+      <thead class="table-light">
+        <tr>
+          <th style="width: 20%;">상품</th>
+          <th>상품명</th>
+          <th>가격</th>
+          <th>결제일</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr th:each="item : ${purchasedProducts}">
+          <td>
+            <div class="ratio ratio-1x1 mx-auto" style="max-width: 80px;">
+              <img th:src="${item.thumbnailPath != null} ? ${item.thumbnailPath} : '/images/no-image.png'"
+                   alt="상품 이미지"
+                   class="img-fluid object-fit-cover rounded" />
+            </div>
+          </td>
+          <td th:text="${item.title}">상품명</td>
+          <td th:text="'₩' + ${item.price}">가격</td>
+          <td th:text="${item.createdAt != null} ? ${#temporals.format(item.createdAt, 'yyyy-MM-dd')} : 'N/A'">결제일</td>
+        </tr>
+        <tr th:if="${#lists.isEmpty(purchasedProducts)}">
+          <td colspan="4" class="text-center text-muted py-4">구매한 상품이 없습니다.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
