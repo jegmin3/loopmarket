@@ -22,13 +22,12 @@ function initQRWidget() {
 	// QR 생성 버튼 클릭 시
 	generateBtn.addEventListener("click", function () {
 		const productId = hiddenInput.value;
-		const sellerId = window.loginUserId;
 
-		if (!productId || !sellerId) {
+		if (!productId) {
 			Swal.fire({
 			  icon: 'warning',
 			  title: 'QR 생성 실패',
-			  text: '상품이나 판매자 정보가 누락되었습니다.',
+			  text: '상품을 선택해주세요.',
 			  confirmButtonText: '확인'
 			});
 			return;
@@ -38,12 +37,13 @@ function initQRWidget() {
 		document.querySelectorAll("#productCardList .card").forEach(card => {
 			card.style.display = (card.getAttribute("data-id") === productId) ? "block" : "none";
 		});
-		productLabel.style.display = "none";        // 상품 선택 라벨 숨김
-		generateBtn.style.display = "none";         // QR 생성 버튼 숨김
-		resetBtn.style.display = "block";           // 되돌리기 버튼 표시
+		productLabel.style.display = "none";
+		generateBtn.style.display = "none";
+		resetBtn.style.display = "block";
 
+		// sellerId 제거 → 서버가 세션으로 판단
 		const expiresAt = new Date(Date.now() + 5 * 60 * 1000).toISOString();
-		const payload = { productId: parseInt(productId), sellerId: parseInt(sellerId), expiresAt };
+		const payload = { productId: parseInt(productId), expiresAt };
 		const token = btoa(JSON.stringify(payload));
 		const qrUrl = `${location.origin}/pay/direct-check?token=${encodeURIComponent(token)}`;
 
@@ -64,9 +64,9 @@ function initQRWidget() {
 		hiddenInput.value = "";
 		qrCodeContainer.innerHTML = "";
 
-		productLabel.style.display = "block";       // 다시 보이게
-		generateBtn.style.display = "block";        // 다시 보이게
-		resetBtn.style.display = "none";            // 숨김
+		productLabel.style.display = "block";
+		generateBtn.style.display = "block";
+		resetBtn.style.display = "none";
 	});
 }
 

@@ -5,7 +5,7 @@
 
 document.addEventListener("DOMContentLoaded", () => {
 	// 현재 잔액 조회
-	fetch(`/api/pay/balance/${window.loginUserId}`)
+	fetch("/api/pay/balance")
 		.then(res => res.json())
 		.then(data => {
 			console.log("잔액 API 응답:", data);
@@ -113,6 +113,6 @@ document.addEventListener("DOMContentLoaded", () => {
 			return;
 		}
 		// 정상 충전 요청
-		requestPay(window.loginUserId, amount, selectedPg);
+		requestPay(amount, selectedPg);
 	});
 });

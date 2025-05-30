@@ -1,14 +1,8 @@
 <th:block th:fragment="content">
 
-  <!-- 로그인/상품 정보 JS 전달 -->
+  <!-- 상품 정보 JS 전달 -->
   <script th:inline="javascript">
     /*<![CDATA[*/
-    window.loginUser = {
-      id: /*[[${loginUser.userId}]]*/ 0,
-      name: /*[[${loginUser.nickname}]]*/ "",
-      email: /*[[${loginUser.email}]]*/ ""
-    };
-
     window.checkoutProduct = {
       productId: /*[[${product.productId}]]*/ 0,
       price: /*[[${product.price}]]*/ 0,
@@ -58,6 +52,7 @@
     </div>
   </div>
 
+  <!-- 스크립트 -->
   <script src="/js/pay/checkout-ui.js"></script>
   <script src="/js/pay/direct-check.js"></script>
 </th:block>
