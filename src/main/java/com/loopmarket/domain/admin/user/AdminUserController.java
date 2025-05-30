@@ -72,39 +72,33 @@ private void addUsersToModel(Model model, int page, int size) {
     
     //상태 변경 처리 (예: 활성화 <-> 정지)
     @PostMapping("/changeStatus")
-    public String changeUserStatus(HttpServletRequest request, Model model,
-                                   @RequestParam("userId") int userId,
-                                   @RequestParam("newStatus") String newStatus,
-                                   @RequestParam(defaultValue = "0") int page,
-                                   @RequestParam(defaultValue = "10") int size) {
-    	
-    	// 기존 상태 조회
-        UserStatusEntity status = userStatusRepository.findById(userId).orElse(null);
+    @ResponseBody
+    public Map<String, Object> changeUserStatus(@RequestParam("userId") int userId,
+                                                @RequestParam("newStatus") String newStatus) {
+        Map<String, Object> result = new HashMap<>();
+        try {
+            UserStatusEntity status = userStatusRepository.findById(userId).orElse(null);
 
-        if (status == null) {
-        	// 없으면 MemberEntity 조회하여 새로 생성
-            MemberEntity member = memberRepository.findById(userId)
+            if (status == null) {
+                MemberEntity member = memberRepository.findById(userId)
                     .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 사용자입니다."));
-
-            status = UserStatusEntity.builder()
+                status = UserStatusEntity.builder()
                     .member(member)
                     .accountStatus(UserStatusEntity.AccountStatus.valueOf(newStatus))
                     .build();
-        } else {
-
-            // DELETED가 아닌 경우에만 상태 업데이트
-            if (!status.getAccountStatus().equals(UserStatusEntity.AccountStatus.DELETED)) {
+            } else {
                 status.setAccountStatus(UserStatusEntity.AccountStatus.valueOf(newStatus));
             }
+
+            userStatusRepository.save(status);
+
+            result.put("success", true);
+            result.put("message", "상태가 변경되었습니다.");
+        } catch (Exception e) {
+            result.put("success", false);
+            result.put("message", "오류 발생: " + e.getMessage());
         }
 
-        userStatusRepository.save(status);
-
-
-        addUsersToModel(model, page, size);
-      
-        //return "redirect:/admin/user";
-        //return "admin/user_admin :: content";
-        return renderAdminPage(request, model, "admin/user_admin");
+        return result;
     }
 }
