@@ -165,7 +165,8 @@ public class PayServiceImpl implements PayService {
 	                payment.getPaymentId(),
 	                product.getTitle(),
 	                product.getPrice(),
-	                product.getThumbnailPath() // 이미지 URL
+	                product.getThumbnailPath(),
+	                payment.getCreatedAt()
 	            );
 	        })
 	        .collect(Collectors.toList());
@@ -218,5 +219,30 @@ public class PayServiceImpl implements PayService {
 
 	    // 6. 판매자 최종 잔액 반환
 	    return sellerMoney.getBalance();
+	}
+	
+	/**
+	 * 구매 내역 조회: 결제 완료(HOLD 또는 COMPLETED) 상태인 결제 리스트 반환
+	 */
+	@Override
+	@Transactional(readOnly = true)
+	public List<ConfirmableItem> getMyPurchaseHistory(Long buyerId) {
+	    List<Payment> payments = paymentRepository.findByBuyerIdAndStatusIn(
+	        buyerId, List.of(PaymentStatus.HOLD, PaymentStatus.COMPLETED)
+	    );
+
+	    return payments.stream()
+	        .map(payment -> {
+	            ProductEntity product = productService.getProductById(payment.getProductId());
+	            return new ConfirmableItem(
+	                product.getProductId(),
+	                payment.getPaymentId(),
+	                product.getTitle(),
+	                product.getPrice(),
+	                product.getThumbnailPath(),
+	                payment.getCreatedAt()
+	            );
+	        })
+	        .collect(Collectors.toList());
 	}
 }

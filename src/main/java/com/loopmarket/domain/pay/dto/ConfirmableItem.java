@@ -1,5 +1,7 @@
 package com.loopmarket.domain.pay.dto;
 
+import java.time.LocalDateTime;
+
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
@@ -11,4 +13,5 @@ public class ConfirmableItem {
     private String title;
     private Integer price;
     private String thumbnailPath;
+    private LocalDateTime createdAt;
 }
