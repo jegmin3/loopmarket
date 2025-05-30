@@ -82,7 +82,7 @@ public class MemberEntity {
     }
 
     public enum Role {
-        USER, BUISNESS, MANAGER, ADMIN
+        USER, BUSINESS, MANAGER, ADMIN
     }
 
     public enum Status {

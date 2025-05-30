@@ -1,13 +1,6 @@
 <!-- 마이페이지에 포함할 페이 위젯 조각입니다. -->
 
 <div th:fragment="payWidget(loginUser)">
-  <script th:inline="javascript">
-    /*<![CDATA[*/
-    window.loginUserId = /*[[${loginUser.userId}]]*/ 0;
-    /*]]>*/
-  </script>
-
-  <!-- 불필요한 container, row, col 제거 -->
   <div class="d-flex flex-column align-items-center p-3 border rounded-4 shadow-sm" style="min-width: 240px; max-width: 100%;" id="pay-widget">
     <div class="d-flex justify-content-between align-items-center w-100 mb-2 px-2">
       <img src="/img/pay/pay.png" alt="pay logo" class="img-fluid" style="max-height: 1.5rem;">

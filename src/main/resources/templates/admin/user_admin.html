@@ -25,6 +25,7 @@
                     <td th:text="${member.name}">홍길동</td>
                     <td th:text="${#temporals.format(member.createdAt, 'yyyy-MM-dd HH:mm')}">2025-05-26</td>
                     <td th:text="${userStatusMap[member.userId]}">ACTIVE</td>
+					<!-- 계정 상태 변경-->
                     <td>
 						<form th:action="@{/admin/user/changeStatus}" method="post" class="d-flex justify-content-center user-status-form">
 						    <input type="hidden" name="userId" th:value="${member.userId}" />
@@ -37,6 +38,22 @@
 						    <button type="submit" class="btn btn-sm btn-primary change-status-btn">변경</button>
 						</form>
                     </td>
+					<!-- 계정 권한 변경-->
+					<td th:text="${member.role}">USER</td>
+					<td>
+					    <form th:action="@{/admin/user/changeRole}" method="post" class="d-flex justify-content-center user-role-form">
+					        <input type="hidden" name="userId" th:value="${member.userId}" />
+					        <input type="hidden" name="page" th:value="${currentPage}" />
+
+					        <select name="newRole" class="form-control form-control-sm w-auto mx-1">
+					            <option value="USER" th:selected="${member.role.name() == 'USER'}">USER</option>
+					            <option value="BUSINESS" th:selected="${member.role.name() == 'BUSINESS'}">BUSINESS</option>
+					            <option value="MANAGER" th:selected="${member.role.name() == 'MANAGER'}">MANAGER</option>
+					            <option value="ADMIN" th:selected="${member.role.name() == 'ADMIN'}">ADMIN</option>
+					        </select>
+					        <button type="submit" class="btn btn-sm btn-secondary change-role-btn">변경</button>
+					    </form>
+					</td>
                 </tr>
             </tbody>
         </table>
@@ -44,10 +61,12 @@
 		<!-- 페이징 네비게이션 -->
         <nav aria-label="Page navigation" class="mt-4">
             <ul class="pagination justify-content-center">
-                <li class="page-item" th:classappend="${currentPage == 0} ? 'disabled'">
-                    <a class="page-link" th:href="@{/admin/user(page=${currentPage - 1})}">이전</a>
-                </li>
-
+				<!-- 이전 버튼 -->
+				<li class="page-item" th:classappend="${currentPage == 0} ? 'disabled'">
+				    <a class="page-link user-page-link" th:attr="data-page=${currentPage - 1}" href="#">이전</a>
+				</li>
+				
+				<!-- 숫자 페이지들 -->
                 <li class="page-item"
                     th:each="i : ${#numbers.sequence(0, totalPages - 1)}"
                     th:classappend="${i == currentPage} ? 'active'">
@@ -55,9 +74,10 @@
 					<a th:href="@{/admin/user(page=${i})}" class="page-link user-page-link" th:attr="data-page=${i}" th:text="${i + 1}">1</a>
                 </li>
 
-                <li class="page-item" th:classappend="${currentPage + 1 >= totalPages} ? 'disabled'">
-                    <a class="page-link" th:href="@{/admin/user(page=${currentPage + 1})}">다음</a>
-                </li>
+				<!-- 다음 버튼 -->
+				<li class="page-item" th:classappend="${currentPage + 1 >= totalPages} ? 'disabled'">
+				    <a class="page-link user-page-link" th:attr="data-page=${currentPage + 1}" href="#">다음</a>
+				</li>
             </ul>
 		</nav>
       
@@ -110,6 +130,52 @@
 	            });
 	        });
 	    }
+		function bindUserRoleFormEvents() {
+		    document.querySelectorAll('.user-role-form').forEach(form => {
+		        form.addEventListener('submit', function (e) {
+		            e.preventDefault();
+
+		            const formData = new FormData(form);
+		            const page = form.querySelector('input[name="page"]').value;
+
+		            fetch(form.getAttribute('action'), {
+		                method: 'POST',
+		                body: formData,
+		                headers: {
+		                    'X-Requested-With': 'XMLHttpRequest'
+		                }
+		            })
+		            .then(response => response.json())
+		            .then(data => {
+		                if (data.success) {
+		                    Swal.fire({
+		                        icon: 'success',
+		                        title: '권한 변경 성공',
+		                        text: data.message,
+		                        timer: 1500,
+		                        showConfirmButton: false
+		                    }).then(() => {
+		                        loadAdminPage('/admin/user?page=' + page);
+		                    });
+		                } else {
+		                    Swal.fire({
+		                        icon: 'error',
+		                        title: '실패',
+		                        text: data.message
+		                    });
+		                }
+		            })
+		            .catch(error => {
+		                Swal.fire({
+		                    icon: 'error',
+		                    title: '에러 발생',
+		                    text: '잠시 후 다시 시도해주세요.'
+		                });
+		                console.error('오류:', error);
+		            });
+		        });
+		    });
+		}
 
 	    function bindPaginationEvents() {
 	        document.querySelectorAll('.user-page-link').forEach(link => {
@@ -131,6 +197,7 @@
 
 	            // ⚠️ 꼭 다시 바인딩 해줘야 함
 	            bindUserStatusFormEvents();
+				bindUserRoleFormEvents();
 	            bindPaginationEvents();
 	        })
 	        .catch(err => {
@@ -141,7 +208,48 @@
 
 	    // ✅ 초기 바인딩 수동 호출
 	    bindUserStatusFormEvents();
+		bindUserRoleFormEvents();
 	    bindPaginationEvents();
 	</script>
+	
+	<style>
+	    /* 버튼 줄바꿈 방지 */
+	    .change-status-btn,
+	    .change-role-btn {
+	        white-space: nowrap;
+	        text-overflow: ellipsis;
+	        overflow: hidden;
+	    }
+
+	    /* 폼 안 요소들 한 줄 정렬 & 간격 유지 */
+	    .user-status-form,
+	    .user-role-form {
+	        display: flex;
+	        flex-wrap: nowrap; /* 줄바꿈 방지 */
+	        justify-content: center;
+	        align-items: center;
+	        gap: 4px;
+	    }
+
+	    /* 테이블 반응형 - 모바일에서 수평 스크롤 가능하게 */
+	    .table-responsive {
+	        overflow-x: auto;
+	        -webkit-overflow-scrolling: touch;
+	    }
+
+	    /* 테이블 셀 가운데 정렬 + 줄바꿈 최소화 */
+	    .table td,
+	    .table th {
+	        white-space: nowrap;
+	        vertical-align: middle;
+	        text-align: center;
+	    }
+
+	    /* select 요소도 너무 작지 않게 자동 너비로 */
+	    .form-control-sm {
+	        min-width: 80px;
+	    }
+	</style>
+	
 	
 </div>

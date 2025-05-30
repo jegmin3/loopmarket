@@ -15,7 +15,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // 잔액 조회 후 UI 처리
-  fetch(`/api/pay/balance/${window.loginUser.id}`)
+  fetch(`/api/pay/balance`)
     .then(res => res.json())
     .then(data => {
       if (data.success && data.balance !== undefined) {
