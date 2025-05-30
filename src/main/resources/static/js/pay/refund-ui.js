@@ -1,12 +1,10 @@
 /**
  * 관련 뷰: /templates/pay/refund.html
- * 
  * 환불 화면의 입력 로직, 키패드 생성, 빠른 금액 버튼, 잔액 불러오기,
  * 환불 버튼 클릭 후 /api/pay/refund API 호출까지 담당합니다.
  */
 
 document.addEventListener('DOMContentLoaded', () => {
-	const userId = window.loginUserId;
 	const amountInput = document.getElementById('amountInput');
 	const refundBtn = document.getElementById('refundBtn');
 	const keypad = document.getElementById('keypad');
@@ -14,10 +12,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
 	let currentAmount = 0;
 
-	// 현재 잔액 불러오기
+	// 현재 잔액 불러오기 (세션 기반)
 	async function loadBalance() {
 		try {
-			const res = await fetch(`/api/pay/balance/${userId}`);
+			const res = await fetch(`/api/pay/balance`);
 			const data = await res.json();
 			if (data.success) {
 				document.getElementById('balance').textContent = data.balance.toLocaleString();
@@ -109,10 +107,7 @@ document.addEventListener('DOMContentLoaded', () => {
 			const res = await fetch('/api/pay/refund', {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify({
-					userId: userId,
-					amount: currentAmount
-				})
+				body: JSON.stringify({ amount: currentAmount }) // userId 제거
 			});
 
 			const data = await res.json();

@@ -20,9 +20,8 @@ document.addEventListener("DOMContentLoaded", () => {
   // 구매 확정 버튼 클릭
   confirmBtn.addEventListener("click", async () => {
     const paymentId = hiddenInput.value;
-    const buyerId = window.loginUserId;
 
-    if (!paymentId || !buyerId) {
+    if (!paymentId) {
       await Swal.fire({
         icon: "warning",
         title: "선택 필요",
@@ -45,7 +44,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const res = await fetch("/api/pay/complete", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ paymentId: parseInt(paymentId), buyerId: parseInt(buyerId) })
+        body: JSON.stringify({ paymentId: parseInt(paymentId) })
       });
 
       const data = await res.json();

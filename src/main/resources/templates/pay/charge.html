@@ -11,7 +11,6 @@
 	<!-- Thymeleaf가 서버에서 사용자 정보를 렌더링해서 JS 전역변수로 넘겨주는 역할 -->
 	<script th:inline="javascript">
 		/*<![CDATA[*/
-		window.loginUserId = /*[[${loginUser.userId}]]*/ 0;
 		window.loginUserName = /*[[${loginUser.nickname}]]*/ "";
 		window.loginUserEmail = /*[[${loginUser.email}]]*/ "";
 		/*]]>*/

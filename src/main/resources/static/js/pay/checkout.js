@@ -10,12 +10,11 @@ document.addEventListener('DOMContentLoaded', () => {
     // 잔액 부족으로 비활성화된 경우 무시
     if (payBtn.disabled) return;
 
-    const buyerId = window.loginUser.id;
     const productId = window.checkoutProduct.productId;
     const amount = window.checkoutProduct.price;
 
     // 누락된 정보가 있는 경우 방어
-    if (!buyerId || !productId || !amount) {
+    if (!productId || !amount) {
       await Swal.fire({
         icon: 'error',
         title: '결제 불가',
@@ -52,7 +51,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const res = await fetch('/api/pay/safe', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ buyerId, productId })
+        body: JSON.stringify({ productId })
       });
 
       const data = await res.json();
@@ -63,7 +62,7 @@ document.addEventListener('DOMContentLoaded', () => {
           title: '결제 완료',
           text: data.message,
         });
-        location.href = '/'; // 또는 상품 상세 페이지로 이동 가능
+        location.href = '/';
       } else {
         await Swal.fire({
           icon: 'error',
