@@ -41,10 +41,10 @@ public class AdminController extends BaseController {
 	    return renderAdminPage(request, model, "admin/ads_admin");
 	}
 	
-	@GetMapping("dashboard")
-	public String dashboardAdmin(HttpServletRequest request, Model model) {
-	    return renderAdminPage(request, model, "admin/dashboard");
-	}
+//	@GetMapping("dashboard")
+//	public String dashboardAdmin(HttpServletRequest request, Model model) {
+//	    return renderAdminPage(request, model, "admin/dashboard");
+//	}
 	
 //	@GetMapping("notice")
 //	public String noticeAdmin(HttpServletRequest request, Model model) {
