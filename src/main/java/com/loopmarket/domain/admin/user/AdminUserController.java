@@ -1,7 +1,9 @@
 package com.loopmarket.domain.admin.user;
 
 import com.loopmarket.domain.member.MemberEntity;
+import com.loopmarket.domain.member.MemberEntity.Role;
 import com.loopmarket.domain.member.MemberRepository;
+import com.loopmarket.domain.member.MemberService;
 import com.loopmarket.common.controller.BaseController;
 import com.loopmarket.domain.admin.user.UserStatusEntity;
 import com.loopmarket.domain.admin.user.UserStatusRepository;
@@ -11,7 +13,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
-
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -29,10 +31,14 @@ public class AdminUserController extends BaseController{
     private final MemberRepository memberRepository;
 
     private final UserStatusRepository userStatusRepository;
+    
+    private final MemberService memberService;
+    
 
-    public AdminUserController(MemberRepository memberRepository, UserStatusRepository userStatusRepository) {
+    public AdminUserController(MemberRepository memberRepository, UserStatusRepository userStatusRepository, MemberService memberService) {
 		this.memberRepository = memberRepository;
 		this.userStatusRepository = userStatusRepository;
+		this.memberService = memberService;
 	}
     
     private String renderAdminPage(HttpServletRequest request, Model model, String viewName) {
@@ -101,4 +107,29 @@ private void addUsersToModel(Model model, int page, int size) {
 
         return result;
     }
+    
+    // 계정 권한 변경
+    @PostMapping("/changeRole")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> changeUserRole(
+            @RequestParam("userId") Integer userId,
+            @RequestParam("newRole") String newRoleStr) {
+
+        Map<String, Object> response = new HashMap<>();
+        try {
+            Role newRole = Role.valueOf(newRoleStr);
+            memberService.updateUserRole(userId, newRole);
+            response.put("success", true);
+            response.put("message", "권한이 성공적으로 변경되었습니다.");
+        } catch (IllegalArgumentException e) {
+            response.put("success", false);
+            response.put("message", "잘못된 권한 값입니다.");
+        } catch (Exception e) {
+            response.put("success", false);
+            response.put("message", "서버 오류가 발생했습니다.");
+        }
+        return ResponseEntity.ok(response);
+    }
+    
+    
 }
