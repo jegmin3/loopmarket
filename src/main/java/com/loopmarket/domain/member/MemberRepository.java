@@ -1,5 +1,7 @@
 package com.loopmarket.domain.member;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import com.loopmarket.domain.member.MemberEntity.Role;
@@ -30,6 +32,9 @@ public interface MemberRepository extends JpaRepository<MemberEntity, Integer> {
     // FCM 토큰으로 사용자 조회 (필요 시)
     Optional<MemberEntity> findByFcmToken(String fcmToken);
 
+    
+    Page<MemberEntity> findAll(Pageable pageable); // 페이징 지원 메서드
+    
     
     // 소셜 로그인 대비
     // Optional<MemberEntity> findByEmailAndLoginType(String email, LoginType loginType);
