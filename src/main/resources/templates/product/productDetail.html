@@ -47,11 +47,10 @@
 
             <!-- 이미지 아래에 판매자 + 시간 + 프로필이미지 -->
 			<div class="d-flex align-items-center mt-3">
-				<img th:src="${profileImagePath}" 
-				     class="rounded-circle me-4 mb-2 mb-md-0" 
-				     alt="프로필 이미지" 
-				     width="80" height="80"
-				     style="border: 2px solid #ccc;" />
+				<img th:src="${profileImagePath}"
+				     alt="프로필 이미지"
+				     class="rounded-circle border me-3 mb-2 mb-md-0"
+				     style="width: 40px; height: 40px; object-fit: cover; aspect-ratio: 1 / 1;" />
 			  
 			  <div class="text-start text-muted small">
 			    판매자: <span class="fw-semibold" th:text="${product.sellerNickname}">정민</span> ·
