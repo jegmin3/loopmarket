@@ -15,7 +15,7 @@
       <tbody>
         <tr th:each="item : ${purchasedProducts}">
           <td>
-            <div class="ratio ratio-1x1 mx-auto" style="max-width: 100%;">
+            <div class="ratio ratio-1x1 mx-auto" style="max-width: 80px;">
               <img th:src="${item.thumbnailPath != null} ? ${item.thumbnailPath} : '/images/no-image.png'"
                    alt="상품 이미지"
                    class="img-fluid object-fit-cover rounded" />
