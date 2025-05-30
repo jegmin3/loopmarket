@@ -46,11 +46,19 @@
           style="width: 6px; height: 6px; opacity: 0.4;"></span>
             </div>
 
-            <!-- 이미지 아래에 판매자 + 시간 -->
-            <div class="text-start text-muted small mt-2">
-              판매자: <span class="fw-semibold" th:text="${product.sellerNickname}">정민</span> ·
-              <span th:text="${product.relativeTime}">3일 전</span>
-            </div>
+            <!-- 이미지 아래에 판매자 + 시간 + 프로필이미지 -->
+			<div class="d-flex align-items-center mt-3">
+				<img th:src="${profileImagePath}" 
+				     class="rounded-circle me-4 mb-2 mb-md-0" 
+				     alt="프로필 이미지" 
+				     width="80" height="80"
+				     style="border: 2px solid #ccc;" />
+			  
+			  <div class="text-start text-muted small">
+			    판매자: <span class="fw-semibold" th:text="${product.sellerNickname}">정민</span> ·
+			    <span th:text="${product.relativeTime}">3일 전</span>
+			  </div>
+			</div>
           </div>
 
 

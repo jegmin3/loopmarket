@@ -33,7 +33,6 @@
 						    <select name="newStatus" class="form-control form-control-sm w-auto mx-1">
 						        <option value="ACTIVE" th:selected="${userStatusMap[member.userId] == 'ACTIVE'}">ACTIVE</option>
 						        <option value="SUSPENDED" th:selected="${userStatusMap[member.userId] == 'SUSPENDED'}">SUSPENDED</option>
-						        <option value="DELETED" th:selected="${userStatusMap[member.userId] == 'DELETED'}">DELETED</option>
 						    </select>
 						    <button type="submit" class="btn btn-sm btn-primary change-status-btn">변경</button>
 						</form>
@@ -52,17 +51,97 @@
                 <li class="page-item"
                     th:each="i : ${#numbers.sequence(0, totalPages - 1)}"
                     th:classappend="${i == currentPage} ? 'active'">
-                    <a class="page-link" th:href="@{/admin/user(page=${i})}" th:text="${i + 1}">1</a>
+                    <!--<a class="page-link" th:href="@{/admin/user(page=${i})}" th:text="${i + 1}">1</a>-->
+					<a th:href="@{/admin/user(page=${i})}" class="page-link user-page-link" th:attr="data-page=${i}" th:text="${i + 1}">1</a>
                 </li>
 
                 <li class="page-item" th:classappend="${currentPage + 1 >= totalPages} ? 'disabled'">
                     <a class="page-link" th:href="@{/admin/user(page=${currentPage + 1})}">다음</a>
                 </li>
             </ul>
-		    </nav>
+		</nav>
       
     </div>
 	
-	<script src="js/admin_user.js"></script>
+	<script>
+	    function bindUserStatusFormEvents() {
+	        document.querySelectorAll('.user-status-form').forEach(form => {
+	            form.addEventListener('submit', function (e) {
+	                e.preventDefault();
+
+	                const formData = new FormData(form);
+	                const page = form.querySelector('input[name="page"]').value;
+
+	                fetch(form.getAttribute('action'), {
+	                    method: 'POST',
+	                    body: formData,
+	                    headers: {
+	                        'X-Requested-With': 'XMLHttpRequest'
+	                    }
+	                })
+	                .then(response => response.json())
+	                .then(data => {
+	                    if (data.success) {
+	                        Swal.fire({
+	                            icon: 'success',
+	                            title: '상태 변경 성공',
+	                            text: data.message,
+	                            timer: 1500,
+	                            showConfirmButton: false
+	                        }).then(() => {
+	                            loadAdminPage('/admin/user?page=' + page);
+	                        });
+	                    } else {
+	                        Swal.fire({
+	                            icon: 'error',
+	                            title: '실패',
+	                            text: data.message
+	                        });
+	                    }
+	                })
+	                .catch(error => {
+	                    Swal.fire({
+	                        icon: 'error',
+	                        title: '에러 발생',
+	                        text: '잠시 후 다시 시도해주세요.'
+	                    });
+	                    console.error('오류:', error);
+	                });
+	            });
+	        });
+	    }
+
+	    function bindPaginationEvents() {
+	        document.querySelectorAll('.user-page-link').forEach(link => {
+	            link.addEventListener('click', function (e) {
+	                e.preventDefault();
+	                const page = this.getAttribute('data-page');
+	                loadAdminPage('/admin/user?page=' + page);
+	            });
+	        });
+	    }
+
+	    function loadAdminPage(url) {
+	        fetch(url, {
+	            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+	        })
+	        .then(res => res.text())
+	        .then(html => {
+	            document.getElementById('admin-content').innerHTML = html;
+
+	            // ⚠️ 꼭 다시 바인딩 해줘야 함
+	            bindUserStatusFormEvents();
+	            bindPaginationEvents();
+	        })
+	        .catch(err => {
+	            console.error('페이지 로드 실패:', err);
+	            document.getElementById('admin-content').innerHTML = '<p style="color:red;">페이지를 불러오지 못했습니다.</p>';
+	        });
+	    }
+
+	    // ✅ 초기 바인딩 수동 호출
+	    bindUserStatusFormEvents();
+	    bindPaginationEvents();
+	</script>
 	
 </div>

@@ -38,7 +38,6 @@ public class UserStatusEntity {
 
     public enum AccountStatus {
         ACTIVE,
-        SUSPENDED,
-        DELETED
+        SUSPENDED
     }
 }

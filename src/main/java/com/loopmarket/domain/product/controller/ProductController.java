@@ -194,6 +194,10 @@ public class ProductController {
     MemberEntity seller = memberRepository.findById(product.getUserId().intValue()).orElse(null);
     if (seller != null) {
       product.setSellerNickname(seller.getNickname());
+      
+      	// 프로필 이미지 경로 생성 후 모델에 추가
+   		String profileImagePath = productService.getProfileImagePath(seller.getProfileImgId());
+   		model.addAttribute("profileImagePath", profileImagePath);
     }
 
     // 상대 시간 계산하여 설정
