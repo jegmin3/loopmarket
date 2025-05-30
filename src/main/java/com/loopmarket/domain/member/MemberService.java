@@ -6,8 +6,10 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.loopmarket.domain.member.MemberEntity.Role;
 import com.loopmarket.domain.member.dto.WeeklyJoinStatsDTO;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -64,6 +66,15 @@ public class MemberService {
     // 가입자 수 통계 뽑기-2
     public long getTotalMemberCount() {
         return memberRepository.count();
+    }
+    
+    // 유저 권한 변경
+    public void updateUserRole(Integer userId, Role newRole) {
+        MemberEntity member = memberRepository.findById(userId)
+            .orElseThrow(() -> new IllegalArgumentException("해당 유저를 찾을 수 없습니다."));
+        member.setRole(newRole);
+        member.setUpdatedAt(LocalDateTime.now());
+        memberRepository.save(member);
     }
     
     
