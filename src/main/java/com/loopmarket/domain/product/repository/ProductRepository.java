@@ -1,10 +1,12 @@
 package com.loopmarket.domain.product.repository;
 
+import com.loopmarket.domain.product.dto.CategoryProductStatsDTO;
 import com.loopmarket.domain.product.entity.ProductEntity;
 
 import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 /**
@@ -32,5 +34,26 @@ public interface ProductRepository extends JpaRepository<ProductEntity, Long> {
 
      // 검색어가 제목이나 설명에 포함된 상품 조회
     List<ProductEntity> findByTitleContainingIgnoreCaseOrDescriptionContainingIgnoreCase(String title, String description);
+    
+    // 상품 등록 수 통계용-1
+    @Query(value = 
+    	    "SELECT " +
+    	    "    DATE_FORMAT(created_at, '%Y-%u') AS week, " +
+    	    "    COUNT(*) AS count " +
+    	    "FROM products " +
+    	    "WHERE created_at >= DATE_SUB(CURDATE(), INTERVAL 1 MONTH) " +
+    	    "GROUP BY week " +
+    	    "ORDER BY week",
+    	    nativeQuery = true)
+    List<Object[]> countProductByWeekLastMonth();
+    
+    // 상품 등록 수 통계용-2
+    int countByCreatedAtAfter(java.time.LocalDateTime dateTime);
+    
+    // 카테고리별 상품 통계용
+    @Query(value = "SELECT p.ctg_code, c.ctg_name, COUNT(*) FROM products p JOIN category c ON p.ctg_code = c.ctg_code GROUP BY p.ctg_code, c.ctg_name", nativeQuery = true)
+    List<Object[]> countProductsByCategory();
+
+    
 
 }

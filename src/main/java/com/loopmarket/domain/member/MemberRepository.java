@@ -3,6 +3,7 @@ package com.loopmarket.domain.member;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 
 import com.loopmarket.domain.member.MemberEntity.Role;
 import com.loopmarket.domain.member.MemberEntity.Status;
@@ -32,8 +33,22 @@ public interface MemberRepository extends JpaRepository<MemberEntity, Integer> {
     // FCM 토큰으로 사용자 조회 (필요 시)
     Optional<MemberEntity> findByFcmToken(String fcmToken);
 
-    
     Page<MemberEntity> findAll(Pageable pageable); // 페이징 지원 메서드
+    
+    // 1달내에 가입자 수 통계용
+    @Query(value =
+            "SELECT " +
+            "DATE_FORMAT(created_at, '%Y-%u') AS week, " +
+            "COUNT(*) AS count " +
+            "FROM users " +
+            "WHERE created_at >= DATE_SUB(CURDATE(), INTERVAL 1 MONTH) " +
+            "GROUP BY week " +
+            "ORDER BY week",
+            nativeQuery = true)
+    List<Object[]> countNewMembersByWeekLastMonth();
+    
+    
+    
     
     
     // 소셜 로그인 대비
