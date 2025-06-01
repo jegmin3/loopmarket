@@ -14,7 +14,6 @@ document.addEventListener("DOMContentLoaded", async function () {
 
   const productId = window.checkoutProduct.productId;
   const sellerId = window.checkoutProduct.userId;
-  const buyerId = window.loginUser.id;
   const amount = window.checkoutProduct.price;
 
   totalText.innerText = `₩${amount.toLocaleString()}`;
@@ -35,7 +34,7 @@ document.addEventListener("DOMContentLoaded", async function () {
 
   // 결제 버튼 클릭 이벤트
   payBtn.addEventListener("click", async function () {
-    if (!buyerId || !productId || !sellerId) {
+    if (!productId || !sellerId) {
       await Swal.fire({
         icon: "error",
         title: "결제 불가",
@@ -58,7 +57,7 @@ document.addEventListener("DOMContentLoaded", async function () {
       const res = await fetch("/api/pay/direct", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ buyerId, sellerId, productId }),
+        body: JSON.stringify({ sellerId, productId }),
       });
 
       const data = await res.json();

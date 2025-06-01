@@ -142,3 +142,4 @@ $RECYCLE.BIN/
 .env
 
 # 참고 - https://www.toptal.com/developers/gitignore/api/windows,java,eclipse
+src/main/resources/config/firebase-service-key.json

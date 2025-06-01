@@ -2,6 +2,9 @@ package com.loopmarket.domain.product.controller;
 
 import com.loopmarket.domain.category.entity.Category;
 import com.loopmarket.domain.category.repository.CategoryRepository;
+
+import com.loopmarket.domain.category.service.CategoryService;
+
 import com.loopmarket.domain.member.MemberEntity;
 import com.loopmarket.domain.member.MemberRepository;
 import com.loopmarket.domain.product.entity.ProductEntity;
@@ -30,6 +33,9 @@ public class ProductController {
   private final CategoryRepository categoryRepository;
   // 회원 정보 조회용 리포지토리
   private final MemberRepository memberRepository;
+  
+  // 상품 수정용 서비스
+  private final CategoryService categoryService;
 
   /**
    * 전체 상품 목록 페이지를 보여줍니다.
@@ -188,6 +194,10 @@ public class ProductController {
     MemberEntity seller = memberRepository.findById(product.getUserId().intValue()).orElse(null);
     if (seller != null) {
       product.setSellerNickname(seller.getNickname());
+      
+      	// 프로필 이미지 경로 생성 후 모델에 추가
+   		String profileImagePath = productService.getProfileImagePath(seller.getProfileImgId());
+   		model.addAttribute("profileImagePath", profileImagePath);
     }
 
     // 상대 시간 계산하여 설정
@@ -198,4 +208,16 @@ public class ProductController {
     model.addAttribute("viewName", "product/productDetail");
     return "layout/layout";
   }
+  
+  // 상품 수정 페이지
+  @GetMapping("/products/edit/{id}")
+  public String editProductForm(@PathVariable Long id, Model model) {
+      ProductEntity product = productService.getProductById(id);
+      model.addAttribute("product", product);
+      model.addAttribute("mainCategories", categoryService.getMainCategories());
+      model.addAttribute("viewName", "product/product_edit_form");
+//      model.addAttribute("mainCategoryCode", mainCategoryCode);
+      return "layout/layout";
+  }
+  
 }

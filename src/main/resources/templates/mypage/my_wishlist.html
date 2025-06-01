@@ -1,0 +1,67 @@
+<div th:fragment="content">
+  <h6 class="mb-3" th:text="'찜한 상품 수 : ' + ${#lists.size(wishlistItems)}">상품 수 확인</h6>
+
+  <div class="table-responsive shadow-sm">
+    <table class="table align-middle table-bordered text-center mb-0">
+      <thead class="table-light">
+        <tr>
+          <th style="width: 100px;">상품</th>
+          <th>상품명</th>
+          <th>가격</th>
+          <th>찜 해제</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr th:each="item : ${wishlistItems}" th:attr="data-id=${item.productId}">
+          
+          <!-- 썸네일 -->
+          <td>
+            <div class="ratio ratio-1x1" style="max-width: 80px;">
+              <img th:src="@{${item.thumbnailPath}}" alt="상품 이미지"
+                   class="img-fluid object-fit-cover" />
+            </div>
+          </td>
+
+          <!-- 상품명 -->
+          <td>
+            <div th:if="${item.status != 'ONSALE'}">
+              <span class="text-decoration-line-through d-block" th:text="${item.title}">상품명</span>
+              <span class="badge bg-secondary mt-1">판매 완료</span>
+            </div>
+            <a th:if="${item.status == 'ONSALE'}"
+               th:href="@{/products/{id}(id=${item.productId})}"
+               class="text-decoration-none text-dark">
+              <span th:text="${item.title}">상품명</span>
+            </a>
+          </td>
+
+          <!-- 가격 -->
+          <td>
+            <span th:if="${item.status != 'ONSALE'}" class="text-decoration-line-through" th:text="'₩' + ${item.price}">가격</span>
+            <span th:if="${item.status == 'ONSALE'}" th:text="'₩' + ${item.price}">가격</span>
+          </td>
+
+          <!-- 찜 해제 버튼 -->
+          <td>
+            <button class="btn btn-link p-0 border-0 btn-remove-wishlist"
+                    th:data-id="${item.productId}"
+                    title="찜 해제">
+              <i class="bi bi-heart-fill text-danger fs-5"></i>
+            </button>
+          </td>
+        </tr>
+
+        <!-- 비어 있을 때 -->
+        <tr th:if="${#lists.isEmpty(wishlistItems)}">
+          <td colspan="4" class="text-center text-muted py-4">찜한 상품이 없습니다.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<style>
+  .text-decoration-line-through {
+    text-decoration: line-through !important;
+  }
+</style>

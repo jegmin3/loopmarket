@@ -5,7 +5,14 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import com.loopmarket.domain.member.MemberEntity.Role;
+import com.loopmarket.domain.member.dto.WeeklyJoinStatsDTO;
+
+import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -46,6 +53,31 @@ public class MemberService {
         memberRepository.save(member);
         return true;
     }
+    
+    // 가입자 수 통계 뽑기-1
+    public List<WeeklyJoinStatsDTO> getWeeklyJoinStats() {
+        List<Object[]> result = memberRepository.countNewMembersByWeekLastMonth();
+
+        return result.stream()
+        	    .map((Object[] row) -> new WeeklyJoinStatsDTO((String) row[0], ((Number) row[1]).intValue()))
+        	    .collect(Collectors.toList());
+    }
+    
+    // 가입자 수 통계 뽑기-2
+    public long getTotalMemberCount() {
+        return memberRepository.count();
+    }
+    
+    // 유저 권한 변경
+    public void updateUserRole(Integer userId, Role newRole) {
+        MemberEntity member = memberRepository.findById(userId)
+            .orElseThrow(() -> new IllegalArgumentException("해당 유저를 찾을 수 없습니다."));
+        member.setRole(newRole);
+        member.setUpdatedAt(LocalDateTime.now());
+        memberRepository.save(member);
+    }
+    
+    
 
     // TODO: (추가) 로그인 처리, 회원가입, 회원 정보 수정 등 다른 Member 관련 비즈니스 로직
 }
