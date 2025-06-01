@@ -93,9 +93,15 @@
               </button>
 
               <!-- 채팅하기 -->
-              <a th:href="@{/chat/start(productId=${product.productId})}" class="btn btn-outline-primary w-100 text-center">
-                채팅하기
-              </a>
+			  <!-- 상품 등록자가 아닐 경우에만 보여줌 -->
+			  <div th:if="${session.loginUser != null and session.loginUser.userId != product.userId}">
+			      <form th:action="@{/chat/enter}" method="post">
+			          <input type="hidden" name="targetId" th:value="${product.userId}" />
+			          <button type="submit" class="btn btn-outline-primary w-100 mt-3">
+			              <i class="bi bi-chat-dots"></i> 채팅하기
+			          </button>
+			      </form>
+			  </div>
 
               <!-- 택배로 구매하기 -->
               <a th:if="${product.isDelivery}"

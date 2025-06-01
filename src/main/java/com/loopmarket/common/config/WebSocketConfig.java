@@ -6,37 +6,38 @@ import org.springframework.web.socket.config.annotation.EnableWebSocketMessageBr
 import org.springframework.web.socket.config.annotation.StompEndpointRegistry;
 import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerConfigurer;
 
-/** STOMP 기반 웹소켓 메시지 브로커 설정 */
+/**
+ * WebSocket 설정 클래스
+ * - STOMP 프로토콜 기반 WebSocket 연결
+ * - 채팅 메시지 송수신 경로 지정
+ */
 @Configuration
-@EnableWebSocketMessageBroker // 웹소켓 메시지 브로커 활성화
+@EnableWebSocketMessageBroker // WebSocket 메시지 브로커 사용 선언
 public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
     /**
-     * 메시지 브로커를 구성합니다.
-     * 클라이언트가 메시지를 구독하고 발행하는 경로를 정의합니다.
-     */
-    @Override
-    public void configureMessageBroker(MessageBrokerRegistry config) {
-        // 1. 메시지를 구독하는 요청(서버 -> 클라이언트)의 prefix
-        // 클라이언트는 이 경로로 구독하여 메시지를 수신합니다. (예: /sub/chat/room/{roomId})
-        config.enableSimpleBroker("/sub");
-
-        // 2. 메시지를 발행하는 요청(클라이언트 -> 서버)의 prefix
-        // 클라이언트는 이 경로로 메시지를 서버의 @MessageMapping 메서드로 보냅니다. (예: /pub/chat/message)
-        config.setApplicationDestinationPrefixes("/pub");
-    }
-
-    /**
-     * 웹소켓 연결을 위한 STOMP 엔드포인트를 등록합니다.
-     * 클라이언트는 이 엔드포인트를 통해 웹소켓 연결을 시도합니다.
+     * 클라이언트가 메시지를 보낼 endpoint 경로 설정
+     * ex) /ws/chat으로 WebSocket 연결 요청
      */
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
-        // "/ws/chat" 경로로 웹소켓 연결을 허용합니다.
-        // SockJS를 사용하여 웹소켓을 지원하지 않는 브라우저에서도 폴백(fallback)을 통해 연결을 유지합니다.
-        registry.addEndpoint("/ws/chat")
-                .setAllowedOriginPatterns("*") // 모든 Origin 허용 (개발 환경용, 운영 시에는 특정 도메인으로 제한 권장)
-                .withSockJS(); // SockJS 지원 활성화
+        registry.addEndpoint("/ws/chat") // 클라이언트 연결용 endpoint
+                .setAllowedOriginPatterns("*") // CORS 허용
+                .withSockJS(); // SockJS 지원
+    }
+
+    /**
+     * STOMP 메시지 브로커 구성
+     * - /app: 클라이언트가 서버로 메시지 전송할 때 prefix
+     * - /queue, /topic: 서버가 클라이언트에게 메시지 보낼 때 prefix
+     */
+    @Override
+    public void configureMessageBroker(MessageBrokerRegistry registry) {
+        // 1. 서버로 보내는 메시지 경로 설정 (컨트롤러 @MessageMapping 핸들링 대상)
+        registry.setApplicationDestinationPrefixes("/app");
+
+        // 2. 클라이언트가 구독할 수 있는 경로 설정 (브로커가 처리)
+        registry.enableSimpleBroker("/queue", "/topic"); // 내 채널: /queue/myRoom
     }
 }
 

@@ -8,8 +8,8 @@ import javax.validation.constraints.NotBlank;
 import lombok.*;
 
 /** 로그인 후 세션에 저장할 회원 정보.
- *  password는 저장하지 말고, 필요시 다른 DTO를 사용해 MeberDTO정보중
- *  제한적으로 사용하도록 합시당 (일단 지금은 로그인 시 entity사용중이라 이 설명은 무시하셔도 돼요  */
+ *  password는 저장하면 안됩니다.
+ *  (일단 지금은 로그인 시 entity사용중이라 이 설명은 무시하셔도 돼요  */
 @Getter
 @Setter
 @NoArgsConstructor

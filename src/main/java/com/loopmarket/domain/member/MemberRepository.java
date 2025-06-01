@@ -4,6 +4,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import com.loopmarket.domain.member.MemberEntity.Role;
 import com.loopmarket.domain.member.MemberEntity.Status;
@@ -18,6 +19,12 @@ public interface MemberRepository extends JpaRepository<MemberEntity, Integer> {
     Optional<MemberEntity> findByEmail(String email);
     boolean existsByEmail(String email);
     boolean existsByNickname(String nickname);
+    
+    /**
+     * 사용자 ID로 닉네임만 조회 (optional)
+     */
+    @Query("SELECT m.nickname FROM MemberEntity m WHERE m.userId = :userId")
+    Optional<String> findNicknameByUserId(@Param("userId") Integer userId);
     
     // 닉네임으로 상요자 조회
     Optional<MemberEntity> findByNickname(String nickname);
