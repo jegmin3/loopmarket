@@ -160,6 +160,7 @@ public class PayServiceImpl implements PayService {
 
 		return payments.stream().map(payment -> {
 			ProductEntity product = productService.getProductById(payment.getProductId());
+            product.setThumbnailPath(imageService.getThumbnailPath(product.getProductId()));
 			return new ConfirmableItem(product.getProductId(), payment.getPaymentId(), product.getTitle(),
 					product.getPrice(), product.getThumbnailPath(), payment.getCreatedAt());
 		}).collect(Collectors.toList());
