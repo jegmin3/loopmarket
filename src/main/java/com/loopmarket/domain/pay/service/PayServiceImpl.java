@@ -1,5 +1,6 @@
 package com.loopmarket.domain.pay.service;
 
+import com.loopmarket.domain.image.service.ImageService;
 import com.loopmarket.domain.pay.dto.ConfirmableItem;
 import com.loopmarket.domain.pay.entity.MoneyTransaction;
 import com.loopmarket.domain.pay.entity.Payment;
@@ -30,6 +31,7 @@ public class PayServiceImpl implements PayService {
 	private final MoneyTransactionRepository moneyTransactionRepository;
 	private final PaymentRepository paymentRepository;
 	private final ProductService productService;
+	private final ImageService imageService;
 
 	/**
 	 * 페이 충전 : 포트원 결제 성공 이후 -> 잔액 증가 + 거래 기록
@@ -107,10 +109,9 @@ public class PayServiceImpl implements PayService {
 				.orElseThrow(() -> new IllegalArgumentException("잔액 정보가 존재하지 않습니다."));
 		userMoney.refund(amount);
 
-		// 3. 거래 기록 저장 (출금)
+		// 3. 거래 기록 저장 (출금) ← 상품 ID 포함
 		MoneyTransaction tx = new MoneyTransaction(
-			buyerId, TransactionType.SAFE_PAY, amount, TransactionStatus.SUCCESS, PaymentMethod.PAY
-		);
+				buyerId, productId, TransactionType.SAFE_PAY, amount, TransactionStatus.SUCCESS, PaymentMethod.PAY);
 		moneyTransactionRepository.save(tx);
 
 		// 4. 상품 상태를 SOLD로 변경
@@ -198,8 +199,8 @@ public class PayServiceImpl implements PayService {
 	    buyerMoney.refund(amount); // 내부적으로 잔액 차감
 	    userMoneyRepository.save(buyerMoney);
 
-	    // 2. 거래 기록 저장 (출금)
-	    MoneyTransaction outTx = new MoneyTransaction(buyerId, TransactionType.BUY_NOW, amount,
+	    // 2. 거래 기록 저장 (출금) ← 상품 ID 포함
+	    MoneyTransaction outTx = new MoneyTransaction(buyerId, productId, TransactionType.BUY_NOW, amount,
 	            TransactionStatus.SUCCESS, PaymentMethod.PAY);
 	    moneyTransactionRepository.save(outTx);
 
@@ -209,8 +210,8 @@ public class PayServiceImpl implements PayService {
 	    sellerMoney.charge(amount);
 	    userMoneyRepository.save(sellerMoney);
 
-	    // 4. 거래 기록 저장 (입금)
-	    MoneyTransaction inTx = new MoneyTransaction(sellerId, TransactionType.BUY_NOW, amount,
+	    // 4. 거래 기록 저장 (입금) ← 상품 ID 포함
+	    MoneyTransaction inTx = new MoneyTransaction(sellerId, productId, TransactionType.BUY_NOW, amount,
 	            TransactionStatus.SUCCESS, PaymentMethod.PAY);
 	    moneyTransactionRepository.save(inTx);
 
@@ -234,6 +235,7 @@ public class PayServiceImpl implements PayService {
 	    return payments.stream()
 	        .map(payment -> {
 	            ProductEntity product = productService.getProductById(payment.getProductId());
+	            product.setThumbnailPath(imageService.getThumbnailPath(product.getProductId()));
 	            return new ConfirmableItem(
 	                product.getProductId(),
 	                payment.getPaymentId(),
