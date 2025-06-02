@@ -101,7 +101,7 @@ $(document).ready(function () {
 		.then(data => {
 			const $balance = $('#pay-balance');
 			if (data.success) {
-				$balance.text(`${data.data.amount.toLocaleString()}원`);
+				$balance.text(`${data.balance.toLocaleString()}원`);
 			} else {
 				$balance.text('잔액 조회 실패');
 			}
