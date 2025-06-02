@@ -31,7 +31,10 @@
                      th:attr="data-id=${product.productId}"
                      onclick="selectProduct(this)">
                   <div class="d-flex align-items-center">
-                    <img th:src="${product.thumbnailPath}" alt="상품 이미지" width="60" height="60" class="me-3 rounded">
+					<img th:src="${product.thumbnailPath != null} ? ${product.thumbnailPath} : '/images/no-image.png'"
+					     alt="상품 이미지"
+					     style="width: 60px; height: 60px; object-fit: cover;"
+					     class="me-3 rounded" />
                     <div>
                       <div class="fw-bold" th:text="${product.title}">상품명</div>
                       <div class="text-muted small" th:text="'₩' + ${product.price}">가격</div>
