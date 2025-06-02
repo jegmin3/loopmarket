@@ -1,52 +1,115 @@
 let stompClient = null;
-const roomId = window.roomId;       // layout에서 설정
+// chatRoom.html의 하단 스크립트에 값 설정해둠
+let roomId = window.roomId; // 동기화 가능하게 let으로.
 const senderId = window.senderId;
+//const targetId = window.targetId;
 // WebSocket 연결
 let reconnectCount = 0;
+let socketConnected = false;
+const shownMessageIds = new Set();
 
 // 웹소켓 연결 함수
-function connect() {
-    const socket = new SockJS("/ws/chat");
-    stompClient = Stomp.over(socket);
-
-    stompClient.connect({}, function () {
-        console.log("✅ WebSocket 연결됨");
-
-        stompClient.subscribe(`/queue/room.${roomId}`, function (message) {
-            showMessage(JSON.parse(message.body));
-        });
-		// 입장시 읽음 처리
-        stompClient.send("/app/chat.read", {}, JSON.stringify({
-            roomId: roomId,
-            senderId: senderId
-        }));
-
-    }, function (error) {
-        console.warn("❌ WebSocket 연결 실패", error);
-        if (reconnectCount++ < 3) {
-            setTimeout(connect, 3000); // 3초 후 재시도
-        }
-    });
+function connect(callback) {
+		// 이미 연결되어 있다면
+		if (stompClient && stompClient.connected) {
+		    console.log("🔁 이미 연결됨");
+		    if (callback) callback();
+		    return;
+		}
+	    const socket = new SockJS("/ws/chat");
+	    stompClient = Stomp.over(socket);
+		
+		// 소켓 연결 시도 중 전송버튼 비활성화
+		$("#sendBtn").prop("disabled", true);
+		socketConnected = false;
+		
+	    stompClient.connect({}, function () {
+	        console.log("✅ WebSocket 연결됨");
+	
+			socketConnected = true; // 소켓 연결 완료 표시
+			$("#sendBtn").prop("disabled", false); // 전송 버튼 활성화
+			
+	        stompClient.subscribe(`/queue/room.${roomId}`, function (message) {
+				const msg = JSON.parse(message.body);
+				if (msg.type === "READ") return; // 읽음 메시지 무시
+				showMessage(msg);
+	        });
+			// 입장시 읽음 처리
+	        stompClient.send("/app/chat.read", {}, JSON.stringify({
+	            roomId: roomId,
+	            senderId: senderId
+	        }));
+			
+			if (typeof callback === "function") {
+			    callback();
+			}
+	
+	    }, function (error) {
+	        console.warn("❌ WebSocket 연결 실패", error);
+			socketConnected = false;
+			$("#sendBtn").prop("disabled", true); // 실패 시 전송버튼 다시 잠금
+	        if (reconnectCount++ < 3) {
+	            setTimeout(connect, 3000); // 3초 후 재시도
+	        }
+	    });
 }
+
+// 방이 없으면 생성하는 Ajax 함수(상품 상세보기에서 채팅하기 누를 시 사용함)
+function ensureChatRoom(content, callback) {
+    if (window.roomId) {
+        callback(content);
+    } else if (!window.roomId) {
+		// 방이 없으면 생성 후 connect → 콜백에서 전송
+        //console.log("채팅방 없음 → 서버에 생성 요청 중...");
+        $.post("/chat/api/create-room", { targetId: window.targetId }, function (res) {
+            if (res.roomId) {
+                window.roomId = res.roomId;
+				roomId = res.roomId;  // stompClient에서 올바른 roomId 구독하게 하기 위해 필요
+                console.log("채팅방 생성됨: roomId =", res.roomId);
+				
+				connect(() => {
+				    callback(content); // 소켓 연결된 후 메시지 전송
+				});
+            } else {
+                showAlert("error", "채팅방 생성 실패", "서버로부터 roomId를 받을 수 없습니다.");
+            } 
+		});
+    } else if (!socketConnected) {
+		connect(() => {
+			callback(content);
+		});
+	}
+}
+
 // 메시지 출력 (메시지 수신 시 호출됨)
 function showMessage(msg) {
     const chatArea = $("#chatArea");
     const isMine = (msg.senderId === senderId);
+	if (shownMessageIds.has(msg.msgId)) {
+	    if (isMine && msg.read) {
+	        // 이미 보낸 메시지인데 read=true로 갱신되면 읽음 표시만 업데이트
+	        $(`#msg-${msg.msgId} .read-status`).text("읽음");
+	    }
+	    return; // 새로 append하지 않음
+	}
+	
     const align = isMine ? "text-end" : "text-start";
     const bubble = isMine ? "bg-primary text-white" : "bg-light border text-dark";
 
     const time = msg.timestamp?.substring(11, 16) || "00:00"; // 'YYYY-MM-DDTHH:mm:ss'에서 HH:mm 추출
-    const readIcon = isMine ? (msg.read ? "✔✔" : "✔") : "";
-
-    const html = `
-        <div class="${align} mb-2">
-            <div class="d-inline-block p-2 rounded ${bubble}">
-                <div style="font-size: 1.05rem;">${msg.content}</div>
-                <small class="${isMine ? 'text-light' : 'text-muted'}">
-                    ${time} ${readIcon}
-                </small>
-            </div>
-        </div>`;
+    const readIcon = isMine ? (msg.read ? "읽음" : "안읽음") : "";
+	//const alreadyShown = shownMessageIds.has(msg.msgId);
+		
+	// 최초 출력
+	const html = `
+	    <div class="${align} mb-2">
+	        <div class="d-inline-block rounded ${bubble}" style="max-width: 80%; padding: 0.5rem 0.75rem;">
+	            <div style="font-size: 1.05rem;">${msg.content}</div>
+	        </div>
+	        <div style="font-size: 0.75rem;" class="${isMine ? 'text-end text-muted' : 'text-start text-muted'} mt-1">
+	            ${time} ${readIcon}
+	        </div>
+	    </div>`;
 
     chatArea.append(html);
     chatArea.scrollTop(chatArea[0].scrollHeight);
@@ -54,7 +117,10 @@ function showMessage(msg) {
 
 $(document).ready(function () {
 	console.log("chatRoom.js 로딩됨");
-	connect();
+	// roomId가 있을 때만 바로 WebSocket 연결(제어문 안쓰면 채팅하기 누르자마자 방 만들어짐.)
+	if (window.roomId) {
+	    connect(); // 새로고침 해도 소켓 연결 자동 실행
+	}
 	// 채팅방 나가기 sweetAlert 처리
 	$("#leaveBtn").click(function () {
 	    Swal.fire({
@@ -77,18 +143,22 @@ $(document).ready(function () {
 	    e.preventDefault();
 	    const content = $("#msgInput").val().trim();
 	    if (!content) return;
-	
-		if (stompClient && stompClient.connected) {
-		    stompClient.send("/app/chat.send", {}, JSON.stringify({
-		        roomId: roomId,
-		        senderId: senderId,
-		        content: content,
-		        type: "CHAT"
-		    }));
-		    $("#msgInput").val("");
-		} else {
-		    showAlert("error", "전송 실패", "💥 채팅 서버와 연결되지 않았습니다. 페이지를 새로고침 해주세요.");
-		}
+
+		// 메시지 전송 시, 방이 없으면 생성되게.
+		ensureChatRoom(content, function (content) {
+			// 연결 완료 보장 이후 전송
+			if (stompClient && stompClient.connected) {
+			    stompClient.send("/app/chat.send", {}, JSON.stringify({
+			        roomId: roomId,
+			        senderId: senderId,
+			        content: content,
+			        type: "CHAT"
+			    }));
+			    $("#msgInput").val("");
+			} else {
+			    showAlert("error", "전송 실패", "💥 채팅 서버와 연결되지 않았습니다. 페이지를 새로고침 해주세요.");
+			}
+		});
 	});
 	
 });	

@@ -40,6 +40,14 @@ public class ChatService {
                     return chatRoomRepository.save(newRoom);
                 });
     }
+    
+	/** 채팅방이 이미 있는지 확인만 하고, 없으면 생성하지 않음 */
+	public ChatRoomEntity findExistingRoom(Integer user1Id, Integer user2Id) {
+	    return chatRoomRepository
+	        .findByUser1IdAndUser2Id(user1Id, user2Id)
+	        .or(() -> chatRoomRepository.findByUser1IdAndUser2Id(user2Id, user1Id))
+	        .orElse(null); // ❌ 생성하지 않음
+	}
 
     /**
      * 특정 사용자가 참여한 모든 채팅방 목록 조회
@@ -59,6 +67,10 @@ public class ChatService {
      */
     @Transactional
     public ChatMessageEntity saveMessage(Long roomId, Integer senderId, String content) {
+        if (roomId == null) {
+            throw new IllegalArgumentException("roomId는 null일 수 없습니다.");
+        }
+    	
         ChatMessageEntity message = ChatMessageEntity.builder()
                 .roomId(roomId)
                 .senderId(senderId)
@@ -85,13 +97,16 @@ public class ChatService {
         List<ChatMessageEntity> unreadMessages = chatMessageRepository.findByRoomIdAndIsReadFalse(roomId);
 
         for (ChatMessageEntity msg : unreadMessages) {
-            // 본인이 보낸 메시지는 건너뜀
+            // 상대방이 보낸 메시지만 읽음처리
             if (!msg.getSenderId().equals(userId)) {
-                msg.setRead(false);
+                msg.setRead(true);
             }
         }
-        // 변경된 메시지 목록 반환 (flush는 트랜잭션 끝날 때 반영)
-		return unreadMessages;
+        // 영속성 컨텍스트 반영 후 재조회
+        chatMessageRepository.flush();
+        
+        // 변경된 메시지 목록 반환
+		return chatMessageRepository.findByRoomIdOrderBySentAtAsc(roomId);
     }
 
     /**
@@ -120,13 +135,13 @@ public class ChatService {
     public List<ChatRoomEntity> getActiveChatRooms(Integer userId) {
         List<ChatRoomEntity> allRooms = chatRoomRepository.findByUser1IdOrUser2Id(userId, userId);
 
-        // 내가 아직 나가지 않은 방만 반환
+        // 메시지가 0개인 방은 제외
         return allRooms.stream()
                 .filter(room ->
                     (room.getUser1Id().equals(userId) && !room.isUser1Leaved()) ||
                     (room.getUser2Id().equals(userId) && !room.isUser2Leaved())
                 )
-                .collect(Collectors.toList()); // toList는 java15이하에서 호환 안되는건가?
+                .collect(Collectors.toList()); // toList는 java15이하에서 호환 안됨.
     }
     
     public ChatRoomEntity getChatRoomById(Long roomId) {
