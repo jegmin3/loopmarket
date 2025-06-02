@@ -15,13 +15,20 @@
         <tr th:each="item : ${wishlistItems}" th:attr="data-id=${item.productId}">
           
           <!-- 썸네일 -->
-          <td>
-            <div class="ratio ratio-1x1" style="max-width: 80px;">
-              <img th:src="@{${item.thumbnailPath}}" alt="상품 이미지"
-                   class="img-fluid object-fit-cover" />
-            </div>
-          </td>
-
+		  <td>
+		    <a th:if="${item.status == 'ONSALE'}"
+		       th:href="@{/products/{id}(id=${item.productId})}"
+		       class="d-inline-block ratio ratio-1x1"
+		       style="max-width: 80px;">
+		      <img th:src="@{${item.thumbnailPath}}" alt="상품 이미지"
+		           class="img-fluid object-fit-cover" />
+		    </a>
+		    <div th:if="${item.status != 'ONSALE'}" class="ratio ratio-1x1" style="max-width: 80px;">
+		      <img th:src="@{${item.thumbnailPath}}" alt="상품 이미지"
+		           class="img-fluid object-fit-cover" />
+		    </div>
+		  </td>
+		  
           <!-- 상품명 -->
           <td>
             <div th:if="${item.status != 'ONSALE'}">
