@@ -6,20 +6,27 @@
         <p class="text-muted">참여 중인 채팅방이 없습니다.</p>
     </div>
 
-    <!-- 채팅방 목록 -->
-    <div class="list-group" th:if="${chatSummaries != null and !#lists.isEmpty(chatSummaries)}">
-        <a th:each="summary : ${chatSummaries}"
-           th:href="@{/chat/room/{id}(id=${summary.room.roomId})}"
-           class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+	<!-- 채팅방 목록 -->
+	<div class="list-group" th:if="${chatSummaries != null and !#lists.isEmpty(chatSummaries)}">
+	    <a th:each="summary : ${chatSummaries}"
+	       th:href="@{/chat/room/{id}(id=${summary.room.roomId})}"
+	       class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
 
-            <!-- 상대방 닉네임 -->
-            <span>
-                <i class="bi bi-person-circle me-2"></i>
-                <span th:text="${summary.opponentNickname}">상대방</span>
-            </span>
+	        <div class="d-flex flex-column">
+	            <!-- 닉네임 -->
+	            <div>
+	                <i class="bi bi-person-circle me-2"></i>
+	                <strong th:text="${summary.opponentNickname}">상대방</strong>
+	            </div>
 
-            <!-- 생성 시간 -->
-            <small class="text-muted" th:text="${#temporals.format(summary.room.createdAt, 'MM/dd HH:mm')}">00:00</small>
-        </a>
-    </div>
+	            <!-- 마지막 메시지 -->
+	            <div class="text-muted small" th:text="${summary.lastMessage}">(메시지 없음)</div>
+	        </div>
+
+	        <!-- 마지막 메시지 시간 -->
+	        <small class="text-muted" th:if="${summary.lastTime != null}"
+	               th:text="${#temporals.format(summary.lastTime, 'MM/dd HH:mm')}">00:00</small>
+	    </a>
+	</div>
+
 </div>

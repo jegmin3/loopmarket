@@ -155,9 +155,20 @@ public class ChatService {
         return rooms.stream().map(room -> {
             Integer opponentId = room.getUser1Id().equals(userId) ? room.getUser2Id() : room.getUser1Id();
             String nickname = getNicknameByUserId(opponentId);
-            return new ChatRoomSummaryDTO(room, nickname);
+
+            // ✅ 마지막 메시지 조회
+            ChatMessageEntity lastMessage = chatMessageRepository.findTopByRoomIdOrderBySentAtDesc(room.getRoomId())
+                    .orElse(null);
+
+            return new ChatRoomSummaryDTO(
+                room,
+                nickname,
+                lastMessage != null ? lastMessage.getContent() : "(메시지 없음)",
+                lastMessage != null ? lastMessage.getSentAt() : null
+            );
         }).collect(Collectors.toList());
     }
+
 
     
     
