@@ -59,25 +59,27 @@ public class ChatSocketController {
      */
     @MessageMapping("/chat.read")
     public void handleReadMessage(ChatMessageDTO messageDTO) {
-        List<ChatMessageEntity> updatedMessages = chatService.markMessagesAsRead(
-                messageDTO.getRoomId(),
-                messageDTO.getSenderId()
-        );
-
+    	
+    	chatService.markMessagesAsRead(messageDTO.getRoomId(), messageDTO.getSenderId());
+    	
+//        List<ChatMessageEntity> updatedMessages = chatService.markMessagesAsRead(
+//                messageDTO.getRoomId(),
+//                messageDTO.getSenderId()
+//        );
         // 읽음 처리된 메시지를 다시 클라이언트로 전송
-        for (ChatMessageEntity msg : updatedMessages) {
-            ChatMessageDTO response = ChatMessageDTO.builder()
-                    .roomId(msg.getRoomId())
-                    .senderId(msg.getSenderId())
-                    .content(msg.getContent())
-                    .type(ChatMessageDTO.MessageType.CHAT)
-                    .timestamp(msg.getSentAt().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME))
-                    .read(true) // 읽음 상태 반영
-                    .build();
-
-            // 해당 채팅방을 구독 중인 클라이언트에게 전송
-            messagingTemplate.convertAndSend("/queue/room." + msg.getRoomId(), response);
-        }
+//        for (ChatMessageEntity msg : updatedMessages) {
+//            ChatMessageDTO response = ChatMessageDTO.builder()
+//                    .roomId(msg.getRoomId())
+//                    .senderId(msg.getSenderId())
+//                    .content(msg.getContent())
+//                    .type(ChatMessageDTO.MessageType.CHAT)
+//                    .timestamp(msg.getSentAt().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME))
+//                    .read(true) // 읽음 상태 반영
+//                    .build();
+//
+//            // 해당 채팅방을 구독 중인 클라이언트에게 전송
+//            messagingTemplate.convertAndSend("/queue/room." + msg.getRoomId(), response);
+//        }
     }
 
 }

@@ -1,11 +1,6 @@
 <!-- templates/chat/chatRoom.html -->
 <div th:fragment="content">
 	
-	<!-- SockJS, StompJS 라이브러리 추가 -->
-	<script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
-	<script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script>
-
-	
     <h4 class="mb-4">💬 <span th:text="${targetNickname}">상대방 닉네임</span> 님과의 채팅</h4>
 
     <!-- 메시지 출력 영역 -->
@@ -13,7 +8,7 @@
 	    <div th:each="msg : ${messageList}" class="mb-2">
 
 	        <!-- 내가 보낸 메시지 -->
-	        <div th:if="${msg.senderId == loginUser.userId}" class="text-end">
+	        <div th:if="${msg.senderId == session.loginUser.userId}" class="text-end">
 	            <div class="d-inline-block p-2 rounded bg-primary text-white">
 	                <span th:text="${msg.content}" style="font-size: 1.05rem;"></span><br/>
 	                <small class="text-light">
@@ -24,7 +19,7 @@
 	        </div>
 
 	        <!-- 상대방이 보낸 메시지 -->
-	        <div th:if="${msg.senderId != loginUser.userId}" class="text-start">
+	        <div th:if="${msg.senderId != session.loginUser.userId}" class="text-start">
 	            <div class="d-inline-block p-2 rounded bg-light border">
 	                <span th:text="${msg.content}" style="font-size: 1.05rem;"></span><br/>
 	                <small class="text-muted">
@@ -48,90 +43,11 @@
 	<form id="leaveForm" th:action="@{/chat/leave}" method="post" style="display: none;">
 	    <input type="hidden" name="roomId" th:value="${roomId}" />
 	</form>
-
-    <!-- JS는 아래에 배치 -->
-    <script th:inline="javascript">
-        let stompClient = null;
-		const roomId = /*[[${roomId}]]*/ 0;
-		const senderId = /*[[${session.loginUser.userId}]]*/ 0;
-
-        // WebSocket 연결
-        function connect() {
-            const socket = new SockJS("/ws/chat");
-            stompClient = Stomp.over(socket);
-
-            stompClient.connect({}, function () {
-                console.log("🔌 WebSocket 연결됨");
-
-                stompClient.subscribe(`/queue/room.${roomId}`, function (message) {
-                    const msg = JSON.parse(message.body);
-                    showMessage(msg);
-                });
-
-                // 입장 시 읽음 처리
-                stompClient.send("/app/chat.read", {}, JSON.stringify({
-                    roomId: roomId,
-                    senderId: senderId
-                }));
-            });
-        }
-		
-		// 채팅방 나가기 sweetAlert 처리
-		$("#leaveBtn").click(function () {
-		    Swal.fire({
-		        title: "채팅방을 나가시겠습니까?",
-		        text: "나가면 채팅방에서 사라지고, 상대도 나가면 전체 삭제됩니다.",
-		        icon: "warning",
-		        showCancelButton: true,
-		        confirmButtonText: "네, 나갈게요",
-		        cancelButtonText: "취소",
-		        reverseButtons: true
-		    }).then((result) => {
-		        if (result.isConfirmed) {
-		            $("#leaveForm").submit();
-		        }
-		    });
-		});
-		
-        // 메시지 전송
-        $("#chatForm").submit(function (e) {
-            e.preventDefault();
-            const content = $("#msgInput").val().trim();
-            if (!content) return;
-
-            stompClient.send("/app/chat.send", {}, JSON.stringify({
-                roomId: roomId,
-                senderId: senderId,
-                content: content,
-                type: "CHAT"
-            }));
-
-            $("#msgInput").val("");
-        });
-
-        // 메시지 출력
-		function showMessage(msg) {
-		    const chatArea = $("#chatArea");
-		    const isMine = (msg.senderId === senderId);
-		    const align = isMine ? "text-end" : "text-start";
-		    const bubble = isMine ? "bg-primary text-white" : "bg-light border text-dark";
-
-		    const time = msg.timestamp?.substring(11, 16) || "00:00"; // 'YYYY-MM-DDTHH:mm:ss'에서 HH:mm 추출
-		    const readIcon = isMine ? (msg.read ? "✔✔" : "✔") : "";
-
-		    const html = `
-		        <div class="${align} mb-2">
-		            <div class="d-inline-block p-2 rounded ${bubble}">
-		                <div style="font-size: 1.05rem;">${msg.content}</div>
-		                <small class="${isMine ? 'text-light' : 'text-muted'}">
-		                    ${time} ${readIcon}
-		                </small>
-		            </div>
-		        </div>`;
-
-		    chatArea.append(html);
-		    chatArea.scrollTop(chatArea[0].scrollHeight);
-		}
-    </script>
+	
+	<!-- chatRoom.js용 전역변수 설정 -->
+	<script th:inline="javascript">
+	    window.roomId = /*[[${roomId}]]*/ 0;
+	    window.senderId = /*[[${session.loginUser.userId}]]*/ 0;
+	</script>
 
 </div>

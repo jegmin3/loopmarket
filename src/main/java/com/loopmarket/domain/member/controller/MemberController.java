@@ -57,7 +57,7 @@ public class MemberController extends BaseController {
 	    
 	    if (optionalMember.isEmpty()) {
 	        redirectAttributes.addFlashAttribute("errorMessage", "존재하지 않는 이메일입니다.");
-	        //return "redirect:/member/login";
+	        return "redirect:/member/login";
 	    }
 
 	    MemberEntity member = optionalMember.get();

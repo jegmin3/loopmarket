@@ -27,14 +27,13 @@
 	<!-- 본문 삽입 -->
 	<main class="container-fluid my-4" th:insert="${viewName} :: content"></main>
 
-
 	<!-- 공통 푸터 삽입-->
     <div th:replace="layout/footer :: footer"></div>
 
 </div>
 
 
-<!-- 알림 모달 -->
+<!-- 알림 모달창 -->
 <div class="modal fade" id="notifModal" tabindex="-1" aria-labelledby="notifModalLabel" aria-hidden="true">
   <div class="modal-dialog modal-dialog-scrollable modal-sm">
     <div class="modal-content">
@@ -49,99 +48,27 @@
   </div>
 </div>
 
-
-<!-- 이 스크립트는 향후 파일로 분리할 예정입니다. (보기 복잡해짐) -->
-<script>
-$(document).ready(function () {
-  // 서버에서 알림 수 조회 (비동기)
-  function loadNotifications() {
-    $.ajax({
-      url: "/api/notifications/unread", // Spring에서 제공하는 API 필요
-      method: "GET",
-      success: function (data) {
-        const count = data.count;
-        const list = data.notifications;
-
-        // 배지 표시
-        if (count > 0) {
-          $("#notifBadge").show().text(count > 9 ? '●' : count);
-        } else {
-          $("#notifBadge").hide();
-        }
-
-        // 목록 출력
-        if (list.length > 0) {
-          const html = list.map(n => `<div class="alert alert-light border-bottom small">${n.content}</div>`).join('');
-          $("#notifList").html(html);
-        } else {
-          $("#notifList").html('<p class="text-muted">알림이 없습니다.</p>');
-        }
-      }
-    });
-  }
-  // 모달 열릴 때마다 알림 불러오기
-  $('#notifModal').on('show.bs.modal', function () {
-    // 알림 목록 로딩
-    loadNotifications();
-
-    // 읽음 처리 요청
-    $.ajax({
-      url: "/api/alram/mark-read",
-      method: "PATCH"
-    }).done(function () {
-      $("#notifBadge").hide(); // 뱃지 초기화
-    });
-  });
-});
-
-// 클라이언트 측에서 SweetAlert2를 띄울 수 있는 전역 함수 정의
-window.showAlert = function(icon, title, text, timer = 1500) {
-    Swal.fire({
-        icon: icon,
-        title: title,
-        text: text,
-        timer: timer,
-        showConfirmButton: false
-    });
-};
-</script>
-
-<!-- 스윗 얼럿 -->
+<!-- 알람관련 js -->
+<script src="/js/common/alram.js"></script>
+<!-- 클라이언트 측에서 SweetAlert2를 띄울 수 있는 전역 함수 정의 -->
+<script src="/js/common/swal.js"></script>
+<!-- flush 메시지 처리 (백엔드에서 RedirectAttribute로 보낸 내용 처리) -->
 <script th:inline="javascript">
-  $(document).ready(function () {
-	const successMessage = /*[[${successMessage}]]*/ null;
-	const errorMessage = /*[[${errorMessage}]]*/ null;
-	const warnMessage = /*[[${warnMessage}]]*/ null;
+  // 파일분리 하려 했는데 파서가 인식을 못해서 inline js로 놔뒀어용
+  const successMessage = /*[[${successMessage}]]*/ null;
+  const errorMessage = /*[[${errorMessage}]]*/ null;
+  const warnMessage = /*[[${warnMessage}]]*/ null;
 
-    if (successMessage) {
-      Swal.fire({
-        icon: 'success',
-        //title: '성공!',
-        text: successMessage,
-        timer: 1500,
-        showConfirmButton: false
-      });
-    }
-    if (errorMessage) {
-      Swal.fire({
-        icon: 'error',
-        text: errorMessage,
-        timer: 1500,
-        showConfirmButton: false
-      });
-    }
-    if (warnMessage) {
-      Swal.fire({
-        icon: 'warning',
-        text: warnMessage,
-        timer: 1500,
-        showConfirmButton: false
-      });
-    }
-	
-  });
+  if (successMessage) showAlert("success", "완료", successMessage);
+  if (errorMessage) showAlert("error", "오류", errorMessage);
+  if (warnMessage) showAlert("warning", "주의", warnMessage);
 </script>
+<!-- 채팅룸js 조건부 로딩 -->
+<script th:if="${viewName == 'chat/chatRoom'}" th:src="@{/js/chat/chatRoom.js}"></script>
 
+<!-- SockJS, StompJS 라이브러리 추가(채팅용) -->
+<script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script>
 
 <!-- 위치기반 서비스 실행을 위해 위치 옮김 -->
 <!-- 카카오 맵 SDK 추가 -->

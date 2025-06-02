@@ -1,26 +1,25 @@
 <div th:fragment="content">
     <h4 class="mb-4">📨 나의 채팅방</h4>
 
-    <div th:if="${chatRooms.isEmpty()}">
+    <!-- 채팅방 없을 경우 메시지 -->
+    <div th:if="${chatSummaries != null and #lists.isEmpty(chatSummaries)}">
         <p class="text-muted">참여 중인 채팅방이 없습니다.</p>
     </div>
 
-    <div class="list-group">
-        <a th:each="room : ${chatRooms}"
-           th:href="@{'/chat/room/' + ${room.roomId}}"
+    <!-- 채팅방 목록 -->
+    <div class="list-group" th:if="${chatSummaries != null and !#lists.isEmpty(chatSummaries)}">
+        <a th:each="summary : ${chatSummaries}"
+           th:href="@{/chat/room/{id}(id=${summary.room.roomId})}"
            class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
 
             <!-- 상대방 닉네임 -->
-			<div class="list-group">
-			    <a th:each="summary : ${chatSummaries}"
-			       th:href="@{/chat/room/{id}(id=${summary.room.roomId})}"
-			       class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
-			        <span>
-			            <i class="bi bi-person-circle me-2"></i>
-			            <span th:text="${summary.opponentNickname}">상대방</span>
-			        </span>
-	        		<!-- 생성 시간 -->
-			        <small class="text-muted" th:text="${#temporals.format(summary.room.createdAt, 'MM/dd HH:mm')}">00:00</small>
-			    </a>
-			</div>
-	</div>
+            <span>
+                <i class="bi bi-person-circle me-2"></i>
+                <span th:text="${summary.opponentNickname}">상대방</span>
+            </span>
+
+            <!-- 생성 시간 -->
+            <small class="text-muted" th:text="${#temporals.format(summary.room.createdAt, 'MM/dd HH:mm')}">00:00</small>
+        </a>
+    </div>
+</div>

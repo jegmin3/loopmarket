@@ -1,6 +1,7 @@
 package com.loopmarket.domain.chat.controller;
 
 import java.util.List;
+import java.util.NoSuchElementException;
 
 import javax.servlet.http.HttpSession;
 
@@ -23,21 +24,33 @@ import lombok.RequiredArgsConstructor;
 
 @Controller
 @RequiredArgsConstructor
-public class ChatController extends BaseController{
+public class ChatController extends BaseController {
 	
 	private final ChatService chatService;
 	
+	/** 채팅기록에서 채팅방 진입 */
 	@GetMapping("/chat/room/{roomId}")
 	public String viewChatRoom(@PathVariable Long roomId,
 	                           HttpSession session,
-	                           Model model) {
+	                           Model model,
+	                           RedirectAttributes redirectAttributes) {
 
 	    // 로그인 사용자 정보
 		MemberEntity loginUser = getLoginUser();
+	    if (loginUser == null) {
+	        redirectAttributes.addFlashAttribute("errorMessage", "로그인 후 이용해주세요.");
+	        return "redirect:/member/login";
+	    }
 	    Integer userId = loginUser.getUserId();
 
 	    // 채팅방 조회
-	    ChatRoomEntity room = chatService.getChatRoomById(roomId);
+	    ChatRoomEntity room;
+	    try {
+	        room = chatService.getChatRoomById(roomId);
+	    } catch (NoSuchElementException e) {
+	        redirectAttributes.addFlashAttribute("errorMessage", "존재하지 않는 채팅방입니다.");
+	        return "redirect:/chat/list";
+	    }
 
 	    // 본인이 나간 방이면 접근 불가 처리
 	    if ((room.getUser1Id().equals(userId) && room.isUser1Leaved()) ||
@@ -58,9 +71,13 @@ public class ChatController extends BaseController{
 	    model.addAttribute("messageList", messages);
 	    model.addAttribute("targetNickname", targetNickname);
 
-	    return render("chat/chatRoom", model); // layout.html 템플릿 기준
+	    return render("chat/chatRoom", model);
 	}
-
+	
+	/**
+	 * 상품 상세페이지에서 채팅하기 누를 시(POST 요청)
+	 * 채팅방을 생성하거나, 기존의 채팅방을 찾아 입장함.
+	 */
 	@PostMapping("/chat/enter")
 	public String enterChat(@RequestParam Integer targetId,
 	                        HttpSession session,
@@ -69,20 +86,29 @@ public class ChatController extends BaseController{
 
 	    // 로그인 사용자 ID 가져오기
 	    MemberEntity loginUser = getLoginUser();
+	    if (loginUser == null) {
+	        redirectAttributes.addFlashAttribute("errorMessage", "로그인 후 이용해주세요.");
+	        return "redirect:/member/login";
+	    }
+	    
 	    Integer userId = loginUser.getUserId();
 	    
 	    // 자기 자신과는 채팅 못함
 	    if (userId.equals(targetId)) {
 	        redirectAttributes.addFlashAttribute("errorMessage", "자기 자신과는 채팅할 수 없습니다.");
-	        return ""; // 혹은 현재 페이지
+	        return "redirects:/products";
 	    }
 
 	    // 채팅방 입장 또는 생성
 	    ChatRoomEntity room = chatService.enterRoom(userId, targetId);
+	    if (room == null) {
+	        redirectAttributes.addFlashAttribute("errorMessage", "채팅방 생성에 실패했습니다.");
+	        return "redirect:/products";
+	    }
 	    
 	    // 메시지 불러오기
 	    List<ChatMessageEntity> messageList = chatService.getMessages(room.getRoomId());
-	    // 상대방 닉네임 가져오기 (예시: 서비스에서 받아오기)
+	    // 상대방 닉네임 가져오기
 	    String targetNickname = chatService.getNicknameByUserId(targetId);
 	    
 	    // 뷰 데이터 설정
@@ -109,10 +135,16 @@ public class ChatController extends BaseController{
 	    redirectAttributes.addFlashAttribute("successMessage", "채팅방을 나갔습니다.");
 	    return "redirect:/"; // 나중에 반환경로 수정해야함
 	}
-
+	
+	/** 채팅 목록으로 이동 */
 	@GetMapping("/chat/list")
-	public String chatList(Model model, HttpSession session) {
+	public String chatList(Model model, HttpSession session, RedirectAttributes redirectAttributes) {
 		MemberEntity loginUser = getLoginUser();
+		if (loginUser == null) {
+			redirectAttributes.addFlashAttribute("errorMessage", "로그인이 필요합니다.");
+			return "redirect:/member/login";
+		}
+		
 		Integer userId = loginUser.getUserId();
 		
 		List<ChatRoomSummaryDTO> summaries = chatService.getChatRoomSummaries(userId);
