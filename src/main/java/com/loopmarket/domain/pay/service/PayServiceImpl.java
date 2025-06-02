@@ -1,5 +1,6 @@
 package com.loopmarket.domain.pay.service;
 
+import com.loopmarket.domain.image.service.ImageService;
 import com.loopmarket.domain.pay.dto.ConfirmableItem;
 import com.loopmarket.domain.pay.entity.MoneyTransaction;
 import com.loopmarket.domain.pay.entity.Payment;
@@ -30,6 +31,7 @@ public class PayServiceImpl implements PayService {
 	private final MoneyTransactionRepository moneyTransactionRepository;
 	private final PaymentRepository paymentRepository;
 	private final ProductService productService;
+	private final ImageService imageService;
 
 	/**
 	 * 페이 충전 : 포트원 결제 성공 이후 -> 잔액 증가 + 거래 기록
@@ -233,6 +235,7 @@ public class PayServiceImpl implements PayService {
 	    return payments.stream()
 	        .map(payment -> {
 	            ProductEntity product = productService.getProductById(payment.getProductId());
+	            product.setThumbnailPath(imageService.getThumbnailPath(product.getProductId()));
 	            return new ConfirmableItem(
 	                product.getProductId(),
 	                payment.getPaymentId(),

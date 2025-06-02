@@ -19,7 +19,7 @@
 					<td>
 						<a th:href="@{/products/{id}(id=${product.productId})}" class="d-inline-block ratio ratio-1x1"
 							style="max-width: 80px;">
-							<img th:src="${product.thumbnailPath != null} ? ${product.thumbnailPath} : '/images/no-image.png'"
+							<img th:src="${product.thumbnailPath != null} ? ${product.thumbnailPath} : '/img/no-image.png'"
 								alt="상품 이미지" class="img-fluid object-fit-cover" />
 						</a>
 					</td>
