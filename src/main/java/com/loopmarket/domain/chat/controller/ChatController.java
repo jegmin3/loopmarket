@@ -1,50 +1,160 @@
 package com.loopmarket.domain.chat.controller;
 
-import lombok.RequiredArgsConstructor;
+import java.util.List;
+import java.util.NoSuchElementException;
 
-import org.springframework.messaging.handler.annotation.MessageMapping; // STOMP 메시지 매핑
-import org.springframework.messaging.handler.annotation.Payload; // 메시지 페이로드 주입
+import javax.servlet.http.HttpSession;
+
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.loopmarket.common.controller.BaseController;
-import com.loopmarket.domain.chat.dto.ChatMessageDTO;
+import com.loopmarket.domain.chat.dto.ChatRoomSummaryDTO;
+import com.loopmarket.domain.chat.entity.ChatMessageEntity;
+import com.loopmarket.domain.chat.entity.ChatRoomEntity;
 import com.loopmarket.domain.chat.service.ChatService;
 import com.loopmarket.domain.member.MemberEntity;
 
-/** 웹소켓(STOMP) 메시지를 처리하는 컨트롤러 */
+import lombok.RequiredArgsConstructor;
+
 @Controller
 @RequiredArgsConstructor
 public class ChatController extends BaseController {
+	
+	private final ChatService chatService;
+	
+	/** 채팅기록에서 채팅방 진입 */
+	@GetMapping("/chat/room/{roomId}")
+	public String viewChatRoom(@PathVariable Long roomId,
+	                           HttpSession session,
+	                           Model model,
+	                           RedirectAttributes redirectAttributes) {
 
-    private final ChatService chatService;
+	    // 로그인 사용자 정보
+		MemberEntity loginUser = getLoginUser();
+	    if (loginUser == null) {
+	        redirectAttributes.addFlashAttribute("errorMessage", "로그인 후 이용해주세요.");
+	        return "redirect:/member/login";
+	    }
+	    Integer userId = loginUser.getUserId();
 
-    /**
-     * 클라이언트가 "/pub/chat/message" 경로로 메시지를 발행할 때 처리합니다.
-     * 메시지 전송, 채팅방 입장/퇴장 등 모든 채팅 관련 메시지를 처리합니다.
-     *
-     * @param chatMessageDTO 클라이언트로부터 수신한 채팅 메시지 DTO
-     */
-    @MessageMapping("/chat/message") // /pub/chat/message 에 매핑 (WebSocketConfig에서 설정)
-    public void message(@Payload ChatMessageDTO chatMessageDTO) {
-        // ChatService를 통해 메시지 처리 (저장, 웹소켓 브로드캐스팅, FCM 알림 등)
-        chatService.handleChatMessage(chatMessageDTO);
-    }
-    
-    @GetMapping("/chat/page")
-    public String goChatPage(Model model, RedirectAttributes redirectAttributes) {
-    	MemberEntity loginUser = getLoginUser();
-        if (loginUser == null) {
-        	redirectAttributes.addFlashAttribute("errorMessage", "로그인이 필요합니다.");
-        	return "redirect:/member/login";
-        }
-    	return render("chat/chatRoom", model);
-    }
+	    // 채팅방 조회
+	    ChatRoomEntity room;
+	    try {
+	        room = chatService.getChatRoomById(roomId);
+	    } catch (NoSuchElementException e) {
+	        redirectAttributes.addFlashAttribute("errorMessage", "존재하지 않는 채팅방입니다.");
+	        return "redirect:/chat/list";
+	    }
 
-    // TODO: (선택 사항) 웹소켓 연결/연결 해제 이벤트를 처리하는 로직 추가 가능
-    // SimpAnnotationMethodMessageHandler 에서 WebSocketEventListener 등을 사용하여
-    // connect, disconnect 이벤트를 감지하여 사용자 온라인 상태 관리 로직을 구현할 수 있습니다.
-    // 이는 ChatService의 isReceiverOnline 로직과 연동될 수 있습니다.
+	    // 본인이 나간 방이면 접근 불가 처리
+	    if ((room.getUser1Id().equals(userId) && room.isUser1Leaved()) ||
+	        (room.getUser2Id().equals(userId) && room.isUser2Leaved())) {
+	        model.addAttribute("errorMessage", "이미 나간 채팅방입니다.");
+	        return "redirect:/chat/list";
+	    }
+
+	    // 메시지 불러오기
+	    List<ChatMessageEntity> messages = chatService.getMessages(roomId);
+
+	    // 상대방 ID → 닉네임 조회
+	    Integer opponentId = room.getUser1Id().equals(userId) ? room.getUser2Id() : room.getUser1Id();
+	    String targetNickname = chatService.getNicknameByUserId(opponentId);
+
+	    // 모델 데이터 전달
+	    model.addAttribute("roomId", roomId);
+	    model.addAttribute("messageList", messages);
+	    model.addAttribute("targetNickname", targetNickname);
+
+	    return render("chat/chatRoom", model);
+	}
+	
+	/**
+	 * 상품 상세페이지에서 채팅하기 누를 시(POST 요청)
+	 * 채팅방을 생성하거나, 기존의 채팅방을 찾아 입장함.
+	 */
+	@PostMapping("/chat/enter")
+	public String enterChat(@RequestParam Integer targetId,
+	                        HttpSession session,
+	                        Model model,
+	                        RedirectAttributes redirectAttributes) {
+
+	    // 로그인 사용자 ID 가져오기
+	    MemberEntity loginUser = getLoginUser();
+	    if (loginUser == null) {
+	        redirectAttributes.addFlashAttribute("errorMessage", "로그인 후 이용해주세요.");
+	        return "redirect:/member/login";
+	    }
+	    
+	    Integer userId = loginUser.getUserId();
+	    
+	    // 자기 자신과는 채팅 못함
+	    if (userId.equals(targetId)) {
+	        redirectAttributes.addFlashAttribute("errorMessage", "자기 자신과는 채팅할 수 없습니다.");
+	        return "redirects:/products";
+	    }
+
+	    // 채팅방 입장 또는 생성
+	    ChatRoomEntity room = chatService.enterRoom(userId, targetId);
+	    if (room == null) {
+	        redirectAttributes.addFlashAttribute("errorMessage", "채팅방 생성에 실패했습니다.");
+	        return "redirect:/products";
+	    }
+	    
+	    // 메시지 불러오기
+	    List<ChatMessageEntity> messageList = chatService.getMessages(room.getRoomId());
+	    // 상대방 닉네임 가져오기
+	    String targetNickname = chatService.getNicknameByUserId(targetId);
+	    
+	    // 뷰 데이터 설정
+	    model.addAttribute("roomId", room.getRoomId());
+	    model.addAttribute("messageList", messageList);
+	    model.addAttribute("targetNickname", targetNickname);
+	    
+	    // 해당 채팅방 페이지로 리다이렉트
+	    return render("chat/chatRoom", model);
+	}
+	
+	/** 채팅창 나가기 */
+	@PostMapping("/chat/leave")
+	public String leaveRoom(@RequestParam Long roomId,
+	                        HttpSession session,
+	                        RedirectAttributes redirectAttributes) {
+		
+		MemberEntity loginUser = getLoginUser(); 
+	    Integer userId = loginUser.getUserId();
+
+	    // 나가기 처리
+	    chatService.leaveRoom(roomId, userId);
+
+	    redirectAttributes.addFlashAttribute("successMessage", "채팅방을 나갔습니다.");
+	    return "redirect:/"; // 나중에 반환경로 수정해야함
+	}
+	
+	/** 채팅 목록으로 이동 */
+	@GetMapping("/chat/list")
+	public String chatList(Model model, HttpSession session, RedirectAttributes redirectAttributes) {
+		MemberEntity loginUser = getLoginUser();
+		if (loginUser == null) {
+			redirectAttributes.addFlashAttribute("errorMessage", "로그인이 필요합니다.");
+			return "redirect:/member/login";
+		}
+		
+		Integer userId = loginUser.getUserId();
+		
+		List<ChatRoomSummaryDTO> summaries = chatService.getChatRoomSummaries(userId);
+	    //List<ChatRoomEntity> activeRooms = chatService.getActiveChatRooms(loginUser.getUserId());
+	    //model.addAttribute("chatRooms", activeRooms);
+	    model.addAttribute("chatSummaries", summaries);
+
+	    return render("chat/chatList", model);
+	}
+
+	
+
 }

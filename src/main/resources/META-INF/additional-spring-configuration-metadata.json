@@ -1,5 +1,32 @@
-{"properties": [{
-  "name": "firebase.sdk.path",
-  "type": "java.lang.String",
-  "description": "A description for 'firebase.sdk.path'"
-}]}
+{"properties": [
+  {
+    "name": "openai.api.key",
+    "type": "java.lang.String",
+    "description": "A description for 'openai.api.key'"
+  },
+  {
+    "name": "cloud.aws.credentials.access-key",
+    "type": "java.lang.String",
+    "description": "A description for 'cloud.aws.credentials.access-key'"
+  },
+  {
+    "name": "cloud.aws.credentials.secret-key",
+    "type": "java.lang.String",
+    "description": "A description for 'cloud.aws.credentials.secret-key'"
+  },
+  {
+    "name": "cloud.aws.region.static",
+    "type": "java.lang.String",
+    "description": "A description for 'cloud.aws.region.static'"
+  },
+  {
+    "name": "cloud.aws.s3.bucket",
+    "type": "java.lang.String",
+    "description": "A description for 'cloud.aws.s3.bucket'"
+  },
+  {
+    "name": "firebase.sdk.path",
+    "type": "java.lang.String",
+    "description": "A description for 'firebase.sdk.path'"
+  }
+]}

@@ -57,7 +57,7 @@ public class MemberController extends BaseController {
 	    
 	    if (optionalMember.isEmpty()) {
 	        redirectAttributes.addFlashAttribute("errorMessage", "존재하지 않는 이메일입니다.");
-	        //return "redirect:/member/login";
+	        return "redirect:/member/login";
 	    }
 
 	    MemberEntity member = optionalMember.get();
@@ -76,7 +76,7 @@ public class MemberController extends BaseController {
 	    // 비밀번호 체크
 	    if (!passwordEncoder.matches(dto.getPassword(), member.getPassword())) {
 	        redirectAttributes.addFlashAttribute("errorMessage", "비밀번호가 일치하지 않습니다.");
-	        //return "redirect:/member/login";
+	        return "redirect:/member/login";
 	    }
 
 	    // Entity → DTO 변환
