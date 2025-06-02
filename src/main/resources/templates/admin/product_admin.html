@@ -1,8 +1,27 @@
-<!-- 상품 관리 페이지 -->
+<!-- 상품 관리 페이지 fragment -->
 <div th:fragment="content">
-	<div class="container">
-	    <div class="text-center">
-	        <h2 class="productPage">상품 관리 페이지 입니다.</h2>
-	    </div>
-	</div>
+  <div class="container">
+    <div class="text-center mb-4">
+      <h2 class="productPage">상품 관리 페이지 입니다.</h2>
+    </div>
+
+    <div id="product-list">
+      <table class="table table-bordered text-center">
+        <thead>
+          <tr>
+            <th>상품명</th>
+            <th>가격</th>
+            <th>카테고리</th>
+            <th>상태</th>
+            <th>관리</th>
+          </tr>
+        </thead>
+        <tbody id="product-tbody">
+          <!-- AJAX로 받아온 상품 행이 여기 추가됨 -->
+        </tbody>
+      </table>
+    </div>
+  </div>
 </div>
+
+<script src="/js/admin_products.js"></script>

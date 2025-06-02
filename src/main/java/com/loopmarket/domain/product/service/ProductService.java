@@ -7,7 +7,11 @@ import com.loopmarket.domain.product.dto.WeeklyProductStatsDTO;
 import com.loopmarket.domain.product.entity.ProductEntity;
 import com.loopmarket.domain.product.repository.ProductRepository;
 import lombok.RequiredArgsConstructor;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;
@@ -234,4 +238,30 @@ public class ProductService {
 	                    ((Number) row[2]).intValue()))    // count
 	            .collect(Collectors.toList());
 	}
+	
+	@Transactional
+	public void updateHiddenStatus(Long productId, boolean hidden) {
+	    ProductEntity product = productRepository.findById(productId)
+	        .orElseThrow(() -> new RuntimeException("상품 없음"));
+	    product.setIsHidden(hidden);
+	}
+
+	@Transactional
+	public void updateCategory(Long productId, Integer newCode) {
+	    ProductEntity product = productRepository.findById(productId)
+	        .orElseThrow(() -> new RuntimeException("상품 없음"));
+	    product.setCtgCode(newCode);
+	}
+
+	@Transactional
+	public void deleteProductById(Long productId) {
+	    productRepository.deleteById(productId);
+	}
+	
+	public Page<ProductEntity> getProductsPage(Pageable pageable) {
+	    return productRepository.findAll(pageable);
+	}
+	
+	
+	
 }
