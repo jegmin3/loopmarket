@@ -44,9 +44,20 @@ public class MoneyTransaction {
     @Column(name = "created_at")
     private LocalDateTime createdAt = LocalDateTime.now();
     
-    // 생성자: 거래 기록 저장 시 사용 (PayServiceImpl.java)
+ // 기존 생성자 (productId 없이) - 충전, 환불에 사용
     public MoneyTransaction(Long userId, TransactionType type, int amount, TransactionStatus status, PaymentMethod method) {
         this.userId = userId;
+        this.type = type;
+        this.amount = amount;
+        this.status = status;
+        this.method = method;
+        this.createdAt = LocalDateTime.now();
+    }
+
+    // 새로운 생성자 (productId 포함) - 상품 기반 거래에 사용
+    public MoneyTransaction(Long userId, Long productId, TransactionType type, int amount, TransactionStatus status, PaymentMethod method) {
+        this.userId = userId;
+        this.productId = productId;
         this.type = type;
         this.amount = amount;
         this.status = status;
