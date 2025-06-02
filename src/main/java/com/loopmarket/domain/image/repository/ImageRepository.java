@@ -28,4 +28,14 @@ public interface ImageRepository extends JpaRepository<ImageEntity, Long> {
    * @return 이미지 리스트
    */
   List<ImageEntity> findByTargetTableAndTargetId(String targetTable, Long targetId);
+  
+  /**
+   * 특정 대상 테이블명과 ID에 연결된 첫 번째 이미지 조회
+   * - 예: 사용자 프로필 이미지 조회 시 사용
+   *
+   * @param targetTable 대상 테이블명 (예: "users")
+   * @param targetId    대상 ID (예: 사용자 ID)
+   * @return 첫 번째 이미지 (없으면 null)
+   */
+  ImageEntity findFirstByTargetTableAndTargetId(String targetTable, Long targetId);
 }
