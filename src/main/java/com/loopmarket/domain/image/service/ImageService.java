@@ -51,4 +51,15 @@ public class ImageService {
     }
     return thumbnail.getImagePath();
   }
+  
+  public String getProfilePath(Integer userId) {
+	    ImageEntity image = imageRepository.findFirstByTargetTableAndTargetId("users", userId.longValue());
+
+	    // 이미지가 없거나 경로가 비어 있으면 기본 이미지 경로 반환
+	    if (image == null || image.getImagePath() == null || image.getImagePath().isBlank()) {
+	        return "/images/default-profile.png"; // 실제 존재하는 기본 이미지 경로로 수정하세요
+	    }
+
+	    return image.getImagePath();
+	}
 }
