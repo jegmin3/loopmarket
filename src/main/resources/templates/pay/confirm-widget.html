@@ -36,17 +36,26 @@
                     
                     <!-- 썸네일이 있을 때만 이미지 출력 -->
                     <th:block th:if="${item.thumbnailPath != null}">
-						<div class="ratio ratio-1x1 me-3" style="width: 60px; max-width: 60px;">
-						  <img th:src="${item.thumbnailPath != null} ? ${item.thumbnailPath} : '/images/no-image.png'"
-						       alt="상품 이미지"
-						       class="img-fluid rounded object-fit-cover" />
-						</div>
-                    </th:block>
+						<div class="d-flex align-items-center">
+						  <!-- 항상 렌더링되는 썸네일 wrapper -->
+						  <div class="ratio ratio-1x1 me-3" style="width: 60px; max-width: 60px;">
+						    <img th:if="${item.thumbnailPath != null}"
+						         th:src="${item.thumbnailPath}"
+						         alt="상품 이미지"
+						         class="img-fluid rounded object-fit-cover" />
+						         
+						    <img th:if="${item.thumbnailPath == null}"
+						         src="/img/no-image.png"
+						         alt="기본 이미지"
+						         class="img-fluid rounded object-fit-cover" />
+						  </div>
 
-                    <div>
-                      <div class="fw-bold" th:text="${item.title ?: '제목없음'}">상품명</div>
-                      <div class="text-muted small" th:text="'₩' + (${item.price} ?: 0)">가격</div>
-                    </div>
+						  <!-- 텍스트 영역 -->
+						  <div class="flex-grow-1 text-start">
+						    <div class="fw-bold" th:text="${item.title ?: '제목없음'}">상품명</div>
+						    <div class="text-muted small" th:text="'₩' + (${item.price} ?: 0)">가격</div>
+						  </div>
+						</div>
                   </div>
                 </div>
               </div>

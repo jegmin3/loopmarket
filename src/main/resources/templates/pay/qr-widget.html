@@ -30,16 +30,26 @@
                 <div class="card p-2 h-100" style="cursor: pointer;"
                      th:attr="data-id=${product.productId}"
                      onclick="selectProduct(this)">
-                  <div class="d-flex align-items-center">
-					<img th:src="${product.thumbnailPath != null} ? ${product.thumbnailPath} : '/images/no-image.png'"
-					     alt="상품 이미지"
-					     style="width: 60px; height: 60px; object-fit: cover;"
-					     class="me-3 rounded" />
-                    <div>
-                      <div class="fw-bold" th:text="${product.title}">상품명</div>
-                      <div class="text-muted small" th:text="'₩' + ${product.price}">가격</div>
-                    </div>
-                  </div>
+					 <div class="d-flex align-items-center">
+					   <!-- 썸네일 wrapper: 항상 렌더링 -->
+					   <div class="ratio ratio-1x1 me-3" style="width: 60px; max-width: 60px;">
+					     <img th:if="${product.thumbnailPath != null}"
+					          th:src="${product.thumbnailPath}"
+					          alt="상품 이미지"
+					          class="img-fluid rounded object-fit-cover" />
+					          
+					     <img th:if="${product.thumbnailPath == null}"
+					          src="/img/no-image.png"
+					          alt="기본 이미지"
+					          class="img-fluid rounded object-fit-cover" />
+					   </div>
+
+					   <!-- 텍스트 -->
+					   <div class="flex-grow-1 text-start">
+					     <div class="fw-bold" th:text="${product.title}">상품명</div>
+					     <div class="text-muted small" th:text="'₩' + ${product.price}">가격</div>
+					   </div>
+					 </div>
                 </div>
               </div>
             </div>

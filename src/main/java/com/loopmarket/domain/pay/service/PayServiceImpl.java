@@ -110,8 +110,8 @@ public class PayServiceImpl implements PayService {
 		userMoney.refund(amount);
 
 		// 3. 거래 기록 저장 (출금) ← 상품 ID 포함
-		MoneyTransaction tx = new MoneyTransaction(
-				buyerId, productId, TransactionType.SAFE_PAY, amount, TransactionStatus.SUCCESS, PaymentMethod.PAY);
+		MoneyTransaction tx = new MoneyTransaction(buyerId, productId, TransactionType.SAFE_PAY, amount,
+				TransactionStatus.SUCCESS, PaymentMethod.PAY);
 		moneyTransactionRepository.save(tx);
 
 		// 4. 상품 상태를 SOLD로 변경
@@ -120,7 +120,7 @@ public class PayServiceImpl implements PayService {
 		// 5. 결제 보류 정보 저장
 		Payment payment = Payment.create(buyerId, sellerId, productId, amount, tx.getTransactionId());
 		paymentRepository.save(payment);
-		
+
 		return payment.getPaymentId();
 	}
 
@@ -150,101 +150,88 @@ public class PayServiceImpl implements PayService {
 
 		return sellerMoney.getBalance();
 	}
-	
+
 	/**
 	 * 특정 구매자(buyerId)가 구매 확정을 진행할 수 있는 결제 목록을 반환
 	 */
 	@Override
 	public List<ConfirmableItem> getConfirmablePayments(Long buyerId) {
-	    List<Payment> payments = paymentRepository.findByBuyerIdAndStatus(buyerId, PaymentStatus.HOLD);
+		List<Payment> payments = paymentRepository.findByBuyerIdAndStatus(buyerId, PaymentStatus.HOLD);
 
-	    return payments.stream()
-	        .map(payment -> {
-	            ProductEntity product = productService.getProductById(payment.getProductId());
-	            return new ConfirmableItem(
-	                product.getProductId(),
-	                payment.getPaymentId(),
-	                product.getTitle(),
-	                product.getPrice(),
-	                product.getThumbnailPath(),
-	                payment.getCreatedAt()
-	            );
-	        })
-	        .collect(Collectors.toList());
+		return payments.stream().map(payment -> {
+			ProductEntity product = productService.getProductById(payment.getProductId());
+            product.setThumbnailPath(imageService.getThumbnailPath(product.getProductId()));
+			return new ConfirmableItem(product.getProductId(), payment.getPaymentId(), product.getTitle(),
+					product.getPrice(), product.getThumbnailPath(), payment.getCreatedAt());
+		}).collect(Collectors.toList());
 	}
-	
+
 	/**
-	 * 즉시결제 처리
-	 * 구매자의 잔액을 차감하고, 판매자의 잔액을 증가시키며,
-	 * 거래 기록을 출금/입금으로 각각 저장한 뒤 상품 상태를 SOLD로 변경한다.
+	 * 즉시결제 처리 구매자의 잔액을 차감하고, 판매자의 잔액을 증가시키며, 거래 기록을 출금/입금으로 각각 저장한 뒤 상품 상태를 SOLD로
+	 * 변경한다.
 	 *
-	 * - 사용처: QR 인식 후 /pay/direct-check → /api/pay/direct
-	 * - 거래 유형: TransactionType.BUY_NOW
+	 * - 사용처: QR 인식 후 /pay/direct-check → /api/pay/direct - 거래 유형:
+	 * TransactionType.BUY_NOW
 	 */
 	@Override
 	@Transactional
 	public int directPay(Long buyerId, Long sellerId, Long productId) {
-	    // 1. 구매자 잔액 조회 및 차감
-	    UserMoney buyerMoney = userMoneyRepository.findById(buyerId)
-	        .orElseThrow(() -> new IllegalArgumentException("구매자의 잔액 정보가 없습니다."));
+		// 1. 구매자 잔액 조회 및 차감
+		UserMoney buyerMoney = userMoneyRepository.findById(buyerId)
+				.orElseThrow(() -> new IllegalArgumentException("구매자의 잔액 정보가 없습니다."));
 
-	    ProductEntity product = productService.getProductById(productId);
-	    int amount = product.getPrice();
+		ProductEntity product = productService.getProductById(productId);
+		int amount = product.getPrice();
 
-	    // 잔액 부족 시 예외
-	    if (buyerMoney.getBalance() < amount) {
-	        throw new IllegalArgumentException("잔액이 부족합니다.");
-	    }
+		// 잔액 부족 시 예외
+		if (buyerMoney.getBalance() < amount) {
+			throw new IllegalArgumentException("잔액이 부족합니다.");
+		}
 
-	    buyerMoney.refund(amount); // 내부적으로 잔액 차감
-	    userMoneyRepository.save(buyerMoney);
+		buyerMoney.refund(amount); // 내부적으로 잔액 차감
+		userMoneyRepository.save(buyerMoney);
 
-	    // 2. 거래 기록 저장 (출금) ← 상품 ID 포함
-	    MoneyTransaction outTx = new MoneyTransaction(buyerId, productId, TransactionType.BUY_NOW, amount,
-	            TransactionStatus.SUCCESS, PaymentMethod.PAY);
-	    moneyTransactionRepository.save(outTx);
+		// 2. 거래 기록 저장 (출금) ← 상품 ID 포함
+		MoneyTransaction outTx = new MoneyTransaction(buyerId, productId, TransactionType.BUY_NOW, amount,
+				TransactionStatus.SUCCESS, PaymentMethod.PAY);
+		moneyTransactionRepository.save(outTx);
 
-	    // 3. 판매자 잔액 조회 및 충전
-	    UserMoney sellerMoney = userMoneyRepository.findById(sellerId)
-	        .orElse(new UserMoney(sellerId, 0));
-	    sellerMoney.charge(amount);
-	    userMoneyRepository.save(sellerMoney);
+		// 3. 판매자 잔액 조회 및 충전
+		UserMoney sellerMoney = userMoneyRepository.findById(sellerId).orElse(new UserMoney(sellerId, 0));
+		sellerMoney.charge(amount);
+		userMoneyRepository.save(sellerMoney);
 
-	    // 4. 거래 기록 저장 (입금) ← 상품 ID 포함
-	    MoneyTransaction inTx = new MoneyTransaction(sellerId, productId, TransactionType.BUY_NOW, amount,
-	            TransactionStatus.SUCCESS, PaymentMethod.PAY);
-	    moneyTransactionRepository.save(inTx);
+		// 4. 거래 기록 저장 (입금) ← 상품 ID 포함
+		MoneyTransaction inTx = new MoneyTransaction(sellerId, productId, TransactionType.BUY_NOW, amount,
+				TransactionStatus.SUCCESS, PaymentMethod.PAY);
+		moneyTransactionRepository.save(inTx);
 
-	    // 5. 상품 상태를 SOLD로 변경
-	    productService.updateProductStatus(productId, "SOLD");
+		// 5. 상품 상태를 SOLD로 변경
+		productService.updateProductStatus(productId, "SOLD");
 
-	    // 6. 판매자 최종 잔액 반환
-	    return sellerMoney.getBalance();
+		// 6. 결제 정보 저장 (즉시결제는 곧바로 COMPLETED)
+		Payment payment = Payment.create(buyerId, sellerId, productId, amount, outTx.getTransactionId());
+		payment.complete(); // 상태 → COMPLETED
+		paymentRepository.save(payment);
+
+		// 7. 판매자 최종 잔액 반환
+		return sellerMoney.getBalance();
 	}
-	
+
 	/**
 	 * 구매 내역 조회: 결제 완료(HOLD 또는 COMPLETED) 상태인 결제 리스트 반환
 	 */
 	@Override
 	@Transactional(readOnly = true)
 	public List<ConfirmableItem> getMyPurchaseHistory(Long buyerId) {
-	    List<Payment> payments = paymentRepository.findByBuyerIdAndStatusIn(
-	        buyerId, List.of(PaymentStatus.HOLD, PaymentStatus.COMPLETED)
-	    );
+		List<Payment> payments = paymentRepository.findByBuyerIdAndStatusIn(buyerId,
+				List.of(PaymentStatus.HOLD, PaymentStatus.COMPLETED));
 
-	    return payments.stream()
-	        .map(payment -> {
-	            ProductEntity product = productService.getProductById(payment.getProductId());
-	            product.setThumbnailPath(imageService.getThumbnailPath(product.getProductId()));
-	            return new ConfirmableItem(
-	                product.getProductId(),
-	                payment.getPaymentId(),
-	                product.getTitle(),
-	                product.getPrice(),
-	                product.getThumbnailPath(),
-	                payment.getCreatedAt()
-	            );
-	        })
-	        .collect(Collectors.toList());
+		return payments.stream().map(payment -> {
+			ProductEntity product = productService.getProductById(payment.getProductId());
+			product.setThumbnailPath(imageService.getThumbnailPath(product.getProductId()));
+			return new ConfirmableItem(product.getProductId(), payment.getPaymentId(), product.getTitle(),
+					product.getPrice(), product.getThumbnailPath(), payment.getCreatedAt());
+		}).collect(Collectors.toList());
 	}
 }
