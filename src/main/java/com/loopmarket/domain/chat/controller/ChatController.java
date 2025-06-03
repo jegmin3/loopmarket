@@ -150,7 +150,7 @@ public class ChatController extends BaseController {
 	    return "redirect:/chat/list";
 	}
 	
-	/** 채팅 목록으로 이동 */
+	/** 채팅 목록으로  */
 	@GetMapping("/list")
 	public String chatList(Model model, HttpSession session, RedirectAttributes redirectAttributes) {
 		MemberEntity loginUser = getLoginUser();
