@@ -1,60 +1,63 @@
 <header th:fragment="header">
-    <nav class="navbar navbar-expand-lg navbar-light bg-light" style="background-color: #e3f2fd;">
-        <div class="container-fluid">
-			<a class="navbar-brand d-flex align-items-center ms-3" th:href="@{/}">
-			    <img src="/img/logo.png" alt="LoopMarket 로고" height="30" style="margin-right: 8px;" />
-			</a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
-                    aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-			
+  <nav class="navbar navbar-expand-lg navbar-light bg-light shadow-sm" style="background-color: #e3f2fd;">
+    <div class="container-fluid d-flex justify-content-between align-items-center">
 
-            <div class="collapse navbar-collapse" id="navbarNav">
-              <ul class="navbar-nav me-auto">
-                <li class="nav-item">
-                  <a class="nav-link [[${#httpServletRequest.requestURI == '/'} ? 'active' : '']]" th:href="@{/}">홈</a>
-                </li>
-                <li class="nav-item">
-                  <a class="nav-link [[${#httpServletRequest.requestURI.startsWith('/products')} ? 'active' : '']]" th:href="@{/products}">상품 목록</a>
-                </li>
-                <li class="nav-item">
-                  <a class="nav-link [[${#httpServletRequest.requestURI.startsWith('/mypage')} ? 'active' : '']]" th:href="@{/mypage}">마이페이지</a>
-                </li>
-				<li class="nav-item">
-				    <a class="nav-link" th:href="@{/chat/list}">나의 채팅</a>
-				</li>
-				<li class="nav-item">
-                    <a class="nav-link" href="/notice">공지사항</a>
-                </li>
-				<li class="nav-item"
-				    th:if="${session.userRole == 'ADMIN' or session.userRole == 'MANAGER'}">
-				    <a class="nav-link" href="/admin">관리자 페이지</a>
-				</li>
-              </ul>
-			
-			  <ul class="navbar-nav">
-				<!-- 알림 아이콘, 버튼 -->
-				<li class="nav-item dropdown" id="notificationDropdown" th:if="${session.loginUser != null}">
-				    <a class="nav-link position-relative" href="#" id="notifIcon" data-bs-toggle="modal" data-bs-target="#notifModal">
-				        <i class="bi bi-bell"></i>
-				        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" id="notifBadge" style="display:none;">
-				            0
-				        </span>
-				    </a>
-				</li>
-				<li class="nav-item" 
-				    th:if="${session.loginUser == null}">
-				    <a class="nav-link" th:href="@{/member/login}">로그인</a>
-				</li>
-				
-				<li class="nav-item" 
-				    th:if="${session.loginUser != null}">
-				    <a class="nav-link" th:href="@{/member/logout}">로그아웃</a>
-				</li>
-			  </ul>
-			  
-            </div>
-        </div>
-    </nav>
+      <!-- 왼쪽 영역: 로고 + 메뉴 -->
+      <div class="d-flex align-items-center">
+        <!-- 로고 -->
+        <a class="navbar-brand d-flex align-items-center me-3" th:href="@{/}">
+          <img src="/img/logo.png" alt="LoopMarket 로고" height="40" class="me-2" />
+        </a>
+
+        <!-- 좌측 고정 메뉴: 상품 목록, 공지사항 -->
+        <ul class="navbar-nav flex-row">
+          <li class="nav-item me-3">
+            <a class="nav-link [[${#httpServletRequest.requestURI.startsWith('/products')} ? 'active' : '']]" th:href="@{/products}">상품 목록</a>
+          </li>
+          <li class="nav-item me-3">
+            <a class="nav-link" href="/notice">공지사항</a>
+          </li>
+        </ul>
+      </div>
+
+      <!-- 오른쪽 영역: 알림 + 햄버거 버튼 -->
+      <div class="d-flex align-items-center">
+        <!-- 알림 아이콘 -->
+        <ul class="navbar-nav flex-row align-items-center me-2">
+          <li class="nav-item dropdown" id="notificationDropdown" th:if="${session.loginUser != null}">
+            <a class="nav-link position-relative" href="#" id="notifIcon" data-bs-toggle="modal" data-bs-target="#notifModal">
+              <i class="bi bi-bell fs-5"></i>
+              <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" id="notifBadge" style="display:none;">
+                0
+              </span>
+            </a>
+          </li>
+        </ul>
+
+        <!-- 햄버거 버튼 -->
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+                aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+      </div>
+    </div>
+
+    <!-- 접히는 메뉴 내용 (오른쪽 메뉴들) -->
+    <div class="collapse navbar-collapse" id="navbarNav">
+      <ul class="navbar-nav ms-auto text-end w-100">
+        <li class="nav-item">
+          <a class="nav-link [[${#httpServletRequest.requestURI.startsWith('/mypage')} ? 'active' : '']]" style="white-space: nowrap;" th:href="@{/mypage}">마이페이지</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" style="white-space: nowrap;" th:href="@{/chat/list}">나의 채팅</a>
+        </li>
+        <li class="nav-item" th:if="${session.loginUser == null}">
+          <a class="nav-link" style="white-space: nowrap;" th:href="@{/member/login}">로그인</a>
+        </li>
+        <li class="nav-item" th:if="${session.loginUser != null}">
+          <a class="nav-link" style="white-space: nowrap;" th:href="@{/member/logout}">로그아웃</a>
+        </li>
+      </ul>
+    </div>
+  </nav>
 </header>

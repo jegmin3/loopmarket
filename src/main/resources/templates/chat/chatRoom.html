@@ -2,12 +2,12 @@
 	
 	<!-- 뒤로가기, 목록, 나가기 버튼 div -->
 	<div class="btn-group d-flex mt-4 mb-3 w-100">
-	    <!-- 🔙 뒤로가기 버튼 -->
+	    <!-- 뒤로가기 버튼 -->
 	    <button type="button" class="btn btn-secondary btn-sm" onclick="history.back();">
 	        <i class="bi bi-arrow-left"></i> 뒤로가기
 	    </button>
 
-	    <!-- 📋 채팅방 목록 이동 버튼 -->
+	    <!-- 채팅방 목록 이동 버튼 -->
 	    <a th:href="@{/chat/list}" class="btn btn-primary btn-sm">
 	        <i class="bi bi-chat-dots"></i> 채팅 목록으로
 	    </a>
@@ -52,7 +52,7 @@
     <!-- 입력창 -->
     <form id="chatForm" class="mt-3 d-flex w-100">
         <input type="text" id="msgInput" class="form-control me-2" placeholder="메시지를 입력하세요">
-        <button type="submit" class="btn btn-outline-success">전송</button>
+        <button type="submit" class="btn btn-outline-success px-4" style="white-space: nowrap;">전송</button>
     </form>
 
 	<!-- chatRoom.js용 전역변수 설정 -->
