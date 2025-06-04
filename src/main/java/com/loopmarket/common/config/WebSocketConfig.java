@@ -21,9 +21,9 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
      */
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
-        registry.addEndpoint("/ws/chat") // 클라이언트 연결용 endpoint
+        registry.addEndpoint("/ws/chat") // 클라이언트 연결용 endpoint (이 주소로 연결 요청)
                 .setAllowedOriginPatterns("*") // CORS 허용
-                .withSockJS(); // SockJS 지원
+                .withSockJS(); // 구형 브라우저 호환성 위한 sockJS fallback옵션
     }
 
     /**
@@ -33,11 +33,11 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
      */
     @Override
     public void configureMessageBroker(MessageBrokerRegistry registry) {
-        // 1. 서버로 보내는 메시지 경로 설정 (컨트롤러 @MessageMapping 핸들링 대상)
-        registry.setApplicationDestinationPrefixes("/app");
+        // 1. 서버로 보내는 메시지 경로 설정 (컨트롤러 @MessageMapping 핸들링 대상임)
+        registry.setApplicationDestinationPrefixes("/app"); // 클라이언트에서 서ㅂㅓ로
 
         // 2. 클라이언트가 구독할 수 있는 경로 설정 (브로커가 처리)
-        registry.enableSimpleBroker("/queue", "/topic"); // 내 채널: /queue/myRoom
+        registry.enableSimpleBroker("/queue", "/topic"); // 서버에서 클라이언트로 보내는 경로
     }
 }
 

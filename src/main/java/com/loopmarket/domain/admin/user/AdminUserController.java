@@ -71,6 +71,16 @@ private void addUsersToModel(Model model, int page, int size) {
     public String listUsers(HttpServletRequest request, Model model,
                             @RequestParam(defaultValue = "0") int page,
                             @RequestParam(defaultValue = "10") int size) {
+    	
+    	// 현재 로그인한 사용자 권한 추가
+        MemberEntity loginUser = (MemberEntity) request.getSession().getAttribute("loginUser");
+        if (loginUser != null) {
+            model.addAttribute("currentUserRole", loginUser.getRole());
+            model.addAttribute("currentUserId", loginUser.getUserId()); // 추가
+        } else {
+            model.addAttribute("currentUserRole", null); // 또는 GUEST 처리
+        }
+    	
 
         addUsersToModel(model, page, size);
         return renderAdminPage(request, model, "admin/user_admin");
@@ -113,9 +123,20 @@ private void addUsersToModel(Model model, int page, int size) {
     @ResponseBody
     public ResponseEntity<Map<String, Object>> changeUserRole(
             @RequestParam("userId") Integer userId,
-            @RequestParam("newRole") String newRoleStr) {
+            @RequestParam("newRole") String newRoleStr,
+            HttpServletRequest request) {
 
         Map<String, Object> response = new HashMap<>();
+
+        // 로그인 사용자 정보 가져오기 (세션 기반)
+        MemberEntity currentUser = (MemberEntity) request.getSession().getAttribute("loginUser");
+
+        if (currentUser == null || currentUser.getRole() != Role.ADMIN) {
+            response.put("success", false);
+            response.put("message", "권한이 없습니다.");
+            return ResponseEntity.status(403).body(response);
+        }
+
         try {
             Role newRole = Role.valueOf(newRoleStr);
             memberService.updateUserRole(userId, newRole);
@@ -123,11 +144,12 @@ private void addUsersToModel(Model model, int page, int size) {
             response.put("message", "권한이 성공적으로 변경되었습니다.");
         } catch (IllegalArgumentException e) {
             response.put("success", false);
-            response.put("message", "잘못된 권한 값입니다.");
+            response.put("message", "유효하지 않은 권한 값입니다.");
         } catch (Exception e) {
             response.put("success", false);
-            response.put("message", "서버 오류가 발생했습니다.");
+            response.put("message", "서버 오류 발생: " + e.getMessage());
         }
+
         return ResponseEntity.ok(response);
     }
     
