@@ -18,4 +18,9 @@ public class ProductAdminListDTO {
     
     @JsonProperty("ishidden")
     private Boolean isHidden;
+    
+    
+    // 새로 추가할 필드
+    private String thumbnailUrl;
+    
 }

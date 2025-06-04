@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.loopmarket.domain.image.service.ImageService;
 import com.loopmarket.domain.product.dto.ProductAdminListDTO;
 import com.loopmarket.domain.product.entity.ProductEntity;
 import com.loopmarket.domain.product.service.ProductService;
@@ -25,7 +26,8 @@ import lombok.RequiredArgsConstructor;
 public class AdminProductRestController {
 
     private final ProductService productService;
-
+    private final ImageService imageService;  // 추가
+    
     @GetMapping
     public List<ProductEntity> getAllProductsForAdmin() {
         return productService.getAllProducts(); // 숨김 포함 전체
@@ -55,6 +57,10 @@ public class AdminProductRestController {
         System.out.println("💡 총 상품 수: " + pageData.getTotalElements()); // 로그 찍기
 
         return pageData.map(product -> {
+        	
+        	// 예를 들어 ImageService에서 썸네일 경로 조회
+            String thumbnailUrl = imageService.getThumbnailPath(product.getProductId());
+        	
             System.out.println("✅ Mapping: " + product.getTitle()); // 각 상품 제목 출력
             return new ProductAdminListDTO(
                 product.getProductId(),
@@ -64,7 +70,9 @@ public class AdminProductRestController {
                 product.getSaleType(),
                 product.getCondition(),
                 product.getStatus(),
-                product.getIsHidden()
+                product.getIsHidden(),
+                
+                thumbnailUrl  // 썸네일 URL 추가
             );
         });
     }
