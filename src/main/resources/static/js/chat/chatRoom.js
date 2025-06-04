@@ -17,6 +17,7 @@ function connect(callback) {
 		    if (callback) callback();
 		    return;
 		}
+		// 사용자가 서버에 웹소켓 연결
 	    const socket = new SockJS("/ws/chat");
 	    stompClient = Stomp.over(socket);
 		
@@ -24,18 +25,20 @@ function connect(callback) {
 		$("#sendBtn").prop("disabled", true);
 		socketConnected = false;
 		
+		// 서버 연결 후 구독 시작
 	    stompClient.connect({}, function () {
 	        console.log("✅ WebSocket 연결됨");
 	
 			socketConnected = true; // 소켓 연결 완료 표시
 			$("#sendBtn").prop("disabled", false); // 전송 버튼 활성화
 			
+			// 해당 채팅방 구독
 	        stompClient.subscribe(`/queue/room.${roomId}`, function (message) {
 				const msg = JSON.parse(message.body);
 				if (msg.type === "READ") return; // 읽음 메시지 무시
 				showMessage(msg);
 	        });
-			// 입장시 읽음 처리
+			// 입장시 읽음 처리(roomId, senderId담아서 서버로 전송)
 	        stompClient.send("/app/chat.read", {}, JSON.stringify({
 	            roomId: roomId,
 	            senderId: senderId
@@ -56,26 +59,33 @@ function connect(callback) {
 }
 
 // 방이 없으면 생성하는 Ajax 함수(상품 상세보기에서 채팅하기 누를 시 사용함)
+// content: 사용자가 보내려는 채팅 내용
+// callback: 메시지를 실제로 전송하는 동작을 나중에 실행하기 위한 함수(콜백)
 function ensureChatRoom(content, callback) {
+	// 이미 roomId가 있는 경우, 소켓연결로 간주,바로 메시지 전송 콜백 실행
     if (window.roomId) {
         callback(content);
     } else if (!window.roomId) {
-		// 방이 없으면 생성 후 connect → 콜백에서 전송
-        //console.log("채팅방 없음 → 서버에 생성 요청 중...");
+		// 채팅방 ID가 없으면 /chat/api/create-room API에 targetId를 넘겨 방을 생성 요청
         $.post("/chat/api/create-room", { targetId: window.targetId }, function (res) {
+			//서버가 roomId를 응답했을때
             if (res.roomId) {
+				//window.roomId, roomId 전역 변수에 저장
                 window.roomId = res.roomId;
 				roomId = res.roomId;  // stompClient에서 올바른 roomId 구독하게 하기 위해 필요
                 console.log("채팅방 생성됨: roomId =", res.roomId);
 				
+				//connect() 함수를 호출해서 WebSocket 연결을 시작
 				connect(() => {
-				    callback(content); // 소켓 연결된 후 메시지 전송
+					// 연결이 완료되면 callback(content)를 호출해 메시지를 전송
+				    callback(content);
 				});
             } else {
                 showAlert("error", "채팅방 생성 실패", "서버로부터 roomId를 받을 수 없습니다.");
             } 
 		});
     } else if (!socketConnected) {
+		// 방은 있는데 소켓 연결이 끊긴 상태라면 -> 다시 연결 후 메시지 전송
 		connect(() => {
 			callback(content);
 		});
