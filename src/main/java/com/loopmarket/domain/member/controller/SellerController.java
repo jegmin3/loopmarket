@@ -58,7 +58,7 @@ public class SellerController extends BaseController {
         model.addAttribute("seller", seller);
         model.addAttribute("sellingProducts", sellingProducts);
         model.addAttribute("profileImagePath", profileImagePath);
-        model.addAttribute("loginUser", loginUser); // 템플릿에서 조건 분기 시 사용
+        model.addAttribute("loginUser", loginUser);
 
         // 템플릿 렌더링
         return render("mypage/seller-profile", model);
