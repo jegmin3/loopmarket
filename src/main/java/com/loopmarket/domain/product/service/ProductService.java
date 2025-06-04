@@ -7,7 +7,11 @@ import com.loopmarket.domain.product.dto.WeeklyProductStatsDTO;
 import com.loopmarket.domain.product.entity.ProductEntity;
 import com.loopmarket.domain.product.repository.ProductRepository;
 import lombok.RequiredArgsConstructor;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;
@@ -34,7 +38,7 @@ public class ProductService {
 		product.setCreatedAt(LocalDateTime.now()); // 상품 등록일 현재 시간 설정
 		product.setUpdateAt(LocalDateTime.now()); // 상품 수정일 현재 시간 설정
 		product.setStatus("ONSALE"); // 기본 상태 'ONSALE'으로 설정
-		product.setIsHidden(true); // 상품 숨김 여부 true로 설정 (필요 시 수정)
+		//product.setIsHidden(true); // 상품 숨김 여부 true로 설정 (필요 시 수정)
 
 		// 1. 상품 엔티티 먼저 저장
 		ProductEntity savedProduct = productRepository.save(product);
@@ -126,63 +130,97 @@ public class ProductService {
 
 	// 소분류 코드로 상품 목록 조회
 	public List<ProductEntity> getProductsByCategory(Integer ctgCode) {
-		List<ProductEntity> products = productRepository.findByCtgCode(ctgCode);
-
-		for (ProductEntity product : products) {
-			Long productId = product.getProductId();
-			product.setThumbnailPath(imageService.getThumbnailPath(productId));
-			product.setImagePaths(imageService.getAllImagePaths(productId));
-		}
-
-		return products;
+	    List<ProductEntity> products = productRepository.findByIsHiddenFalseAndCtgCode(ctgCode);
+	    for (ProductEntity product : products) {
+	        Long productId = product.getProductId();
+	        product.setThumbnailPath(imageService.getThumbnailPath(productId));
+	        product.setImagePaths(imageService.getAllImagePaths(productId));
+	    }
+	    return products;
 	}
 
 	// 대분류 코드로 하위 카테고리 상품 조회
 	public List<ProductEntity> getProductsByMainCategory(Integer mainCategoryCode) {
-		List<Integer> subCategoryCodes = categoryRepository.findSubCategoryCodesByMainCode(mainCategoryCode);
-		List<ProductEntity> products = productRepository.findByCtgCodeIn(subCategoryCodes);
+	    List<Integer> subCategoryCodes = categoryRepository.findSubCategoryCodesByMainCode(mainCategoryCode);
+	    List<ProductEntity> products = productRepository.findByIsHiddenFalseAndCtgCodeIn(subCategoryCodes);
 
-		for (ProductEntity product : products) {
-			Long productId = product.getProductId();
-			product.setThumbnailPath(imageService.getThumbnailPath(productId));
-			product.setImagePaths(imageService.getAllImagePaths(productId));
-		}
+	    for (ProductEntity product : products) {
+	        Long productId = product.getProductId();
+	        product.setThumbnailPath(imageService.getThumbnailPath(productId));
+	        product.setImagePaths(imageService.getAllImagePaths(productId));
+	    }
 
-		return products;
+	    return products;
 	}
+	
+//	public List<ProductEntity> getProductsByMainCategory(Integer mainCategoryCode) {
+//		List<Integer> subCategoryCodes = categoryRepository.findSubCategoryCodesByMainCode(mainCategoryCode);
+//		List<ProductEntity> products = productRepository.findByCtgCodeIn(subCategoryCodes);
+//
+//		for (ProductEntity product : products) {
+//			Long productId = product.getProductId();
+//			product.setThumbnailPath(imageService.getThumbnailPath(productId));
+//			product.setImagePaths(imageService.getAllImagePaths(productId));
+//		}
+//
+//		return products;
+//	}
 
 	// 전체 가격 필터
 	public List<ProductEntity> getProductsByPriceRange(Integer min, Integer max) {
-		List<ProductEntity> products = productRepository.findByPriceBetween(min, max);
-		for (ProductEntity product : products) {
-			Long productId = product.getProductId();
-			product.setThumbnailPath(imageService.getThumbnailPath(productId));
-			product.setImagePaths(imageService.getAllImagePaths(productId));
-		}
-		return products;
+	    List<ProductEntity> products = productRepository.findByIsHiddenFalseAndPriceBetween(min, max);
+	    for (ProductEntity product : products) {
+	        Long productId = product.getProductId();
+	        product.setThumbnailPath(imageService.getThumbnailPath(productId));
+	        product.setImagePaths(imageService.getAllImagePaths(productId));
+	    }
+	    return products;
 	}
+	
+//	public List<ProductEntity> getProductsByPriceRange(Integer min, Integer max) {
+//		List<ProductEntity> products = productRepository.findByPriceBetween(min, max);
+//		for (ProductEntity product : products) {
+//			Long productId = product.getProductId();
+//			product.setThumbnailPath(imageService.getThumbnailPath(productId));
+//			product.setImagePaths(imageService.getAllImagePaths(productId));
+//		}
+//		return products;
+//	}
 
 	// 대분류 + 가격 필터
 	public List<ProductEntity> getProductsByMainCategoryAndPrice(Integer mainCategoryCode, Integer min, Integer max) {
-		List<Integer> subCategoryCodes = categoryRepository.findSubCategoryCodesByMainCode(mainCategoryCode);
-		List<ProductEntity> products = productRepository.findByCtgCodeInAndPriceBetween(subCategoryCodes, min, max);
-		for (ProductEntity product : products) {
-			Long productId = product.getProductId();
-			product.setThumbnailPath(imageService.getThumbnailPath(productId));
-			product.setImagePaths(imageService.getAllImagePaths(productId));
-		}
-		return products;
+	    List<Integer> subCategoryCodes = categoryRepository.findSubCategoryCodesByMainCode(mainCategoryCode);
+	    List<ProductEntity> products = productRepository.findByIsHiddenFalseAndCtgCodeInAndPriceBetween(subCategoryCodes, min, max);
+	    for (ProductEntity product : products) {
+	        Long productId = product.getProductId();
+	        product.setThumbnailPath(imageService.getThumbnailPath(productId));
+	        product.setImagePaths(imageService.getAllImagePaths(productId));
+	    }
+	    return products;
 	}
+	
+//	public List<ProductEntity> getProductsByMainCategoryAndPrice(Integer mainCategoryCode, Integer min, Integer max) {
+//		List<Integer> subCategoryCodes = categoryRepository.findSubCategoryCodesByMainCode(mainCategoryCode);
+//		List<ProductEntity> products = productRepository.findByCtgCodeInAndPriceBetween(subCategoryCodes, min, max);
+//		for (ProductEntity product : products) {
+//			Long productId = product.getProductId();
+//			product.setThumbnailPath(imageService.getThumbnailPath(productId));
+//			product.setImagePaths(imageService.getAllImagePaths(productId));
+//		}
+//		return products;
+//	}
 
 	// 소분류 + 가격 필터
 	public List<ProductEntity> getProductsByCategoryAndPrice(Integer ctgCode, Integer min, Integer max) {
-		List<ProductEntity> products = productRepository.findByCtgCodeAndPriceBetween(ctgCode, min, max);
+		List<ProductEntity> products = productRepository.findByCtgCodeAndPriceBetweenAndIsHiddenFalse(ctgCode, min, max);
 		for (ProductEntity product : products) {
 			Long productId = product.getProductId();
 			product.setThumbnailPath(imageService.getThumbnailPath(productId));
 			product.setImagePaths(imageService.getAllImagePaths(productId));
 		}
 		return products;
+		//return productRepository.findByCtgCodeAndPriceBetweenAndIsHiddenFalse(ctgCode, min, max);
+
 	}
 
 	// ID 기반 상세 조회 시 이미지 경로 세팅 포함
@@ -234,4 +272,30 @@ public class ProductService {
 	                    ((Number) row[2]).intValue()))    // count
 	            .collect(Collectors.toList());
 	}
+	
+	@Transactional
+	public void updateHiddenStatus(Long productId, boolean hidden) {
+	    ProductEntity product = productRepository.findById(productId)
+	        .orElseThrow(() -> new RuntimeException("상품 없음"));
+	    product.setIsHidden(hidden);
+	}
+
+	@Transactional
+	public void updateCategory(Long productId, Integer newCode) {
+	    ProductEntity product = productRepository.findById(productId)
+	        .orElseThrow(() -> new RuntimeException("상품 없음"));
+	    product.setCtgCode(newCode);
+	}
+
+	@Transactional
+	public void deleteProductById(Long productId) {
+	    productRepository.deleteById(productId);
+	}
+	
+	public Page<ProductEntity> getProductsPage(Pageable pageable) {
+	    return productRepository.findAll(pageable);
+	}
+	
+	
+	
 }
