@@ -52,7 +52,7 @@ public class SellerController extends BaseController {
                     : product.getImagePaths().get(0));
         }
         
-        String profileImagePath = productService.getProfileImagePath(seller.getProfileImgId());
+        String profileImagePath = imageService.getProfilePath(seller.getUserId());
         
         // 모델에 데이터 추가
         model.addAttribute("seller", seller);

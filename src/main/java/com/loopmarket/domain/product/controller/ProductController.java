@@ -4,7 +4,7 @@ import com.loopmarket.domain.category.entity.Category;
 import com.loopmarket.domain.category.repository.CategoryRepository;
 
 import com.loopmarket.domain.category.service.CategoryService;
-
+import com.loopmarket.domain.image.service.ImageService;
 import com.loopmarket.domain.member.MemberEntity;
 import com.loopmarket.domain.member.MemberRepository;
 import com.loopmarket.domain.product.entity.ProductEntity;
@@ -36,6 +36,8 @@ public class ProductController {
   
   // 상품 수정용 서비스
   private final CategoryService categoryService;
+  
+  private final ImageService imageService;
 
   /**
    * 전체 상품 목록 페이지를 보여줍니다.
@@ -196,8 +198,8 @@ public class ProductController {
       product.setSellerNickname(seller.getNickname());
       
       	// 프로필 이미지 경로 생성 후 모델에 추가
-   		String profileImagePath = productService.getProfileImagePath(seller.getProfileImgId());
-   		model.addAttribute("profileImagePath", profileImagePath);
+      String profileImagePath = imageService.getProfilePath(seller.getUserId());
+      model.addAttribute("profileImagePath", profileImagePath);
     }
 
     // 상대 시간 계산하여 설정

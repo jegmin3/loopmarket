@@ -63,7 +63,7 @@ public class ImageService {
 
 	    // 이미지가 없거나 경로가 비어 있으면 기본 이미지 경로 반환
 	    if (image == null || image.getImagePath() == null || image.getImagePath().isBlank()) {
-	        return "/img/no-image.png";
+	        return "/img/profile.png";
 	    }
 
 	    return image.getImagePath();
