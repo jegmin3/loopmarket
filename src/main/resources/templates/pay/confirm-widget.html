@@ -12,7 +12,7 @@
   <!-- 2. 모달 -->
   <div class="modal fade" id="confirmModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered" style="max-width: 480px;">
-      <div class="modal-content p-4 rounded-4 shadow">
+      <div class="modal-content p-2 rounded-4 shadow">
         <div class="modal-header border-0">
           <h5 class="modal-title fw-bold">구매 확정할 상품 선택</h5>
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
@@ -33,12 +33,29 @@
                      th:attr="data-id=${item.paymentId}"
                      onclick="selectConfirmItem(this)">
                   <div class="d-flex align-items-center">
-                    <img th:src="${item.thumbnailPath}" alt="상품 이미지"
-                         width="60" height="60" class="me-3 rounded">
-                    <div>
-                      <div class="fw-bold" th:text="${item.title}">상품명</div>
-                      <div class="text-muted small" th:text="'₩' + ${item.price}">가격</div>
-                    </div>
+                    
+                    <!-- 썸네일이 있을 때만 이미지 출력 -->
+                    <th:block th:if="${item.thumbnailPath != null}">
+						<div class="d-flex align-items-center">
+						  <!-- 항상 렌더링되는 썸네일 wrapper -->
+						  <div class="ratio ratio-1x1 me-3" style="width: 60px; max-width: 60px;">
+						    <img th:if="${item.thumbnailPath != null}"
+						         th:src="${item.thumbnailPath}"
+						         alt="상품 이미지"
+						         class="img-fluid rounded object-fit-cover" />
+						         
+						    <img th:if="${item.thumbnailPath == null}"
+						         src="/img/no-image.png"
+						         alt="기본 이미지"
+						         class="img-fluid rounded object-fit-cover" />
+						  </div>
+
+						  <!-- 텍스트 영역 -->
+						  <div class="flex-grow-1 text-start">
+						    <div class="fw-bold" th:text="${item.title ?: '제목없음'}">상품명</div>
+						    <div class="text-muted small" th:text="'₩' + (${item.price} ?: 0)">가격</div>
+						  </div>
+						</div>
                   </div>
                 </div>
               </div>

@@ -1,0 +1,59 @@
+<!-- templates/mypage/seller-profile.html -->
+<div th:fragment="content">
+	<div class="container py-4">
+		<div class="row justify-content-center">
+			<div class="col-12 col-lg-8">
+
+				<!-- 판매자 프로필 카드 -->
+				<div class="card shadow-sm rounded-4 p-4 mb-4">
+					<div class="d-flex align-items-center flex-wrap">
+						<img th:src="${profileImagePath}" alt="프로필 이미지"
+							class="rounded-circle border me-4 mb-2 mb-md-0"
+							style="width: 80px; height: 80px; object-fit: cover; aspect-ratio: 1 / 1;" />
+						<div>
+							<h4 class="fw-bold mb-1" th:text="${seller.nickname}">판매자 닉네임</h4>
+							<div class="text-muted small">
+								가입일: <span
+									th:text="${#temporals.format(seller.createdAt, 'yyyy-MM-dd')}">2025-05-23</span><br />
+								총 판매 상품 수: <span th:text="${#lists.size(sellingProducts)}">0</span>개
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<!-- 판매 중 상품 영역 -->
+				<h5 class="fw-bold mb-3 text-center" th:text="${seller.nickname} + '님이 판매 중인 상품'">
+					판매 중인 상품
+				</h5>
+
+				<div th:if="${#lists.isEmpty(sellingProducts)}" class="text-center text-muted py-5">
+					현재 판매 중인 상품이 없습니다.
+				</div>
+
+				<div class="row g-3" th:unless="${#lists.isEmpty(sellingProducts)}">
+					<div class="col-6 col-md-4" th:each="product : ${sellingProducts}">
+						<a th:href="@{/products/{id}(id=${product.productId})}" class="text-decoration-none text-dark">
+							<div class="card shadow-sm h-100 border-0 rounded-3"
+								style="transition: transform 0.2s ease;"
+								onmouseover="this.style.transform='scale(1.02)'"
+								onmouseout="this.style.transform='scale(1)'">
+
+								<img th:src="@{${product.thumbnailPath}}" th:alt="'상품 ' + ${product.title}"
+									class="card-img-top"
+									style="object-fit: cover; height: 160px; border-radius: 0.5rem 0.5rem 0 0;" />
+
+								<div class="card-body p-2">
+									<h6 class="card-title mb-1 text-truncate" style="max-width: 100%;"
+										th:text="${product.title}">상품명</h6>
+									<p class="card-text text-danger fw-semibold mb-0"
+										th:text="${#numbers.formatInteger(product.price, 3, 'COMMA')} + '원'">가격</p>
+								</div>
+							</div>
+						</a>
+					</div>
+				</div>
+
+			</div>
+		</div>
+	</div>
+</div>

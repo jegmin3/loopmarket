@@ -38,17 +38,34 @@ public class ImageService {
   }
 
   public List<String> getAllImagePaths(Long productId) {
-    List<ImageEntity> images = imageRepository.findByTargetTableAndTargetId("products", productId);
-    return images.stream()
-      .map(ImageEntity::getImagePath)
-      .collect(Collectors.toList());
-  }
+	  List<ImageEntity> images = imageRepository.findByTargetTableAndTargetId("products", productId);
+	  
+	  // 이미지가 없을 경우 기본 이미지 경로 하나 넣어줌
+	  if (images == null || images.isEmpty()) {
+	    return List.of("/img/no-image.png");
+	  }
+
+	  return images.stream()
+	    .map(ImageEntity::getImagePath)
+	    .collect(Collectors.toList());
+	}
 
   public String getThumbnailPath(Long productId) {
     ImageEntity thumbnail = imageRepository.findFirstByTargetIdAndIsThumbnail(productId, true);
     if (thumbnail == null) {
-      return "/img.pay/kakao.png";
+      return "/img/no-image.png";
     }
     return thumbnail.getImagePath();
   }
+  
+  public String getProfilePath(Integer userId) {
+	    ImageEntity image = imageRepository.findFirstByTargetTableAndTargetId("users", userId.longValue());
+
+	    // 이미지가 없거나 경로가 비어 있으면 기본 이미지 경로 반환
+	    if (image == null || image.getImagePath() == null || image.getImagePath().isBlank()) {
+	        return "/img/profile.png";
+	    }
+
+	    return image.getImagePath();
+	}
 }
