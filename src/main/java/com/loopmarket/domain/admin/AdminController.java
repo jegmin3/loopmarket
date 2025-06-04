@@ -51,6 +51,11 @@ public class AdminController extends BaseController {
 //	    return renderAdminPage(request, model, "admin/notice_admin");
 //	}
 	
+	@GetMapping("/categories")
+	public String categoryAdminPage(HttpServletRequest request, Model model) {
+	    return renderAdminPage(request, model, "admin/category_admin");
+	}
+	
 	@GetMapping("notifications")
 	public String notificationAdmin(HttpServletRequest request, Model model) {
 	    return renderAdminPage(request, model, "admin/notifications_admin");

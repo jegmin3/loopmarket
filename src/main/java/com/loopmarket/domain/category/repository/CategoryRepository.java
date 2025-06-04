@@ -1,8 +1,11 @@
 package com.loopmarket.domain.category.repository;
 
 import com.loopmarket.domain.category.entity.Category;
+import com.loopmarket.domain.category.entity.CategoryWithCountDTO;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -22,6 +25,18 @@ public interface CategoryRepository extends JpaRepository<Category, Integer> {
   List<Integer> findSubCategoryCodesByMainCode(Integer mainCode);
 
   List<Category> findAllByOrderBySeqAsc();
+  
+  @Query("SELECT new com.loopmarket.domain.category.entity.CategoryWithCountDTO(c.ctgCode, c.ctgName, c.upCtgCode, COUNT(p)) " +
+	       "FROM Category c LEFT JOIN c.products p " + 
+	       "GROUP BY c.ctgCode, c.ctgName, c.upCtgCode " +
+	       "ORDER BY c.seq ASC")
+	List<CategoryWithCountDTO> findCategoriesWithProductCount();
+
+  @Query("SELECT COUNT(p) FROM ProductEntity p WHERE p.ctgCode = :ctgCode")
+  int countProductsInCategory(@Param("ctgCode") Integer ctgCode);
+
+  @Query("SELECT COALESCE(MAX(c.seq), 0) FROM Category c")
+  int getMaxSeq();
   
 
 }
