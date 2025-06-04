@@ -6,7 +6,8 @@ const senderId = window.senderId;
 // WebSocket 연결
 let reconnectCount = 0;
 let socketConnected = false;
-const shownMessageIds = new Set();
+//const shownMessageIds = new Set();
+const shownMessageIds = new Set(window.shownMessageIds || []);
 
 // 웹소켓 연결 함수
 function connect(callback) {

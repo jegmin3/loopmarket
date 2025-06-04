@@ -60,6 +60,13 @@
 		window.roomId = /*[[${roomId}]]*/ null;
 		window.senderId = /*[[${session.loginUser.userId}]]*/ 0;
 		window.targetId = /*[[${targetId}]]*/ 0;
+		//이미 서버에서 받은 메시지는 클라이언트에서 다시 렌더링하지 않도록
+		// shownMessageIds를 수동으로 모아서 보내기 (map 대신 each)
+		window.shownMessageIds = [
+			/*[# th:each="msg : ${messageList}"]*/
+				/*[[${msg.msgId}]]*/,
+			/*[/]*/
+		];
 	</script>
 
 </div>
