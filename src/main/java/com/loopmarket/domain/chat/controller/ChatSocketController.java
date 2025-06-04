@@ -39,17 +39,10 @@ public class ChatSocketController {
         );
 
         // 2. 응답 메시지 구성 (timestamp, 읽음 여부 포함)
-        ChatMessageDTO response = ChatMessageDTO.builder()
-                .roomId(saved.getRoomId())
-                .senderId(saved.getSenderId())
-                .content(saved.getContent())
-                .type(MessageType.CHAT)
-                .timestamp(saved.getSentAt().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME))
-                .read(saved.isRead())
-                .build();
+        ChatMessageDTO dto = ChatMessageDTO.fromEntity(saved);
 
         // 3. 채팅방 구독자에게 메시지 전송
-        messagingTemplate.convertAndSend("/queue/room." + saved.getRoomId(), response);
+        messagingTemplate.convertAndSend("/queue/room." + saved.getRoomId(), dto);
     }
     
     /**
@@ -58,28 +51,21 @@ public class ChatSocketController {
      * - 프론트에서 roomId, userId만 전달
      */
     @MessageMapping("/chat.read")
-    public void handleReadMessage(ChatMessageDTO messageDTO) {
+    public void handleReadMessage(ChatMessageDTO dto) {
     	
-    	chatService.markMessagesAsRead(messageDTO.getRoomId(), messageDTO.getSenderId());
+    	//chatService.markMessagesAsRead(dto.getRoomId(), dto.getSenderId());
     	
-//        List<ChatMessageEntity> updatedMessages = chatService.markMessagesAsRead(
-//                messageDTO.getRoomId(),
-//                messageDTO.getSenderId()
-//        );
-        // 읽음 처리된 메시지를 다시 클라이언트로 전송
-//        for (ChatMessageEntity msg : updatedMessages) {
-//            ChatMessageDTO response = ChatMessageDTO.builder()
-//                    .roomId(msg.getRoomId())
-//                    .senderId(msg.getSenderId())
-//                    .content(msg.getContent())
-//                    .type(ChatMessageDTO.MessageType.CHAT)
-//                    .timestamp(msg.getSentAt().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME))
-//                    .read(true) // 읽음 상태 반영
-//                    .build();
-//
-//            // 해당 채팅방을 구독 중인 클라이언트에게 전송
-//            messagingTemplate.convertAndSend("/queue/room." + msg.getRoomId(), response);
-//        }
+        List<ChatMessageEntity> updatedMessages = chatService.markMessagesAsRead(
+                dto.getRoomId(),
+                dto.getSenderId()
+        );
+        //읽음 처리된 메시지를 다시 클라이언트로 전송
+        for (ChatMessageEntity msg : updatedMessages) {
+            ChatMessageDTO CMDto = ChatMessageDTO.fromEntity(msg);
+
+            // 메시지 보낸 상대방에게도 전송 (방 전체 구독 대상)
+           messagingTemplate.convertAndSend("/queue/room." + msg.getRoomId(), CMDto);
+        }
     }
 
 }

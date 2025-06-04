@@ -6,6 +6,7 @@ import org.springframework.stereotype.Repository;
 import com.loopmarket.domain.chat.entity.ChatMessageEntity;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface ChatMessageRepository extends JpaRepository<ChatMessageEntity, Long> {
@@ -27,5 +28,8 @@ public interface ChatMessageRepository extends JpaRepository<ChatMessageEntity, 
      * - ON DELETE CASCADE가 있더라도 수동 삭제 로직이 필요할 경우
      */
     void deleteByRoomId(Long roomId);
+    
+    Optional<ChatMessageEntity> findTopByRoomIdOrderBySentAtDesc(Long roomId);
+
 }
 
