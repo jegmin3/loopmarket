@@ -55,17 +55,18 @@ public class ChatSocketController {
     	
     	//chatService.markMessagesAsRead(dto.getRoomId(), dto.getSenderId());
     	
-        List<ChatMessageEntity> updatedMessages = chatService.markMessagesAsRead(
+        //List<ChatMessageEntity> updatedMessages = 
+        		chatService.markMessagesAsRead( // 읽음처리만 하고 메시지 안보냄
                 dto.getRoomId(),
                 dto.getSenderId()
         );
         //읽음 처리된 메시지를 다시 클라이언트로 전송
-        for (ChatMessageEntity msg : updatedMessages) {
-            ChatMessageDTO CMDto = ChatMessageDTO.fromEntity(msg);
+        //for (ChatMessageEntity msg : updatedMessages) {
+        //    ChatMessageDTO CMDto = ChatMessageDTO.fromEntity(msg);
 
             // 메시지 보낸 상대방에게도 전송 (방 전체 구독 대상)
-           messagingTemplate.convertAndSend("/queue/room." + msg.getRoomId(), CMDto);
-        }
+        //   messagingTemplate.convertAndSend("/queue/room." + msg.getRoomId(), CMDto);
+        //}
     }
 
 }
