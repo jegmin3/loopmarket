@@ -94,24 +94,30 @@ function ensureChatRoom(content, callback) {
 
 // 메시지 출력 (메시지 수신 시 호출됨)
 function showMessage(msg) {
+	// chatArea: 채팅 말풍선이 들어가는 곳곳
     const chatArea = $("#chatArea");
+	// isMine: 현재 메시지가 나한텧서 보내진건지 확인
     const isMine = (msg.senderId === senderId);
 	if (shownMessageIds.has(msg.msgId)) {
 	    if (isMine && msg.read) {
-	        // 이미 보낸 메시지인데 read=true로 갱신되면 읽음 표시만 업데이트
+	        // 이미 보낸 메시지는 다시 출력하지 않고,
+			// read=true(읽음상태)로 갱신되면 읽음 표시만 업데이트
 	        $(`#msg-${msg.msgId} .read-status`).text("읽음");
 	    }
 	    return; // 새로 append하지 않음
 	}
-	
+	// 말품선 서타일
     const align = isMine ? "text-end" : "text-start";
     const bubble = isMine ? "bg-primary text-white" : "bg-light border text-dark";
 
-    const time = msg.timestamp?.substring(11, 16) || "00:00"; // 'YYYY-MM-DDTHH:mm:ss'에서 HH:mm 추출
+	// 메시지 전송시간 처리리
+	// msg.timestamp의형식(ISO)인'YYYY-MM-DDTHH:mm:ss'에서 HH:mm만 추출
+    const time = msg.timestamp?.substring(11, 16) || "00:00"; 
+	// 상대가 읽었는지 여부(읽음,안읽음) 표시, 내가 보낸 메시지 일때만 표시함함
     const readIcon = isMine ? (msg.read ? "읽음" : "안읽음") : "";
 	//const alreadyShown = shownMessageIds.has(msg.msgId);
 		
-	// 최초 출력
+	// HTML 말풍선
 	const html = `
 	    <div class="${align} mb-2">
 	        <div class="d-inline-block rounded ${bubble}" style="max-width: 80%; padding: 0.5rem 0.75rem;">
@@ -122,8 +128,8 @@ function showMessage(msg) {
 	        </div>
 	    </div>`;
 
-    chatArea.append(html);
-    chatArea.scrollTop(chatArea[0].scrollHeight);
+    chatArea.append(html); //말풍선을 chatArea에 추가
+    chatArea.scrollTop(chatArea[0].scrollHeight); // 스크롤을 가장 아래로 내려줌(최신 메시지 보기 편하게)
 }
 
 $(document).ready(function () {
