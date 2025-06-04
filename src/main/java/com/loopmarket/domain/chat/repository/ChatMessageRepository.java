@@ -30,6 +30,9 @@ public interface ChatMessageRepository extends JpaRepository<ChatMessageEntity, 
     void deleteByRoomId(Long roomId);
     
     Optional<ChatMessageEntity> findTopByRoomIdOrderBySentAtDesc(Long roomId);
-
+    
+    /** 안읽은 메시지용 */
+    int countByRoomIdAndSenderIdNotAndIsReadFalse(Long roomId, Integer senderId);
+    
 }
 

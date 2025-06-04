@@ -5,6 +5,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.loopmarket.domain.chat.dto.ChatRoomSummaryDTO;
+import com.loopmarket.domain.chat.dto.UnreadCountDTO;
 import com.loopmarket.domain.chat.entity.ChatMessageEntity;
 import com.loopmarket.domain.chat.entity.ChatRoomEntity;
 import com.loopmarket.domain.chat.repository.ChatMessageRepository;
@@ -156,16 +157,31 @@ public class ChatService {
             Integer opponentId = room.getUser1Id().equals(userId) ? room.getUser2Id() : room.getUser1Id();
             String nickname = getNicknameByUserId(opponentId);
 
-            // ✅ 마지막 메시지 조회
+            // 마지막 메시지 조회
             ChatMessageEntity lastMessage = chatMessageRepository.findTopByRoomIdOrderBySentAtDesc(room.getRoomId())
                     .orElse(null);
+            
+            // 안 읽은 메시지 수 조회 (상대방이 보낸 메시지이면서, 내가 안 읽은 메시지)
+            int unreadCount = chatMessageRepository.countByRoomIdAndSenderIdNotAndIsReadFalse(
+                    room.getRoomId(), userId);
 
             return new ChatRoomSummaryDTO(
                 room,
                 nickname,
                 lastMessage != null ? lastMessage.getContent() : "(메시지 없음)",
-                lastMessage != null ? lastMessage.getSentAt() : null
+                lastMessage != null ? lastMessage.getSentAt() : null,
+                unreadCount
             );
+        }).collect(Collectors.toList());
+    }
+    
+    /** 채팅방별 안읽은 메시지 수 반환 */
+    public List<UnreadCountDTO> getUnreadCountsByRoom(Integer userId) {
+        List<ChatRoomEntity> rooms = getActiveChatRooms(userId);
+
+        return rooms.stream().map(room -> {
+            int count = chatMessageRepository.countByRoomIdAndSenderIdNotAndIsReadFalse(room.getRoomId(), userId);
+            return new UnreadCountDTO(room.getRoomId(), count);
         }).collect(Collectors.toList());
     }
 

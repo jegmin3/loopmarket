@@ -15,5 +15,6 @@ public class ChatRoomSummaryDTO {
     
     private String lastMessage;      // 마지막 메시지 내용
     private LocalDateTime lastTime;  // 마지막 메시지 시간
+    private int unreadCount;		 // 안읽은 채팅메시지 개수
 }
 

@@ -14,10 +14,12 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.SessionAttribute;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.loopmarket.common.controller.BaseController;
 import com.loopmarket.domain.chat.dto.ChatRoomSummaryDTO;
+import com.loopmarket.domain.chat.dto.UnreadCountDTO;
 import com.loopmarket.domain.chat.entity.ChatMessageEntity;
 import com.loopmarket.domain.chat.entity.ChatRoomEntity;
 import com.loopmarket.domain.chat.service.ChatService;
@@ -123,6 +125,7 @@ public class ChatController extends BaseController {
 	    return render("chat/chatRoom", model);
 	}
 	
+	/** 채팅하기 누르고 입장 후, 메시지를 입력했을때 방이 만들어지게 매핑된 메서드 */
 	@PostMapping("/api/create-room")
 	@ResponseBody
 	public Map<String, Object> createRoom(@RequestParam Integer targetId, HttpSession session) {
@@ -132,7 +135,15 @@ public class ChatController extends BaseController {
 	    ChatRoomEntity room = chatService.enterRoom(userId, targetId); // 여기선 생성 허용
 	    return Map.of("roomId", room.getRoomId());
 	}
-
+	
+	// 안읽은 메시지 수 반환
+    @GetMapping("/api/unread-summary")
+    @ResponseBody
+    public List<UnreadCountDTO> getUnreadSummary() {
+    	MemberEntity loginUser =  getLoginUser();
+    	
+        return chatService.getUnreadCountsByRoom(loginUser.getUserId());
+    }
 	
 	/** 채팅창 나가기 */
 	@PostMapping("/leave")
