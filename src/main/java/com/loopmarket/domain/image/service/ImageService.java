@@ -47,7 +47,7 @@ public class ImageService {
   public String getThumbnailPath(Long productId) {
     ImageEntity thumbnail = imageRepository.findFirstByTargetIdAndIsThumbnail(productId, true);
     if (thumbnail == null) {
-      return "/img.pay/kakao.png";
+      return "/img/pay/kakao.png";
     }
     return thumbnail.getImagePath();
   }
@@ -57,7 +57,7 @@ public class ImageService {
 
 	    // 이미지가 없거나 경로가 비어 있으면 기본 이미지 경로 반환
 	    if (image == null || image.getImagePath() == null || image.getImagePath().isBlank()) {
-	        return "/images/default-profile.png"; // 실제 존재하는 기본 이미지 경로로 수정하세요
+	        return "/img/no-image.png";
 	    }
 
 	    return image.getImagePath();
