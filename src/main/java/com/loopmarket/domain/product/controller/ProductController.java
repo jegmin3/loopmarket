@@ -154,6 +154,10 @@ public class ProductController {
     // 좌표 정보 설정
     product.setLatitude(latitude);
     product.setLongitude(longitude);
+    // 명시적으로 상품 숨김해제
+    product.setIsHidden(false);
+    
+    
     // 서비스 호출하여 상품 및 이미지 저장
     productService.registerProductWithImages(product, images, mainImageIndex);
 

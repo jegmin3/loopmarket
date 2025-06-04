@@ -1,5 +1,7 @@
 package com.loopmarket.domain.product.dto;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
@@ -13,5 +15,7 @@ public class ProductAdminListDTO {
     private String saleType;
     private String condition;
     private String status;
+    
+    @JsonProperty("ishidden")
     private Boolean isHidden;
 }

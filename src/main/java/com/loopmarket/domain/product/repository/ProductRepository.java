@@ -54,6 +54,20 @@ public interface ProductRepository extends JpaRepository<ProductEntity, Long> {
     @Query(value = "SELECT p.ctg_code, c.ctg_name, COUNT(*) FROM products p JOIN category c ON p.ctg_code = c.ctg_code GROUP BY p.ctg_code, c.ctg_name", nativeQuery = true)
     List<Object[]> countProductsByCategory();
 
-    
+    // 숨김(false)이고 상태 ONSALE인 상품만 조회
+    List<ProductEntity> findByIsHiddenFalseAndStatus(String status);
 
+    // 숨김(false)이고 특정 카테고리인 상품만 조회
+    List<ProductEntity> findByIsHiddenFalseAndCtgCode(Integer ctgCode);
+
+    // 숨김(false)이고 소분류 코드 리스트 + 가격 범위 조건
+    List<ProductEntity> findByIsHiddenFalseAndCtgCodeInAndPriceBetween(List<Integer> ctgCodes, Integer min, Integer max);
+
+    // 숨김(false)이고 가격 범위 조건
+    List<ProductEntity> findByIsHiddenFalseAndPriceBetween(Integer min, Integer max);
+    
+    List<ProductEntity> findByCtgCodeAndPriceBetweenAndIsHiddenFalse(Integer ctgCode, Integer min, Integer max);
+
+    List<ProductEntity> findByIsHiddenFalseAndCtgCodeIn(List<Integer> ctgCodes);
+    
 }

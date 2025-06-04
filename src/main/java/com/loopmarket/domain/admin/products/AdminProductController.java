@@ -33,17 +33,22 @@ public class AdminProductController {
     }
 
     // 상품 관리 페이지 접근
+//    @GetMapping
+//    public String productAdminPage(HttpServletRequest request, Model model,
+//                                   @RequestParam(defaultValue = "0") int page) {
+//        int pageSize = 10;
+//        Pageable pageable = PageRequest.of(page, pageSize, Sort.by("createdAt").descending());
+//        Page<ProductEntity> productPage = productService.getProductsPage(pageable);
+//
+//        model.addAttribute("products", productPage.getContent());
+//        model.addAttribute("currentPage", page);
+//        model.addAttribute("totalPages", productPage.getTotalPages());
+//
+//        return renderAdminPage(request, model, "admin/product_admin");
+//    }
     @GetMapping
-    public String productAdminPage(HttpServletRequest request, Model model,
-                                   @RequestParam(defaultValue = "0") int page) {
-        int pageSize = 10;
-        Pageable pageable = PageRequest.of(page, pageSize, Sort.by("createdAt").descending());
-        Page<ProductEntity> productPage = productService.getProductsPage(pageable);
-
-        model.addAttribute("products", productPage.getContent());
-        model.addAttribute("currentPage", page);
-        model.addAttribute("totalPages", productPage.getTotalPages());
-
+    public String productAdminPage(HttpServletRequest request, Model model) {
         return renderAdminPage(request, model, "admin/product_admin");
     }
+    
 }
