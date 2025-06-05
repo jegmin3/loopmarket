@@ -9,7 +9,6 @@ import com.loopmarket.domain.chat.entity.ChatMessageEntity;
 import com.loopmarket.domain.chat.entity.ChatRoomEntity;
 import com.loopmarket.domain.chat.repository.ChatMessageRepository;
 import com.loopmarket.domain.chat.repository.ChatRoomRepository;
-import com.loopmarket.domain.image.repository.ImageRepository;
 import com.loopmarket.domain.member.MemberRepository;
 
 import java.time.LocalDateTime;
@@ -24,7 +23,7 @@ public class ChatService {
     private final ChatRoomRepository chatRoomRepository;
     private final ChatMessageRepository chatMessageRepository;
     private final MemberRepository memberRepository;
-    private final ImageRepository imageRepository;
+    //private final ImageRepository imageRepository;
     
     /**
      * 두 유저 간의 채팅방을 찾거나, 없으면 새로 생성해서 반환
