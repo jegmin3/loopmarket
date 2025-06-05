@@ -13,9 +13,11 @@ public interface ChatRoomRepository extends JpaRepository<ChatRoomEntity, Long> 
 
     /**
      * 두 사용자가 참여한 채팅방을 조회
+     * productId까지 포함해서 중복 방지
      * - 두 사용자의 조합으로 유일한 채팅방 존재
      */
-    Optional<ChatRoomEntity> findByUser1IdAndUser2Id(Integer user1Id, Integer user2Id);
+	Optional<ChatRoomEntity> findByUser1IdAndUser2IdAndProductId(Integer user1, Integer user2, Integer productId);
+
 
     /**
      * 현재 사용자가 참여하고 있는 채팅방 전체 조회

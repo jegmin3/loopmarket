@@ -9,6 +9,7 @@ import com.loopmarket.domain.chat.entity.ChatMessageEntity;
 import com.loopmarket.domain.chat.entity.ChatRoomEntity;
 import com.loopmarket.domain.chat.repository.ChatMessageRepository;
 import com.loopmarket.domain.chat.repository.ChatRoomRepository;
+import com.loopmarket.domain.image.repository.ImageRepository;
 import com.loopmarket.domain.member.MemberRepository;
 
 import java.time.LocalDateTime;
@@ -23,32 +24,38 @@ public class ChatService {
     private final ChatRoomRepository chatRoomRepository;
     private final ChatMessageRepository chatMessageRepository;
     private final MemberRepository memberRepository;
-
+    private final ImageRepository imageRepository;
+    
     /**
      * 두 유저 간의 채팅방을 찾거나, 없으면 새로 생성해서 반환
      */
     @Transactional
-    public ChatRoomEntity enterRoom(Integer user1Id, Integer user2Id) {
-        // 기존 채팅방 존재 확인 (user1-user2, user2-user1 양방향 체크)
-        return chatRoomRepository.findByUser1IdAndUser2Id(user1Id, user2Id)
-                .or(() -> chatRoomRepository.findByUser1IdAndUser2Id(user2Id, user1Id))
+    public ChatRoomEntity enterRoom(Integer myId, Integer targetId, Integer productId) {
+        // 항상 user1 < user2로 정렬 (중복 방지)
+        Integer user1 = Math.min(myId, targetId);
+        Integer user2 = Math.max(myId, targetId);
+        // 기존 채팅방 존재 확인
+        return chatRoomRepository
+                .findByUser1IdAndUser2IdAndProductId(user1, user2, productId)
                 .orElseGet(() -> {
-                    // 새 채팅방 생성
-                    ChatRoomEntity newRoom = ChatRoomEntity.builder()
-                            .user1Id(user1Id)
-                            .user2Id(user2Id)
-                            .build();
+                    ChatRoomEntity newRoom = new ChatRoomEntity();
+                    newRoom.setUser1Id(user1);
+                    newRoom.setUser2Id(user2);
+                    newRoom.setProductId(productId);
                     return chatRoomRepository.save(newRoom);
                 });
     }
     
-	/** 채팅방이 이미 있는지 확인만 하고, 없으면 생성하지 않음 */
-	public ChatRoomEntity findExistingRoom(Integer user1Id, Integer user2Id) {
-	    return chatRoomRepository
-	        .findByUser1IdAndUser2Id(user1Id, user2Id)
-	        .or(() -> chatRoomRepository.findByUser1IdAndUser2Id(user2Id, user1Id))
-	        .orElse(null); // ❌ 생성하지 않음
-	}
+    /** 채팅방이 이미 있는지 확인만 하고, 없으면 생성하지 않음 */
+    public ChatRoomEntity findExistingRoom(Integer user1, Integer user2, Integer productId) {
+    	// 항상 user1 < user2로 정렬 (중복 방지)
+        Integer u1 = Math.min(user1, user2);
+        Integer u2 = Math.max(user1, user2);
+
+        return chatRoomRepository
+            .findByUser1IdAndUser2IdAndProductId(u1, u2, productId)
+            .orElse(null);
+    }
 
     /**
      * 특정 사용자가 참여한 모든 채팅방 목록 조회
@@ -196,7 +203,11 @@ public class ChatService {
             return new UnreadChatDTO(room.getRoomId(), unreadCount, content, time);
         }).collect(Collectors.toList());
     }
-
+    
+    // 상품 이미지(썸네일) 경로 추출
+    public String getThumbnailPathForProduct(Integer productId) {
+        return "";
+    }
 
 
     

@@ -38,7 +38,10 @@ public class ChatRoomEntity {
     @Builder.Default
     @Column(name = "user2_leaved", nullable = false)
     private boolean user2Leaved = false;
-
+    
+    @Column(name = "product_id", nullable = false)
+    private Integer productId; // 어떤 상품에 대한 채팅방인지
+    
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
 
