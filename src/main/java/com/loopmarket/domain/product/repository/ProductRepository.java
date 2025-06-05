@@ -1,6 +1,5 @@
 package com.loopmarket.domain.product.repository;
 
-import com.loopmarket.domain.product.dto.CategoryProductStatsDTO;
 import com.loopmarket.domain.product.entity.ProductEntity;
 
 import java.util.List;

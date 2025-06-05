@@ -68,7 +68,7 @@ function ensureChatRoom(content, callback) {
         callback(content);
     } else if (!window.roomId) {
 		// 채팅방 ID가 없으면 /chat/api/create-room API에 targetId를 넘겨 방을 생성 요청
-        $.post("/chat/api/create-room", { targetId: window.targetId }, function (res) {
+        $.post("/chat/api/create-room", { targetId: window.targetId, productId: productId }, function (res) {
 			//서버가 roomId를 응답했을때
             if (res.roomId) {
 				//window.roomId, roomId 전역 변수에 저장
