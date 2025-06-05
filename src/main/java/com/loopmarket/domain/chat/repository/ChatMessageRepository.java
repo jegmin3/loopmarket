@@ -3,6 +3,7 @@ package com.loopmarket.domain.chat.repository;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import com.loopmarket.domain.chat.dto.ChatMessageDTO;
 import com.loopmarket.domain.chat.entity.ChatMessageEntity;
 
 import java.util.List;
@@ -29,10 +30,13 @@ public interface ChatMessageRepository extends JpaRepository<ChatMessageEntity, 
      */
     void deleteByRoomId(Long roomId);
     
+    // 해당 채팅방에서 가장 최근 메시지 1개
     Optional<ChatMessageEntity> findTopByRoomIdOrderBySentAtDesc(Long roomId);
     
-    /** 안읽은 메시지용 */
+    // 해당 채팅방에서 내가 아닌 사람이 보냈고, 아직 읽지 않은 메시지 개수
     int countByRoomIdAndSenderIdNotAndIsReadFalse(Long roomId, Integer senderId);
+    
+
     
 }
 

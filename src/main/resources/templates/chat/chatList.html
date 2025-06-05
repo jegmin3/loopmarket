@@ -19,16 +19,8 @@
                     <strong th:text="${summary.opponentNickname}">상대방</strong>
                 </div>
                 <!-- 마지막 메시지 -->
-                <div class="text-muted small" th:text="${summary.lastMessage}">(메시지 없음)</div>
+                <div class="text-muted small" th:id="'chat-msg-' + ${summary.room.roomId}" th:text="${summary.lastMessage}">(메시지 없음)</div>
             </div>
-			
-<!--		   <div class="position-relative">
-		       <span class="badge rounded-pill bg-danger"
-		             th:if="${summary.unreadCount > 0}"
-		             th:text="${summary.unreadCount > 9 ? '.' : summary.unreadCount}"
-		             style="font-size: 0.8rem; position: absolute; top: -5px; right: -10px;">
-		       </span>
-		   </div>-->
 			
    			<!-- 채팅방 목록 우측에 채팅온 개수(뱃지) -->
 		   <div class="text-end" style="min-width: 60px;">
@@ -39,7 +31,7 @@
 		           <!-- JS에서 숫자 삽입 -->
 		       </span><br/>
     			<!-- 마지막 메시지 시간 -->
-		       <small class="text-muted" th:if="${summary.lastTime != null}"
+		       <small class="text-muted" th:if="${summary.lastTime != null}" th:id="'chat-time-' + ${summary.room.roomId}"
 		              th:text="${#temporals.format(summary.lastTime, 'MM/dd HH:mm')}">00:00</small>
 		   </div>
         </a>
@@ -47,28 +39,35 @@
 	
 	<script>
 	$(document).ready(function () {
-	    function updateUnreadBadges() {
-	        $.get("/chat/api/unread-summary", function (data) {
-	            // 모든 뱃지를 초기화
-	            $("[id^=chat-badge-]").hide();
+		function updateUnreadBadgesAndMessages() {
+		    $.get("/chat/api/unread-summary", function (data) {
+		        data.forEach(item => {
+		            const badge = $("#chat-badge-" + item.roomId);
+		            const msgBox = $("#chat-msg-" + item.roomId);
+		            const timeBox = $("#chat-time-" + item.roomId);
 
-	            data.forEach(item => {
-	                const badge = $("#chat-badge-" + item.roomId);
-	                if (badge.length > 0 && item.count > 0) {
-	                    badge.text(item.count > 9 ? "." : item.count);
-	                    badge.show();
-	                }
-	            });
-	        }).fail(function () {
-	            console.error("채팅 알림 불러오기 실패");
-	        });
-	    }
+		            // 뱃지 표시
+		            if (item.unreadCount > 0) {
+		                badge.text(item.unreadCount > 9 ? "." : item.unreadCount).show();
+		            } else {
+		                badge.hide();
+		            }
 
-	    // 최초 실행
-	    updateUnreadBadges();
-
-	    // 주기적 갱신(10초 간격)
-	    setInterval(updateUnreadBadges, 5000);
+		            // 메시지 내용, 시간 업데이트
+		            if (msgBox.length > 0) {
+		                msgBox.text(item.lastMessage || "(메시지 없음)");
+		            }
+		            if (timeBox.length > 0 && item.lastTime) {
+		                const hhmm = item.lastTime.substring(11, 16); // "2025-06-04T17:21" → "17:21"
+		                timeBox.text(hhmm);
+		            }
+		        });
+		    });
+		}
+	    // chatList 진입시 최초 실행
+	    updateUnreadBadgesAndMessages();
+	    // 주기적으로 갱신
+	    setInterval(updateUnreadBadgesAndMessages, 4000);
 	});
 	</script>
 

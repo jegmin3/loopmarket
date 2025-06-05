@@ -18,8 +18,9 @@ import org.springframework.web.bind.annotation.SessionAttribute;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.loopmarket.common.controller.BaseController;
+import com.loopmarket.domain.chat.dto.ChatMessageDTO;
 import com.loopmarket.domain.chat.dto.ChatRoomSummaryDTO;
-import com.loopmarket.domain.chat.dto.UnreadCountDTO;
+import com.loopmarket.domain.chat.dto.UnreadChatDTO;
 import com.loopmarket.domain.chat.entity.ChatMessageEntity;
 import com.loopmarket.domain.chat.entity.ChatRoomEntity;
 import com.loopmarket.domain.chat.service.ChatService;
@@ -67,6 +68,15 @@ public class ChatController extends BaseController {
 	    // 읽음 처리 + 업데이트된 메시지 반환
 	    List<ChatMessageEntity> messageList = chatService.markMessagesAsRead(roomId, userId);
 	    
+	    // 내가 보낸 마지막 메시지 ID 추출
+	    Long lastMyMsgId = null;
+	    for (int i = messageList.size() - 1; i >= 0; i--) {
+	        if (messageList.get(i).getSenderId().equals(userId)) {
+	            lastMyMsgId = messageList.get(i).getMsgId();
+	            break;
+	        }
+	    }
+	    
 	    // 상대방 ID → 닉네임 조회
 	    Integer opponentId = room.getUser1Id().equals(userId) ? room.getUser2Id() : room.getUser1Id();
 	    String targetNickname = chatService.getNicknameByUserId(opponentId);
@@ -75,6 +85,7 @@ public class ChatController extends BaseController {
 	    model.addAttribute("roomId", roomId);
 	    model.addAttribute("messageList", messageList);
 	    model.addAttribute("targetNickname", targetNickname);
+	    model.addAttribute("lastMyMsgId", lastMyMsgId);
 
 	    return render("chat/chatRoom", model);
 	}
@@ -136,13 +147,11 @@ public class ChatController extends BaseController {
 	    return Map.of("roomId", room.getRoomId());
 	}
 	
-	// 안읽은 메시지 수 반환
+	// 안읽은 메시지 반환
     @GetMapping("/api/unread-summary")
     @ResponseBody
-    public List<UnreadCountDTO> getUnreadSummary() {
-    	MemberEntity loginUser =  getLoginUser();
-    	
-        return chatService.getUnreadCountsByRoom(loginUser.getUserId());
+    public List<UnreadChatDTO> getUnreadSummary(@SessionAttribute MemberEntity loginUser) {
+        return chatService.getUnreadSummariesWithLastMessage(loginUser.getUserId());
     }
 	
 	/** 채팅창 나가기 */
