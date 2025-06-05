@@ -21,5 +21,7 @@ public interface CategoryRepository extends JpaRepository<Category, Integer> {
   @Query("SELECT c.ctgCode FROM Category c WHERE c.upCtgCode = :mainCode")
   List<Integer> findSubCategoryCodesByMainCode(Integer mainCode);
 
+  List<Category> findAllByOrderBySeqAsc();
+  
 
 }

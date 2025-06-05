@@ -44,4 +44,8 @@ public class CategoryService {
   public void deleteCategory(Integer ctgCode) {
     categoryRepository.deleteById(ctgCode);
   }
+
+  public List<Category> findAllCategories() {
+      return categoryRepository.findAllByOrderBySeqAsc();
+  }
 }

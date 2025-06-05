@@ -1,12 +1,13 @@
+// chatRoom.html의 하단 스크립트에 전역변수 설정해둠
 let stompClient = null;
-// chatRoom.html의 하단 스크립트에 값 설정해둠
 let roomId = window.roomId; // 동기화 가능하게 let으로.
 const senderId = window.senderId;
 //const targetId = window.targetId;
 // WebSocket 연결
 let reconnectCount = 0;
 let socketConnected = false;
-const shownMessageIds = new Set();
+//const shownMessageIds = new Set();
+const shownMessageIds = new Set(window.shownMessageIds || []);
 
 // 웹소켓 연결 함수
 function connect(callback) {
@@ -16,6 +17,7 @@ function connect(callback) {
 		    if (callback) callback();
 		    return;
 		}
+		// 사용자가 서버에 웹소켓 연결
 	    const socket = new SockJS("/ws/chat");
 	    stompClient = Stomp.over(socket);
 		
@@ -23,18 +25,20 @@ function connect(callback) {
 		$("#sendBtn").prop("disabled", true);
 		socketConnected = false;
 		
+		// 서버 연결 후 구독 시작
 	    stompClient.connect({}, function () {
 	        console.log("✅ WebSocket 연결됨");
 	
 			socketConnected = true; // 소켓 연결 완료 표시
 			$("#sendBtn").prop("disabled", false); // 전송 버튼 활성화
 			
+			// 해당 채팅방 구독
 	        stompClient.subscribe(`/queue/room.${roomId}`, function (message) {
 				const msg = JSON.parse(message.body);
 				if (msg.type === "READ") return; // 읽음 메시지 무시
 				showMessage(msg);
 	        });
-			// 입장시 읽음 처리
+			// 입장시 읽음 처리(roomId, senderId담아서 서버로 전송)
 	        stompClient.send("/app/chat.read", {}, JSON.stringify({
 	            roomId: roomId,
 	            senderId: senderId
@@ -48,6 +52,7 @@ function connect(callback) {
 	        console.warn("❌ WebSocket 연결 실패", error);
 			socketConnected = false;
 			$("#sendBtn").prop("disabled", true); // 실패 시 전송버튼 다시 잠금
+			// 웹소켓 연결 재시도(최대 3회로 설정해둠)
 	        if (reconnectCount++ < 3) {
 	            setTimeout(connect, 3000); // 3초 후 재시도
 	        }
@@ -55,26 +60,33 @@ function connect(callback) {
 }
 
 // 방이 없으면 생성하는 Ajax 함수(상품 상세보기에서 채팅하기 누를 시 사용함)
+// content: 사용자가 보내려는 채팅 내용
+// callback: 메시지를 실제로 전송하는 동작을 나중에 실행하기 위한 함수(콜백)
 function ensureChatRoom(content, callback) {
+	// 이미 roomId가 있는 경우, 소켓연결로 간주,바로 메시지 전송 콜백 실행
     if (window.roomId) {
         callback(content);
     } else if (!window.roomId) {
-		// 방이 없으면 생성 후 connect → 콜백에서 전송
-        //console.log("채팅방 없음 → 서버에 생성 요청 중...");
-        $.post("/chat/api/create-room", { targetId: window.targetId }, function (res) {
+		// 채팅방 ID가 없으면 /chat/api/create-room API에 targetId를 넘겨 방을 생성 요청
+        $.post("/chat/api/create-room", { targetId: window.targetId, productId: productId }, function (res) {
+			//서버가 roomId를 응답했을때
             if (res.roomId) {
+				//window.roomId, roomId 전역 변수에 저장
                 window.roomId = res.roomId;
 				roomId = res.roomId;  // stompClient에서 올바른 roomId 구독하게 하기 위해 필요
                 console.log("채팅방 생성됨: roomId =", res.roomId);
 				
+				//connect() 함수를 호출해서 WebSocket 연결을 시작
 				connect(() => {
-				    callback(content); // 소켓 연결된 후 메시지 전송
+					// 연결이 완료되면 callback(content)를 호출해 메시지를 전송
+				    callback(content);
 				});
             } else {
                 showAlert("error", "채팅방 생성 실패", "서버로부터 roomId를 받을 수 없습니다.");
             } 
 		});
     } else if (!socketConnected) {
+		// 방은 있는데 소켓 연결이 끊긴 상태라면 -> 다시 연결 후 메시지 전송
 		connect(() => {
 			callback(content);
 		});
@@ -83,44 +95,65 @@ function ensureChatRoom(content, callback) {
 
 // 메시지 출력 (메시지 수신 시 호출됨)
 function showMessage(msg) {
+	// chatArea: 채팅 말풍선이 들어가는 곳
     const chatArea = $("#chatArea");
+	// isMine: 현재 메시지가 나한텧서 보내진건지 확인
     const isMine = (msg.senderId === senderId);
+	
 	if (shownMessageIds.has(msg.msgId)) {
 	    if (isMine && msg.read) {
-	        // 이미 보낸 메시지인데 read=true로 갱신되면 읽음 표시만 업데이트
-	        $(`#msg-${msg.msgId} .read-status`).text("읽음");
+			// 읽음/안읽음 표시는 내가 보낸 가장 마지막 메시지에만 표시 (마지막 메시지가 아닐 경우 무시하는 스크립트)
+			const isLastMine = chatArea.find(".text-end").last().attr("id") === `msg-${msg.msgId}`;
+	        // 이미 보낸 메시지는 다시 출력하지 않고,
+			// read=true(읽음상태)로 갱신되면 읽음 표시만 업데이트
+			if (isLastMine) {
+			    $(`#msg-${msg.msgId} .read-status`).text("읽음");
+			}
 	    }
 	    return; // 새로 append하지 않음
 	}
-	
+	// 말품선 스타일
     const align = isMine ? "text-end" : "text-start";
     const bubble = isMine ? "bg-primary text-white" : "bg-light border text-dark";
-
-    const time = msg.timestamp?.substring(11, 16) || "00:00"; // 'YYYY-MM-DDTHH:mm:ss'에서 HH:mm 추출
-    const readIcon = isMine ? (msg.read ? "읽음" : "안읽음") : "";
-	//const alreadyShown = shownMessageIds.has(msg.msgId);
+	// 메시지 전송시간 처리
+	// msg.timestamp의형식(ISO)인'YYYY-MM-DDTHH:mm:ss'에서 HH:mm만 추출
+    const time = msg.timestamp?.substring(11, 16) || "00:00"; 
 		
-	// 최초 출력
+	// HTML 말풍선
 	const html = `
-	    <div class="${align} mb-2">
+	    <div class="${align} mb-2" id="msg-${msg.msgId}">
 	        <div class="d-inline-block rounded ${bubble}" style="max-width: 80%; padding: 0.5rem 0.75rem;">
 	            <div style="font-size: 1.05rem;">${msg.content}</div>
 	        </div>
-	        <div style="font-size: 0.75rem;" class="${isMine ? 'text-end text-muted' : 'text-start text-muted'} mt-1">
-	            ${time} ${readIcon}
+	        <div style="font-size: 0.75rem;" class="${align} text-muted mt-1">
+	            ${time} <span class="read-status"></span>
 	        </div>
 	    </div>`;
 
-    chatArea.append(html);
-    chatArea.scrollTop(chatArea[0].scrollHeight);
+    chatArea.append(html); //말풍선을 chatArea에 추가
+	shownMessageIds.add(msg.msgId); // 중복 방지
+	//append 이후에, 가장 마지막 내 메시지만 읽음 상태 업데이트
+	if (isMine) {
+	    $(".read-status").text(""); // 전체 초기화
+	    const lastMyMsg = chatArea.find(".text-end[id^='msg-']").last();
+	    const readStatus = msg.read ? "읽음" : "안읽음";
+	    lastMyMsg.find(".read-status").text(readStatus);
+	}
+	
+    chatArea.scrollTop(chatArea[0].scrollHeight); // 스크롤을 가장 아래로 내려줌(최신 메시지 보기 편하게)
 }
 
+/* 스크립트 처음 로드시 작업할 동작 */
 $(document).ready(function () {
 	console.log("chatRoom.js 로딩됨");
 	// roomId가 있을 때만 바로 WebSocket 연결(제어문 안쓰면 채팅하기 누르자마자 방 만들어짐.)
 	if (window.roomId) {
 	    connect(); // 새로고침 해도 소켓 연결 자동 실행
 	}
+	// 채팅방 입장 시 스크롤을 맨 아래로
+	const chatArea = $("#chatArea");
+	chatArea.scrollTop(chatArea[0].scrollHeight);
+	
 	// 채팅방 나가기 sweetAlert 처리
 	$("#leaveBtn").click(function () {
 	    Swal.fire({

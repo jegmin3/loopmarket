@@ -175,7 +175,48 @@ $(document).ready(function () {
 	          }
 	        }
 	      });
-	    });  
+	    });
+		
+		// 거래 성사율 파이 차트
+		/*fetch('/admin/statistics/trade-success-rate')
+		  .then(res => res.json())
+		  .then(data => {
+		    // 예: { successCount: 80, failCount: 20 }
+		    const success = data.successCount || 0;
+		    const fail = data.failCount || 0;
+
+		    const ctx = document.getElementById('tradePieChart').getContext('2d');
+		    new Chart(ctx, {
+		      type: 'pie',
+		      data: {
+		        labels: ['성공', '실패'],
+		        datasets: [{
+		          data: [success, fail],
+		          backgroundColor: ['#4CAF50', '#F44336'], // 초록 / 빨강
+		        }]
+		      },
+		      options: {
+		        responsive: true,
+		        plugins: {
+		          legend: {
+		            position: 'bottom'
+		          },
+		          tooltip: {
+		            callbacks: {
+		              label: function(context) {
+		                const total = success + fail;
+		                const value = context.parsed;
+		                const percent = total > 0 ? ((value / total) * 100).toFixed(1) : 0;
+		                return `${context.label}: ${value}건 (${percent}%)`;
+		              }
+		            }
+		          }
+		        }
+		      }
+		    });
+		  })
+		  .catch(err => console.error("거래 성사율 API 호출 실패:", err));*/
+		
 	
 	
 });

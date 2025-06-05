@@ -14,14 +14,18 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.SessionAttribute;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.loopmarket.common.controller.BaseController;
 import com.loopmarket.domain.chat.dto.ChatRoomSummaryDTO;
+import com.loopmarket.domain.chat.dto.UnreadChatDTO;
 import com.loopmarket.domain.chat.entity.ChatMessageEntity;
 import com.loopmarket.domain.chat.entity.ChatRoomEntity;
 import com.loopmarket.domain.chat.service.ChatService;
 import com.loopmarket.domain.member.MemberEntity;
+import com.loopmarket.domain.product.entity.ProductEntity;
+import com.loopmarket.domain.product.repository.ProductRepository;
 
 import lombok.RequiredArgsConstructor;
 
@@ -31,6 +35,7 @@ import lombok.RequiredArgsConstructor;
 public class ChatController extends BaseController {
 	
 	private final ChatService chatService;
+	private final ProductRepository productRepository;
 	
 	/** 채팅기록에서 해당 채팅방 진입 */
 	@GetMapping("/room/{roomId}")
@@ -65,6 +70,16 @@ public class ChatController extends BaseController {
 	    // 읽음 처리 + 업데이트된 메시지 반환
 	    List<ChatMessageEntity> messageList = chatService.markMessagesAsRead(roomId, userId);
 	    
+	    // 내가 보낸 마지막 메시지 ID 추출
+	    Long lastMyMsgId = null;
+	    for (int i = messageList.size() - 1; i >= 0; i--) {
+	        if (messageList.get(i).getSenderId().equals(userId)) {
+	            lastMyMsgId = messageList.get(i).getMsgId();
+	            break;
+	        }
+	    }
+	    // 상품 정보 가져옴 (productId 타입 오류나서 findbyId(Long) 호출시 명시적으로 타입 변환함..)
+	    ProductEntity product = productRepository.findById(room.getProductId().longValue()).orElseThrow();
 	    // 상대방 ID → 닉네임 조회
 	    Integer opponentId = room.getUser1Id().equals(userId) ? room.getUser2Id() : room.getUser1Id();
 	    String targetNickname = chatService.getNicknameByUserId(opponentId);
@@ -72,19 +87,22 @@ public class ChatController extends BaseController {
 	    // 모델 데이터 전달
 	    model.addAttribute("roomId", roomId);
 	    model.addAttribute("messageList", messageList);
+	    model.addAttribute("product", product);
 	    model.addAttribute("targetNickname", targetNickname);
+	    model.addAttribute("lastMyMsgId", lastMyMsgId);
 
 	    return render("chat/chatRoom", model);
 	}
 	
 	/**
-	 * 상품 상세페이지에서 채팅하기 누를 시(POST 요청)
+	 * 상품 상세페이지에서 채팅하기 누를 시.
 	 * 기존의 채팅방을 찾아 입장함.
 	 * 없을시 상대방 ID만 전달. 채팅방 UI에서 roomId == null이면,
 	 * 메시지 전송 전에 Ajax로 방 생성
 	 */
 	@GetMapping("/start")
 	public String startChat(@RequestParam Integer targetId,
+							@RequestParam Integer productId,
 	                        HttpSession session,
 	                        Model model,
 	                        RedirectAttributes redirectAttributes) {
@@ -105,34 +123,49 @@ public class ChatController extends BaseController {
 	    }
 
 	    // 방이 존재하는지만 확인 (생성은 하지 않음, 없으면 null)
-	    ChatRoomEntity existingRoom = chatService.findExistingRoom(userId, targetId);
+	    ChatRoomEntity existingRoom = chatService.findExistingRoom(userId, targetId, productId);
 	    List<ChatMessageEntity> messages = existingRoom != null
 	            ? chatService.getMessages(existingRoom.getRoomId())
 	            : List.of();
 	    
 	    // 상대방 닉네임 가져오기
 	    String targetNickname = chatService.getNicknameByUserId(targetId);
+	    //productId 추출 경로 분기
+	    ProductEntity product;
+	    if (existingRoom != null) {
+	        product = productRepository.findById(existingRoom.getProductId().longValue()).orElseThrow();
+	    } else {
+	        product = productRepository.findById(productId.longValue()).orElseThrow();
+	    }
 	    
 	    // 뷰 데이터 설정
 	    model.addAttribute("roomId", existingRoom != null ? existingRoom.getRoomId() : null);
 	    model.addAttribute("messageList", messages);
 	    model.addAttribute("targetNickname", targetNickname);
+	    model.addAttribute("product", product);
 	    model.addAttribute("targetId", targetId); // JS에서 방 생성용으로 필요(ajax처리함)
 	    
 	    // 해당 채팅방 페이지로
 	    return render("chat/chatRoom", model);
 	}
 	
+	/** 채팅하기 누르고 입장 후, 메시지를 입력했을때 방이 만들어지게 매핑된 메서드 */
 	@PostMapping("/api/create-room")
 	@ResponseBody
-	public Map<String, Object> createRoom(@RequestParam Integer targetId, HttpSession session) {
+	public Map<String, Object> createRoom(@RequestParam Integer targetId, @RequestParam Integer productId, HttpSession session) {
 		MemberEntity loginUser = getLoginUser();
 	    Integer userId = loginUser.getUserId();
 
-	    ChatRoomEntity room = chatService.enterRoom(userId, targetId); // 여기선 생성 허용
+	    ChatRoomEntity room = chatService.enterRoom(userId, targetId, productId); // 여기선 생성 허용
 	    return Map.of("roomId", room.getRoomId());
 	}
-
+	
+	// 안읽은 메시지 반환
+    @GetMapping("/api/unread-summary")
+    @ResponseBody
+    public List<UnreadChatDTO> getUnreadSummary(@SessionAttribute MemberEntity loginUser) {
+        return chatService.getUnreadSummariesWithLastMessage(loginUser.getUserId());
+    }
 	
 	/** 채팅창 나가기 */
 	@PostMapping("/leave")

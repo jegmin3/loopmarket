@@ -38,16 +38,22 @@ public class ImageService {
   }
 
   public List<String> getAllImagePaths(Long productId) {
-    List<ImageEntity> images = imageRepository.findByTargetTableAndTargetId("products", productId);
-    return images.stream()
-      .map(ImageEntity::getImagePath)
-      .collect(Collectors.toList());
-  }
+	  List<ImageEntity> images = imageRepository.findByTargetTableAndTargetId("products", productId);
+	  
+	  // 이미지가 없을 경우 기본 이미지 경로 하나 넣어줌
+	  if (images == null || images.isEmpty()) {
+	    return List.of("/img/no-image.png");
+	  }
+
+	  return images.stream()
+	    .map(ImageEntity::getImagePath)
+	    .collect(Collectors.toList());
+	}
 
   public String getThumbnailPath(Long productId) {
     ImageEntity thumbnail = imageRepository.findFirstByTargetIdAndIsThumbnail(productId, true);
     if (thumbnail == null) {
-      return "/img.pay/kakao.png";
+      return "/img/no-image.png";
     }
     return thumbnail.getImagePath();
   }
@@ -57,7 +63,7 @@ public class ImageService {
 
 	    // 이미지가 없거나 경로가 비어 있으면 기본 이미지 경로 반환
 	    if (image == null || image.getImagePath() == null || image.getImagePath().isBlank()) {
-	        return "/images/default-profile.png"; // 실제 존재하는 기본 이미지 경로로 수정하세요
+	        return "/img/profile.png";
 	    }
 
 	    return image.getImagePath();

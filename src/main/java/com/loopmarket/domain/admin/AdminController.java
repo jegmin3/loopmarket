@@ -26,20 +26,20 @@ public class AdminController extends BaseController {
         return render("admin/admin",model);
     }
 	
-	@GetMapping("product")
-	public String productAdmin(HttpServletRequest request, Model model) {
-	    return renderAdminPage(request, model, "admin/product_admin");
-	}
+//	@GetMapping("product")
+//	public String productAdmin(HttpServletRequest request, Model model) {
+//	    return renderAdminPage(request, model, "admin/product_admin");
+//	}
 	
 //	@GetMapping("user")
 //	public String userAdmin(HttpServletRequest request, Model model) {
 //	    return renderAdminPage(request, model, "admin/user_admin");
 //	}
 	
-	@GetMapping("ads")
-	public String adsAdmin(HttpServletRequest request, Model model) {
-	    return renderAdminPage(request, model, "admin/ads_admin");
-	}
+//	@GetMapping("ads")
+//	public String adsAdmin(HttpServletRequest request, Model model) {
+//	    return renderAdminPage(request, model, "admin/ads_admin");
+//	}
 	
 //	@GetMapping("dashboard")
 //	public String dashboardAdmin(HttpServletRequest request, Model model) {
