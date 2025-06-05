@@ -152,7 +152,7 @@ public class ProductService {
 
 	    return products;
 	}
-	
+
 //	public List<ProductEntity> getProductsByMainCategory(Integer mainCategoryCode) {
 //		List<Integer> subCategoryCodes = categoryRepository.findSubCategoryCodesByMainCode(mainCategoryCode);
 //		List<ProductEntity> products = productRepository.findByCtgCodeIn(subCategoryCodes);
@@ -168,7 +168,7 @@ public class ProductService {
 
 	// 전체 가격 필터
 	public List<ProductEntity> getProductsByPriceRange(Integer min, Integer max) {
-	    List<ProductEntity> products = productRepository.findByIsHiddenFalseAndPriceBetween(min, max);
+    List<ProductEntity> products = productRepository.findByIsHiddenFalseAndPriceBetweenOrderByCreatedAtDesc(min, max);
 	    for (ProductEntity product : products) {
 	        Long productId = product.getProductId();
 	        product.setThumbnailPath(imageService.getThumbnailPath(productId));
@@ -176,7 +176,7 @@ public class ProductService {
 	    }
 	    return products;
 	}
-	
+
 //	public List<ProductEntity> getProductsByPriceRange(Integer min, Integer max) {
 //		List<ProductEntity> products = productRepository.findByPriceBetween(min, max);
 //		for (ProductEntity product : products) {
@@ -198,7 +198,7 @@ public class ProductService {
 	    }
 	    return products;
 	}
-	
+
 //	public List<ProductEntity> getProductsByMainCategoryAndPrice(Integer mainCategoryCode, Integer min, Integer max) {
 //		List<Integer> subCategoryCodes = categoryRepository.findSubCategoryCodesByMainCode(mainCategoryCode);
 //		List<ProductEntity> products = productRepository.findByCtgCodeInAndPriceBetween(subCategoryCodes, min, max);
@@ -272,7 +272,7 @@ public class ProductService {
 	                    ((Number) row[2]).intValue()))    // count
 	            .collect(Collectors.toList());
 	}
-	
+
 	@Transactional
 	public void updateHiddenStatus(Long productId, boolean hidden) {
 	    ProductEntity product = productRepository.findById(productId)
@@ -291,11 +291,45 @@ public class ProductService {
 	public void deleteProductById(Long productId) {
 	    productRepository.deleteById(productId);
 	}
-	
+
 	public Page<ProductEntity> getProductsPage(Pageable pageable) {
 	    return productRepository.findAll(pageable);
 	}
-	
-	
-	
+
+  public List<ProductEntity> getNearbyProducts(double lat, double lng) {
+    List<ProductEntity> allProducts = productRepository.findByIsHiddenFalseAndStatus("ONSALE");
+
+    double radiusKm = 25.0;
+    List<ProductEntity> nearby = allProducts.stream()
+      .filter(product -> {
+        Double productLat = product.getLatitude();
+        Double productLng = product.getLongitude();
+        if (productLat == null || productLng == null) return false;
+
+        double distance = calculateDistanceKm(lat, lng, productLat, productLng);
+        return distance <= radiusKm;
+      })
+      .collect(Collectors.toList());
+
+    for (ProductEntity product : nearby) {
+      Long productId = product.getProductId();
+      product.setThumbnailPath(imageService.getThumbnailPath(productId));
+      product.setImagePaths(imageService.getAllImagePaths(productId));
+    }
+
+    return nearby;
+  }
+
+  private double calculateDistanceKm(double lat1, double lng1, double lat2, double lng2) {
+    double earthRadius = 6371.0; // 지구 반지름 (단위: km)
+
+    double dLat = Math.toRadians(lat2 - lat1);
+    double dLng = Math.toRadians(lng2 - lng1);
+    double a = Math.sin(dLat / 2) * Math.sin(dLat / 2)
+      + Math.cos(Math.toRadians(lat1)) * Math.cos(Math.toRadians(lat2))
+      * Math.sin(dLng / 2) * Math.sin(dLng / 2);
+    double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    return earthRadius * c;
+  }
+
 }

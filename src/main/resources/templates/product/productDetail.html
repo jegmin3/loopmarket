@@ -97,12 +97,19 @@
                    class="alert alert-warning text-center fw-semibold w-100 mb-0">
                 해당 상품은 <strong>예약중</strong>입니다.
               </div>
+              <div th:if="${product.status == 'SOLD'}"
+                   class="alert alert-secondary text-center fw-semibold w-100 mb-0">
+                해당 상품은 <strong>판매완료</strong>된 상태입니다.
+              </div>
+
 
               <div class="d-flex gap-2">
-                <!-- 찜 버튼 -->
-                <button type="button" class="btn btn-outline-danger w-100">
-                  <i id="heart-icon" class="bi bi-heart"></i> 찜하기
-                </button>
+                <!-- 찜 버튼 - 판매완료가 아닐 때만 표시 -->
+                <div th:if="${product.status != 'SOLD'}">
+                  <button type="button" class="btn btn-outline-danger w-100">
+                    <i id="heart-icon" class="bi bi-heart"></i> 찜하기
+                  </button>
+                </div>
 
               <!-- 채팅하기 -->
 			  <!-- 상품 등록자가 아닐 경우에만 보여줌 -->

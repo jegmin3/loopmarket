@@ -96,22 +96,40 @@ function setLocationFallback() {
 
 // 모달에서 위치 선택 시 처리
 function setLocation(fullLocation) {
-  // 전체 주소: "부산광역시 수영구 광안동"
-  const dongName = extractDongFromFull(fullLocation); // 마지막 단어 추출 (광안동)
+  // 전체 주소 → ex: "부산광역시 수영구 광안동"
+  const dongName = extractDongFromFull(fullLocation); // ex: "광안동"
 
-  // 왼쪽 버튼은 전체 주소
+  // 위치 버튼 텍스트 변경
   document.getElementById('current-location').innerText = dongName;
 
-  // 문장 안 제목에는 동만
-  document.getElementById('location-title').innerText = dongName;
+  // 메인 제목에 동 이름 반영 (존재할 때만)
+  const titleSpan = document.getElementById('location-title');
+  if (titleSpan) titleSpan.innerText = dongName;
 
-  // 저장은 전체 주소로
+  // 로컬 스토리지에 전체 주소 저장
   localStorage.setItem('selectedDong', fullLocation);
 
-  // 모달 닫기
-  const modal = bootstrap.Modal.getInstance(document.getElementById('locationModal'));
-  modal.hide();
+  // 모달 부드럽게 닫기 (fade-out 애니메이션 유지)
+  const modalEl = document.getElementById('locationModal');
+  const modalInstance =
+    bootstrap.Modal.getInstance(modalEl) || new bootstrap.Modal(modalEl); // 인스턴스 없으면 생성
+  modalInstance.hide(); // ✨ Bootstrap 방식으로 자연스럽게 닫힘
+
+//     사용자가 위치(예: 부전동)를 선택한 후, 해당 주소를 위도/경도로 변환하여
+//     해당 위치 기준으로 반경 25km 이내 상품 목록을 요청함
+  getCoordsFromAddress(fullLocation, function(lat, lng) {
+    window.location.href = `/products?lat=${lat}&lng=${lng}`;
+    // 위도, 경도 localStorage에 저장 (자동 적용용)
+    localStorage.setItem("selectedLat", lat);
+    localStorage.setItem("selectedLng", lng);
+
+  });
+
+
 }
+
+
+
 
 
 // 전체 주소에서 동만 추출하는 함수

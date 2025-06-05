@@ -5,6 +5,7 @@ import com.loopmarket.domain.category.repository.CategoryRepository;
 
 import com.loopmarket.domain.category.service.CategoryService;
 import com.loopmarket.domain.image.service.ImageService;
+import com.loopmarket.domain.location.service.LocationService;
 import com.loopmarket.domain.member.MemberEntity;
 import com.loopmarket.domain.member.MemberRepository;
 import com.loopmarket.domain.product.entity.ProductEntity;
@@ -19,6 +20,7 @@ import javax.servlet.http.HttpSession;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * 상품 관련 요청을 처리하는 컨트롤러 클래스
@@ -38,6 +40,7 @@ public class ProductController {
   private final CategoryService categoryService;
 
   private final ImageService imageService;
+  private final LocationService locationService;
 
   /**
    * 전체 상품 목록 페이지를 보여줍니다.
@@ -56,57 +59,54 @@ public class ProductController {
     @RequestParam(value = "search", required = false) String search,
     @RequestParam(value = "minPrice", required = false) Integer minPrice,
     @RequestParam(value = "maxPrice", required = false) Integer maxPrice,
+    @RequestParam(value = "lat", required = false) Double lat,
+    @RequestParam(value = "lng", required = false) Double lng,
     Model model) {
-    // 사이드바용 대분류 카테고리 조회
-    List<Category> mainCategories = categoryRepository.findMainCategories();
-    model.addAttribute("mainCategories", mainCategories);
+
+    int min = (minPrice != null) ? minPrice : 0;
+    int max = (maxPrice != null) ? maxPrice : Integer.MAX_VALUE;
 
     List<ProductEntity> productList;
     List<Category> subCategories = null;
 
-    // 검색어가 있으면 검색 결과만 보여주고 종료
-    if (search != null && !search.isBlank()) {
+    if (lat != null && lng != null) {
+      // 위치 + 가격 필터
+      productList = productService.getNearbyProducts(lat, lng).stream()
+        .filter(p -> p.getPrice() >= min && p.getPrice() <= max)
+        .collect(Collectors.toList());
+    } else if (search != null && !search.isBlank()) {
+      // 검색만
       productList = productService.searchProductsByKeyword(search);
-      model.addAttribute("productList", productList);
-      model.addAttribute("viewName", "product/productList");
-      return "layout/layout";
-    }
-
-    // 가격 필터 기본값 설정
-    if (minPrice == null) minPrice = 0;
-    if (maxPrice == null) maxPrice = Integer.MAX_VALUE;
-
-    // 카테고리 필터 처리
-    if (category == null || category.equalsIgnoreCase("ALL") || category.isBlank()) {
-      // 카테고리 미선택 시, 가격 범위만 필터링
-      productList = productService.getProductsByPriceRange(minPrice, maxPrice);
+    } else if (category == null || category.equalsIgnoreCase("ALL") || category.isBlank()) {
+      // 가격 필터만
+      productList = productService.getProductsByPriceRange(min, max);
     } else {
       try {
         Integer categoryCode = Integer.parseInt(category);
-        // 대분류 코드로 하위 카테고리 조회
         subCategories = categoryRepository.findByUpCtgCodeOrderBySeqAsc(categoryCode);
 
         if (!subCategories.isEmpty()) {
-          // 대분류 선택: 하위 소분류 모두 포함하여 필터링
-          productList = productService.getProductsByMainCategoryAndPrice(categoryCode, minPrice, maxPrice);
+          productList = productService.getProductsByMainCategoryAndPrice(categoryCode, min, max);
         } else {
-          // 소분류 선택: 단일 카테고리 코드로 필터링
-          productList = productService.getProductsByCategoryAndPrice(categoryCode, minPrice, maxPrice);
+          productList = productService.getProductsByCategoryAndPrice(categoryCode, min, max);
         }
 
         model.addAttribute("subCategories", subCategories);
         model.addAttribute("selectedMainCategory", categoryCode);
       } catch (NumberFormatException e) {
-        // 카테고리 파라미터가 숫자가 아닐 경우, 가격만 필터링
-        productList = productService.getProductsByPriceRange(minPrice, maxPrice);
+        productList = productService.getProductsByPriceRange(min, max);
       }
     }
 
-    // 최종 상품 목록 및 뷰 이름 설정
+    // 공통으로 설정되는 데이터
+    model.addAttribute("mainCategories", categoryRepository.findMainCategories());
+    model.addAttribute("recommendedDongNames", locationService.getRecommendedDongNames());
     model.addAttribute("productList", productList);
     model.addAttribute("viewName", "product/productList");
+
     return "layout/layout";
   }
+
 
   /**
    * 상품 등록 폼 페이지를 보여줍니다.

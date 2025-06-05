@@ -1,8 +1,12 @@
 // 이미지 슬라이드 좌우 버튼 클릭 시 이미지 이동 함수
-function slideImage(button, direction) {
+function slideImage(button, direction,event) {
+  event.preventDefault();     // <a> 태그 기본 동작 막기
+  event.stopPropagation();    // 클릭 이벤트 상위로 전달 막기
+
   const wrapper = button.closest(".position-relative").parentElement; // wrapper 바꿈
   const track = wrapper.querySelector(".slider-track");
   if (!track) return;
+
 
   const total = parseInt(track.dataset.count);
   if (!track.dataset.index) track.dataset.index = "0";
@@ -149,10 +153,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function handleCategoryChange(e) {
     const selectedMain = e.target.value;
-    // 이후 원하는 동작을 넣거나 아무것도 안해도 기본 오류는 안 나
+
     console.log("대분류 선택됨:", selectedMain);
   }
   window.handleCategoryChange = handleCategoryChange;
+
 
 
 // 가격 필터 버튼 클릭 함수
@@ -200,7 +205,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
 
-// ✅ 버튼에서 호출할 수 있게 등록
+// 버튼에서 호출할 수 있게 등록
   window.filterByPrice = filterByPrice;
   window.applyPriceRange = applyPriceRange;
 
@@ -488,6 +493,21 @@ document.addEventListener("DOMContentLoaded", () => {
       updatePreview(); // 순서 변경 후 미리보기 갱신 및 대표사진 재설정
     }
   });
+
+  //Kakao 지도 API로 주소 → 좌표 변환 함수 만들기
+  function getCoordsFromAddress(address, callback) {
+    const geocoder = new kakao.maps.services.Geocoder();
+    geocoder.addressSearch(address, function(result, status) {
+      if (status === kakao.maps.services.Status.OK) {
+        const lat = parseFloat(result[0].y); // 위도
+        const lng = parseFloat(result[0].x); // 경도
+        callback(lat, lng); // 좌표를 콜백으로 넘김
+      } else {
+        alert("주소 → 좌표 변환 실패");
+      }
+    });
+  }
+
 
 });
 

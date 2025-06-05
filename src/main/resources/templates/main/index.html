@@ -23,7 +23,8 @@
 
 
     <!-- 1. 검색창과 위치 정보 영역: fragment로 분리해 재사용 -->
-    <div th:replace="fragment/searchAndLocation :: searchAndLocation"></div>
+    <div th:replace="fragment/searchAndLocation :: searchAndLocation"
+         th:with="showSearchTitle=${true}"></div>
 
     <!-- 2. 카테고리 카드 리스트 출력 -->
     <div class="container my-5">
