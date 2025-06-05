@@ -33,10 +33,10 @@ public class ProductController {
   private final CategoryRepository categoryRepository;
   // 회원 정보 조회용 리포지토리
   private final MemberRepository memberRepository;
-  
+
   // 상품 수정용 서비스
   private final CategoryService categoryService;
-  
+
   private final ImageService imageService;
 
   /**
@@ -158,8 +158,8 @@ public class ProductController {
     product.setLongitude(longitude);
     // 명시적으로 상품 숨김해제
     product.setIsHidden(false);
-    
-    
+
+
     // 서비스 호출하여 상품 및 이미지 저장
     productService.registerProductWithImages(product, images, mainImageIndex);
 
@@ -200,7 +200,7 @@ public class ProductController {
     MemberEntity seller = memberRepository.findById(product.getUserId().intValue()).orElse(null);
     if (seller != null) {
       product.setSellerNickname(seller.getNickname());
-      
+
       	// 프로필 이미지 경로 생성 후 모델에 추가
       String profileImagePath = imageService.getProfilePath(seller.getUserId());
       model.addAttribute("profileImagePath", profileImagePath);
@@ -214,16 +214,23 @@ public class ProductController {
     model.addAttribute("viewName", "product/productDetail");
     return "layout/layout";
   }
-  
+
   // 상품 수정 페이지
   @GetMapping("/products/edit/{id}")
   public String editProductForm(@PathVariable Long id, Model model) {
-      ProductEntity product = productService.getProductById(id);
-      model.addAttribute("product", product);
-      model.addAttribute("mainCategories", categoryService.getMainCategories());
-      model.addAttribute("viewName", "product/product_edit_form");
-//      model.addAttribute("mainCategoryCode", mainCategoryCode);
-      return "layout/layout";
+    ProductEntity product = productService.getProductById(id);
+
+    List<String> imagePaths = imageService.getAllImagePaths(id);
+    product.setImagePaths(imagePaths);
+
+    Integer mainCategoryCode = categoryService.findMainCategoryCodeBySubCode(product.getCtgCode());
+
+    model.addAttribute("product", product);
+    model.addAttribute("mainCategoryCode", mainCategoryCode);
+    model.addAttribute("mainCategories", categoryService.getMainCategories());
+    model.addAttribute("subCategories", categoryService.getSubCategories(mainCategoryCode));
+    model.addAttribute("viewName", "product/product_edit_form");
+
+    return "layout/layout";
   }
-  
 }

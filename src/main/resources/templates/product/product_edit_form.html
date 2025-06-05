@@ -66,14 +66,14 @@
         <!-- 대분류 카테고리 선택 -->
         <div class="mb-3">
           <label>카테고리</label>
-		  <select id="main-category" class="form-select" th:value="${product.mainCategoryCode}">
-		    <option value="">대분류 선택</option>
-		    <option th:each="main : ${mainCategories}" 
-		            th:value="${main.ctgCode}" 
-		            th:text="${main.ctgName}" 
-		            th:selected="${main.ctgCode == product.mainCategoryCode}">
-		    </option>
-		  </select>
+          <select id="main-category" class="form-select" name="mainCategory">
+            <option value="">대분류 선택</option>
+            <option th:each="main : ${mainCategories}"
+                    th:value="${main.ctgCode}"
+                    th:text="${main.ctgName}"
+                    th:selected="${main.ctgCode == mainCategoryCode}">
+            </option>
+          </select>
         </div>
 
         <!-- 소분류 카테고리 선택 -->
@@ -81,12 +81,12 @@
           <label>소분류 선택</label>
 		  <select id="sub-category" name="ctgCode" class="form-select" required>
 		    <option value="">소분류 선택</option>
-		    <option th:each="sub : ${subCategories}" 
-		            th:value="${sub.ctgCode}" 
-		            th:text="${sub.ctgName}" 
+		    <option th:each="sub : ${subCategories}"
+		            th:value="${sub.ctgCode}"
+		            th:text="${sub.ctgName}"
 		            th:selected="${sub.ctgCode == product.ctgCode}">
 		    </option>
-		  </select>>
+		  </select>
         </div>
 
         <!-- 상품 상태 슬라이더 -->
@@ -185,25 +185,26 @@
       <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
       <script type="text/javascript"
               src="//dapi.kakao.com/v2/maps/sdk.js?appkey=d4ca8876da8e183543e1cfbbd669097d&libraries=services"></script>
-			  
-	  <script>
-		document.addEventListener("DOMContentLoaded", () => {
-		  const priceValue = /*[[${product.price}]]*/ 0;
-		  const priceDisplay = document.getElementById("priceDisplay");
-		  const priceInput = document.getElementById("priceInput");
 
-		  // 기존 가격 값 숫자형으로 변환 후 콤마 찍어 표시
-		  priceDisplay.value = Number(priceValue).toLocaleString('ko-KR');
-		  priceInput.value = priceValue;
+      <script th:inline="javascript">
+        document.addEventListener("DOMContentLoaded", () => {
+          const priceValue = /*[[${product.price}]]*/ 0;
+          const priceDisplay = document.getElementById("priceDisplay");
+          const priceInput = document.getElementById("priceInput");
 
-		  priceDisplay.addEventListener("input", (e) => {
-		    const rawValue = e.target.value.replace(/[^0-9]/g, "");
-		    priceInput.value = rawValue;
-		    e.target.value = rawValue ? Number(rawValue).toLocaleString('ko-KR') : '';
-		  });
-		});
-	  </script>
-	  
+          // 기존 가격 값 숫자형으로 변환 후 콤마 찍어 표시
+          priceDisplay.value = Number(priceValue).toLocaleString('ko-KR');
+          priceInput.value = priceValue;
+
+          priceDisplay.addEventListener("input", (e) => {
+            const rawValue = e.target.value.replace(/[^0-9]/g, "");
+            priceInput.value = rawValue;
+            e.target.value = rawValue ? Number(rawValue).toLocaleString('ko-KR') : '';
+          });
+        });
+      </script>
+
+
     </div>
   </div>
 </div>

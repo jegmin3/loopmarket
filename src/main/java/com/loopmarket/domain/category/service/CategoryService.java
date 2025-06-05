@@ -48,4 +48,12 @@ public class CategoryService {
   public List<Category> findAllCategories() {
       return categoryRepository.findAllByOrderBySeqAsc();
   }
+
+  public Integer findMainCategoryCodeBySubCode(Integer subCode) {
+    Category subCategory = categoryRepository.findById(subCode)
+      .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 카테고리입니다: " + subCode));
+
+    return subCategory.getUpCtgCode(); // 대분류 코드 반환
+  }
+
 }
