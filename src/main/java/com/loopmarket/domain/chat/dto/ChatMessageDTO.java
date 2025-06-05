@@ -1,7 +1,6 @@
 package com.loopmarket.domain.chat.dto;
 
 import java.time.format.DateTimeFormatter;
-
 import com.loopmarket.domain.chat.entity.ChatMessageEntity;
 
 import lombok.*;
@@ -26,6 +25,8 @@ public class ChatMessageDTO {
     private String timestamp; // ISO 포맷 시간 문자열 (서버에서 응답 시 사용)
     private boolean read;     // 읽음 여부 (서버에서 클라이언트에게 알림 시)
     private Long msgId; // 메시지 아이디
+    private boolean isMine;
+    //private LocalDateTime sentAt;
     /**
      * 메시지 유형 열거형
      */

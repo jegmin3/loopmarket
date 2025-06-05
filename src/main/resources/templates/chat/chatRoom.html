@@ -31,7 +31,8 @@
 	            </div>
 	            <div class="text-end text-secondary mt-1" style="font-size: 0.75rem;">
 	                <span th:text="${#temporals.format(msg.sentAt, 'HH:mm')}">00:00</span>
-	                <span th:text="${msg.read ? '읽음' : '안읽음'}"></span>
+					<!-- 마지막 메시지인 경우에만 읽음 여부 표시 -->
+					<span th:if="${msg.msgId == lastMyMsgId}" th:text="${msg.read ? '읽음' : '안읽음'}"></span>
 	            </div>
 	        </div>
 

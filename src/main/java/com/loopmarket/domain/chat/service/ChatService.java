@@ -3,14 +3,15 @@ package com.loopmarket.domain.chat.service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
 import com.loopmarket.domain.chat.dto.ChatRoomSummaryDTO;
+import com.loopmarket.domain.chat.dto.UnreadChatDTO;
 import com.loopmarket.domain.chat.entity.ChatMessageEntity;
 import com.loopmarket.domain.chat.entity.ChatRoomEntity;
 import com.loopmarket.domain.chat.repository.ChatMessageRepository;
 import com.loopmarket.domain.chat.repository.ChatRoomRepository;
 import com.loopmarket.domain.member.MemberRepository;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
@@ -105,8 +106,7 @@ public class ChatService {
         // 영속성 컨텍스트 반영 후 재조회
         chatMessageRepository.flush();
         
-        // 변경된 메시지 목록 반환
-		return chatMessageRepository.findByRoomIdOrderBySentAtAsc(roomId);
+        return chatMessageRepository.findByRoomIdOrderBySentAtAsc(roomId);
     }
 
     /**
@@ -156,18 +156,47 @@ public class ChatService {
             Integer opponentId = room.getUser1Id().equals(userId) ? room.getUser2Id() : room.getUser1Id();
             String nickname = getNicknameByUserId(opponentId);
 
-            // ✅ 마지막 메시지 조회
+            // 마지막 메시지 조회
             ChatMessageEntity lastMessage = chatMessageRepository.findTopByRoomIdOrderBySentAtDesc(room.getRoomId())
                     .orElse(null);
-
+            
+            // 안 읽은 메시지 수 조회 (상대방이 보낸 메시지이면서, 내가 안 읽은 메시지)
+            int unreadCount = chatMessageRepository.countByRoomIdAndSenderIdNotAndIsReadFalse(
+                    room.getRoomId(), userId);
+            
+            // 마지막 메시지를 내가 보낸 경우인지 확인
+            boolean lastMine = lastMessage != null && lastMessage.getSenderId().equals(userId);
+            
             return new ChatRoomSummaryDTO(
                 room,
                 nickname,
                 lastMessage != null ? lastMessage.getContent() : "(메시지 없음)",
-                lastMessage != null ? lastMessage.getSentAt() : null
+                lastMessage != null ? lastMessage.getSentAt() : null,
+                unreadCount,
+                lastMine
             );
         }).collect(Collectors.toList());
     }
+    
+    /** 채팅방별 안읽은 메시지 갱신용 */
+    public List<UnreadChatDTO> getUnreadSummariesWithLastMessage(Integer userId) {
+        List<ChatRoomEntity> rooms = getActiveChatRooms(userId);
+
+        return rooms.stream().map(room -> {
+            // 안읽은 개수
+            int unreadCount = chatMessageRepository.countByRoomIdAndSenderIdNotAndIsReadFalse(room.getRoomId(), userId);
+
+            // 마지막 메시지
+            ChatMessageEntity lastMessage = chatMessageRepository.findTopByRoomIdOrderBySentAtDesc(room.getRoomId())
+                    .orElse(null);
+
+            String content = (lastMessage != null) ? lastMessage.getContent() : "(메시지 없음)";
+            LocalDateTime time = (lastMessage != null) ? lastMessage.getSentAt() : null;
+
+            return new UnreadChatDTO(room.getRoomId(), unreadCount, content, time);
+        }).collect(Collectors.toList());
+    }
+
 
 
     
