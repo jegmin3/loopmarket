@@ -33,6 +33,12 @@ function connect(callback) {
 			socketConnected = true; // 소켓 연결 완료 표시
 			$("#sendBtn").prop("disabled", false); // 전송 버튼 활성화
 			
+			// 입장 후 바로 읽음 처리 요청 전송
+			stompClient.send("/app/chat.read", {}, JSON.stringify({
+			    roomId: roomId,
+			    senderId: senderId
+			}));
+			
 			// 해당 채팅방 구독
 	        stompClient.subscribe(`/queue/room.${roomId}`, function (message) {
 				const msg = JSON.parse(message.body);
@@ -50,6 +56,7 @@ function connect(callback) {
 				    }
 				    return;
 				}
+				
 				// 상대가 채팅방을 나갔을 시 출력될 메시지
 				if (msg.type === "LEAVE") {
 				    const html = `
@@ -72,7 +79,6 @@ function connect(callback) {
 					hasSentRead = true; // 한 번만 보냄
 				}
 				
-
 				// 기본 채팅 메시지 출력
 				showMessage(msg);
 	        });
