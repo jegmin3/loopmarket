@@ -51,9 +51,10 @@ public class AdminController extends BaseController {
 //	    return renderAdminPage(request, model, "admin/notice_admin");
 //	}
 	
+	/** 관리자용 알림페이지로 이동 */
 	@GetMapping("notifications")
 	public String notificationAdmin(HttpServletRequest request, Model model) {
-	    return renderAdminPage(request, model, "admin/notifications_admin");
+	    return renderAdminPage(request, model, "admin/admin_alram");
 	}
 	
 	@GetMapping("report")

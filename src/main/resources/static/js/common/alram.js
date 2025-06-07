@@ -20,31 +20,39 @@ $(document).ready(function () {
 		  $("#notifBadge").hide();
 		}
 
-        // 알림 목록 렌더링
+        // 알림 목록 렌더링 (url없으면 클릭 안되게 함)
         if (list.length > 0) {
-          const html = list.map(n => `
-			<div class="border-bottom p-3 d-flex justify-content-between align-items-start notif-card">
-			  <div class="flex-grow-1 pe-2">
-			    <a href="${n.url}" class="alram-link text-decoration-none text-dark" data-id="${n.alramId}">
-			      <div class="fw-bold text-primary mb-1">[${n.title}]</div>
-			      <div class="small text-muted text-truncate" style="max-width: 100%;">${n.content}</div>
-			    </a>
+          const html = list.map(n => {
+			const isClickable = n.url !== null && n.url !== "";
+			
+			return `
+			  <div class="border-bottom p-3 d-flex justify-content-between align-items-start notif-card">
+			    <div class="flex-grow-1 pe-2">
+			      <a
+			        href="${isClickable ? n.url : '#'}"
+			        class="alram-link text-decoration-none text-dark ${!isClickable ? 'disabled-link' : ''}"
+			        data-id="${n.alramId}">
+			        <div class="fw-bold ${isClickable ? 'text-primary' : 'text-secondary'} mb-1">[${n.title}]</div>
+			        <div class="small text-muted text-truncate" style="max-width: 100%;">${n.content}</div>
+			      </a>
+			    </div>
+			    <div class="dropdown">
+			      <button class="btn btn-sm btn-outline-secondary" data-bs-toggle="dropdown">
+			        <i class="bi bi-three-dots-vertical"></i>
+			      </button>
+			      <ul class="dropdown-menu dropdown-menu-end">
+			        <li><a class="dropdown-item mark-read-btn" href="#" data-id="${n.alramId}">읽음 처리</a></li>
+			        <li><a class="dropdown-item delete-btn" href="#" data-id="${n.alramId}">삭제</a></li>
+			      </ul>
+			    </div>
 			  </div>
-			  <div class="dropdown">
-			    <button class="btn btn-sm btn-outline-secondary" data-bs-toggle="dropdown">
-			      <i class="bi bi-three-dots-vertical"></i>
-			    </button>
-			    <ul class="dropdown-menu dropdown-menu-end">
-			      <li><a class="dropdown-item mark-read-btn" href="#" data-id="${n.alramId}">읽음 처리</a></li>
-			      <li><a class="dropdown-item delete-btn" href="#" data-id="${n.alramId}">삭제</a></li>
-			    </ul>
-			  </div>
-			</div>
-          `).join('');
+			`;
+		  }).join('');
           $("#notifList").html(html);
         } else {
           $("#notifList").html('<p class="text-muted">알림이 없습니다.</p>');
         }
+		
       }
     });
   }

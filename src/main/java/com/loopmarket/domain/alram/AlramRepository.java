@@ -17,5 +17,9 @@ public interface AlramRepository extends JpaRepository<AlramEntity, Long> {
     
     /** 해당 유저가 가진 알림 중 채팅방 URL이 같은 게 있는지 조회하는 메서드 */
     Optional<AlramEntity> findByUserIdAndUrlAndType(Integer userId, String url, String type);
+    
+    /** 알림 타입이 "ADMIN"인 알림을 30개까지 최신순으로 가져오기 */
+    List<AlramEntity> findTop30ByTypeOrderByCreatedAtDesc(String type);
+
 
 }

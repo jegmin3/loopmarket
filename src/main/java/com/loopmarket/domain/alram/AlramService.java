@@ -28,16 +28,7 @@ public class AlramService {
     private final AlramRepository alramRepository;
     private final FirebaseMessaging firebaseMessaging;
     private final MemberRepository memberRepository;
-
-    /**
-     * 안 읽은 알림 목록 반환
-     */
-    public List<AlramDTO> getUnreadAlrams(Integer userId) {
-        return alramRepository.findByUserIdAndIsReadFalseOrderByCreatedAtDesc(userId)
-                .stream()
-                .map(this::toDTO)
-                .collect(Collectors.toList());
-    }
+    
     /** 
      * 중복 알림이 있으면 업데이트, 없으면 저장 
      */
@@ -99,6 +90,16 @@ public class AlramService {
             }
         }
     }
+    
+    /**
+     * 안 읽은 알림 목록 반환
+     */
+    public List<AlramDTO> getUnreadAlrams(Integer userId) {
+        return alramRepository.findByUserIdAndIsReadFalseOrderByCreatedAtDesc(userId)
+                .stream()
+                .map(this::toDTO)
+                .collect(Collectors.toList());
+    }
 
     /**
      * 알림 모두 읽음 처리
@@ -131,55 +132,51 @@ public class AlramService {
     }
     
     /**
-     * 알림 생성
-     * 밑에 createOrUpdateChatAlram 먼저 실행하고 조건에 따라 실행되는 메서드
+     * 관리자용 알림 생성(전송)
      */
-//    public void createAlram(AlramDTO dto) {
-//        try {
-//            System.out.println("알림 DTO 확인: " + dto);
-//
-//            AlramEntity entity = AlramEntity.builder()
-//                    .userId(dto.getUserId())
-//                    .senderId(dto.getSenderId())
-//                    .type(dto.getType())
-//                    .title(dto.getTitle())
-//                    .content(dto.getContent())
-//                    .url(dto.getUrl())
-//                    .isRead(false)
-//                    .build();
-//
-//            alramRepository.save(entity);
-//            System.out.println("알림 저장 성공: " + entity);
-//
-//            // FCM 전송
-//            MemberEntity receiver = memberRepository.findById(dto.getUserId()).orElse(null);
-//            if (receiver != null && receiver.getFcmToken() != null) {
-//            	System.out.println("createAlram에서 FCM전송 조건 만족됨!");
-//            	System.out.println("알림 제목: " + dto.getTitle());
-//            	System.out.println("알림 내용: " + dto.getContent());
-//            	Map<String, String> data = new HashMap<>();
-//            	data.put("title", dto.getTitle());
-//            	data.put("body", dto.getContent());
-//
-//            	Message message = Message.builder()
-//            	    .setToken(receiver.getFcmToken())
-//            	    .putAllData(data) // Notification 말고 data-only 메시지로 보냄
-//            	    .build();
-//            	//System.out.println("FCM 보낼 토큰: " + receiver.getFcmToken());
-//            	//System.out.println("FCM 보낼 data: " + data);
-//                try {
-//                    firebaseMessaging.send(message);
-//                    System.out.println("FCM 전송 성공!");
-//                } catch (FirebaseMessagingException e) {
-//                	// 하아..
-//                    log.warn("FCM 전송 실패: {}", e.getMessage());
-//                }
-//            }
-//
-//        } catch (Exception e) {
-//            System.out.println("알림 저장 중 예외 발생: " + e.getMessage());
-//            e.printStackTrace();
-//        }
-//    }
+    public void createAdminAlram(AlramDTO dto) {
+        try {
+            //System.out.println("관리자 알림 생성 시도");
+            //System.out.println("알림 제목: " + dto.getTitle());
+            //System.out.println("알림 내용: " + dto.getContent());
+
+            AlramEntity entity = AlramEntity.builder()
+                    .userId(dto.getUserId())
+                    .senderId(dto.getSenderId()) // null 가능
+                    .type(dto.getType())         // "ADMIN"
+                    .title(dto.getTitle())
+                    .content(dto.getContent())
+                    .isRead(false)
+                    .build();
+
+            alramRepository.save(entity);
+            //System.out.println("관리자 알림 저장 완료: " + entity);
+
+            // FCM 전송
+            MemberEntity receiver = memberRepository.findById(dto.getUserId()).orElse(null);
+            if (receiver != null && receiver.getFcmToken() != null) {
+                Map<String, String> data = new HashMap<>();
+                data.put("title", dto.getTitle());
+                data.put("body", dto.getContent());
+
+                Message message = Message.builder()
+                        .setToken(receiver.getFcmToken())
+                        .putAllData(data)
+                        .build();
+
+                try {
+                    firebaseMessaging.send(message);
+                    System.out.println("관리자 알림 FCM 전송 성공");
+                } catch (FirebaseMessagingException e) {
+                    log.warn("관리자 알림 FCM 전송 실패: {}", e.getMessage());
+                }
+            }
+
+        } catch (Exception e) {
+            System.out.println("관리자 알림 저장 중 예외 발생: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
 }
 
