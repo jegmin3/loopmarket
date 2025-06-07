@@ -2,8 +2,6 @@ package com.loopmarket.domain.chat.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
-
-import com.loopmarket.domain.chat.dto.ChatMessageDTO;
 import com.loopmarket.domain.chat.entity.ChatMessageEntity;
 
 import java.util.List;

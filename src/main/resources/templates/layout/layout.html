@@ -42,13 +42,12 @@
       </div>
       <div class="modal-body" id="notifList">
         <p class="text-muted">알림이 없습니다.</p>
+        <!-- JS가 여기를 동적으로 덮어씀 -->
       </div>
     </div>
   </div>
 </div>
 
-<!-- 알람관련 js -->
-<script src="/js/common/alram.js"></script>
 <!-- 클라이언트 측에서 SweetAlert2를 띄울 수 있는 전역 함수 정의 -->
 <script src="/js/common/swal.js"></script>
 <!-- flush 메시지 처리 (백엔드에서 RedirectAttribute로 보낸 내용 처리) -->
@@ -62,19 +61,20 @@
   if (errorMessage) showAlert("error", "오류", errorMessage);
   if (warnMessage) showAlert("warning", "주의", warnMessage);
 </script>
+<!-- FCM용 JS -->
+<!-- Firebase core SDK -->
+<script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-auth-compat.js"></script>
+<!-- Firebase Messaging -->
+<script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-messaging-compat.js"></script>
+<!-- 알람관련JS. 모달 열릴 때 알림 목록 AJAX로 불러오고, 읽음 처리 -->
+<script src="/js/common/fcm.js"></script>
+<script src="/js/common/alram.js"></script>
 <!-- 채팅룸js 조건부 로딩 -->
 <script th:if="${viewName == 'chat/chatRoom'}" th:src="@{/js/chat/chatRoom.js}"></script>
-
-<!-- SockJS, StompJS 라이브러리 추가(채팅용) -->
+<!-- SockJS, StompJS 라이브러리 추가(채팅용) 얘네도 조건부로 바꿀예정 -->
 <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script>
-
-<!-- 위치기반 서비스 실행을 위해 위치 옮김 -->
-<!-- 카카오 맵 SDK 추가 -->
-<!--<script type="text/javascript"
-        src="//dapi.kakao.com/v2/maps/sdk.js?appkey=d4ca8876da8e183543e1cfbbd669097d&libraries=services"></script>
-
-<script th:src="@{/js/render.js}"></script>-->
 
 </body>
 </html>
