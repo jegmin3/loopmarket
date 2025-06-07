@@ -5,10 +5,14 @@ import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Controller;
+
+import com.loopmarket.domain.alram.AlramDTO;
+import com.loopmarket.domain.alram.AlramService;
 import com.loopmarket.domain.chat.dto.ChatMessageDTO;
 import com.loopmarket.domain.chat.dto.ChatMessageDTO.MessageType;
 import com.loopmarket.domain.chat.entity.ChatMessageEntity;
 import com.loopmarket.domain.chat.entity.ChatRoomEntity;
+import com.loopmarket.domain.chat.repository.ChatRoomRepository;
 import com.loopmarket.domain.chat.service.ChatService;
 import com.loopmarket.domain.chat.util.ChatSessionTracker;
 
@@ -26,6 +30,8 @@ public class ChatSocketController {
     private final ChatService chatService;
     private final SimpMessagingTemplate messagingTemplate;
     private final ChatSessionTracker chatSessionTracker;
+    private final ChatRoomRepository chatRoomRepository;
+    private final AlramService alramService;
 
     /**
      * 클라이언트로부터 채팅 메시지를 수신
@@ -33,17 +39,45 @@ public class ChatSocketController {
      */
     @MessageMapping("/chat.send")
     public void handleChatMessage(ChatMessageDTO messageDTO) {
-        // 1. 메시지 저장
+        // 메시지 저장
         ChatMessageEntity saved = chatService.saveMessage(
                 messageDTO.getRoomId(),
                 messageDTO.getSenderId(),
                 messageDTO.getContent()
         );
 
-        // 2. 응답 메시지 구성 (timestamp, 읽음 여부 포함)
+        // 응답 메시지 구성 (timestamp, 읽음 여부 포함)
         ChatMessageDTO dto = ChatMessageDTO.fromEntity(saved, MessageType.CHAT);
+        
+        // --------------알림용 로직-----------------
+        // 1. 채팅방 정보 가져오기
+        ChatRoomEntity room = chatRoomRepository.findById(saved.getRoomId())
+            .orElseThrow(() -> new IllegalArgumentException("채팅방을 찾을 수 없습니다."));
 
-        // 3. 채팅방 구독자에게 메시지 전송
+        // 2. 상대방 ID 구하기
+        Integer receiverId = (room.getUser1Id().equals(saved.getSenderId()))
+            ? room.getUser2Id()
+            : room.getUser1Id();
+
+        // 3. 상대방이 채팅방에 없으면 알림 전송
+        //if (!chatSessionTracker.isUserInRoom(saved.getRoomId(), receiverId)) {
+        	System.out.println("알림 생성 시도!");
+            alramService.createAlram(
+                AlramDTO.builder()
+                    .userId(receiverId)
+                    .senderId(saved.getSenderId())
+                    .type("CHAT")
+                    .title("새 채팅 도착")
+                    .content("상대방이 메시지를 보냈어요.")
+                    .url("/chat/room/" + saved.getRoomId())
+                    .build()
+            );
+        //} else {
+        //	System.out.println("알림 전송되지 않음! 상대방이 채팅방에 있습니다.");
+        //}
+        // ----------------알림용 로직 끝-----------------
+        
+        // 채팅방 구독자에게 메시지 전송(브로드캐스트)
         messagingTemplate.convertAndSend("/queue/room." + saved.getRoomId(), dto);
     }
     

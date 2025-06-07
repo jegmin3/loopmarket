@@ -8,11 +8,12 @@ import org.springframework.stereotype.Service;
 import com.google.firebase.messaging.FirebaseMessaging;
 import com.google.firebase.messaging.FirebaseMessagingException;
 import com.google.firebase.messaging.Message;
-import com.google.firebase.messaging.Notification;
 import com.loopmarket.domain.member.MemberEntity;
 import com.loopmarket.domain.member.MemberRepository;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 // Slf4j = Logger log = loggerFactory.getLogger... 와 같은 역할
@@ -29,37 +30,51 @@ public class AlramService {
      * 알림 생성
      */
     public void createAlram(AlramDTO dto) {
-    	// 저장 로직
-        AlramEntity entity = AlramEntity.builder()
-                .userId(dto.getUserId())
-                .senderId(dto.getSenderId())
-                .type(dto.getType())
-                .title(dto.getTitle())
-                .content(dto.getContent())
-                .url(dto.getUrl())
-                .isRead(false) // 생성 시 기본값 false
-                .build();
+        try {
+            System.out.println("알림 DTO 확인: " + dto);
 
-        alramRepository.save(entity);
-        
-        // FCM 전송
-        MemberEntity receiver = memberRepository.findById(dto.getUserId()).orElse(null);
-        if (receiver != null && receiver.getFcmToken() != null) {
-            Notification notification = Notification.builder()
-                    .setTitle(dto.getTitle())
-                    .setBody(dto.getContent())
+            AlramEntity entity = AlramEntity.builder()
+                    .userId(dto.getUserId())
+                    .senderId(dto.getSenderId())
+                    .type(dto.getType())
+                    .title(dto.getTitle())
+                    .content(dto.getContent())
+                    .url(dto.getUrl())
+                    .isRead(false)
                     .build();
 
-            Message message = Message.builder()
-                    .setToken(receiver.getFcmToken())
-                    .setNotification(notification)
-                    .build();
+            alramRepository.save(entity);
+            System.out.println("알림 저장 성공: " + entity);
 
-            try {
-                firebaseMessaging.send(message);
-            } catch (FirebaseMessagingException e) {
-                log.warn("FCM 전송 실패: {}", e.getMessage());
+            // FCM 전송
+            MemberEntity receiver = memberRepository.findById(dto.getUserId()).orElse(null);
+            if (receiver != null && receiver.getFcmToken() != null) {
+            	System.out.println("createAlram에서 FCM전송 조건 만족됨!");
+            	System.out.println("알림 제목: " + dto.getTitle());
+            	System.out.println("알림 내용: " + dto.getContent());
+            	Map<String, String> data = new HashMap<>();
+            	data.put("title", dto.getTitle());
+            	data.put("body", dto.getContent());
+
+            	Message message = Message.builder()
+            	    .setToken(receiver.getFcmToken())
+            	    .putAllData(data) // Notification 말고 data-only 메시지로 보냄
+            	    .build();
+            	System.out.println("📦 FCM 보낼 토큰: " + receiver.getFcmToken());
+            	System.out.println("📦 FCM 보낼 data: " + data);
+                try {
+                    firebaseMessaging.send(message);
+                    System.out.println("FCM 전송 성공!");
+                } catch (FirebaseMessagingException e) {
+                	// SenderId mismatch 뭐지
+                	// 1. 익명 로그인이라 2. localhost에서 테스트라 3. fcm설정 안맞는데 fallback중임
+                    log.warn("FCM 전송 실패: {}", e.getMessage());
+                }
             }
+
+        } catch (Exception e) {
+            System.out.println("알림 저장 중 예외 발생: " + e.getMessage());
+            e.printStackTrace();
         }
     }
     

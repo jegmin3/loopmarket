@@ -23,9 +23,23 @@ public class MemberApiController {
     @PostMapping("/fcm-token")
     public void saveFcmToken(@RequestBody Map<String, String> request, HttpSession session) {
         String token = request.get("token");
-        MemberEntity member = (MemberEntity) session.getAttribute("loginUser");
-        member.setFcmToken(token);
-        memberRepository.save(member);
-    }
+        
+        Object loginUser = session.getAttribute("loginUser"); // 정확한 세션 키
+        if (loginUser != null && loginUser instanceof MemberEntity) {
+            MemberEntity member = (MemberEntity) loginUser;
 
+            // 동일한 토큰이면 저장 로직 생략
+            if (token != null && !token.equals(member.getFcmToken())) {
+                member.setFcmToken(token);
+                memberRepository.save(member);
+                System.out.println("로그인 사용자 토큰 저장됨: " + member.getUserId());
+            } else {
+                System.out.println("동일한 토큰, 저장 생략: " + token);
+            }
+
+        } else {
+            System.out.println("로그인되지 않은 사용자의 FCM 토큰 수신: " + token);
+        }
+    } //saveFcmToekn끝
+    
 }
