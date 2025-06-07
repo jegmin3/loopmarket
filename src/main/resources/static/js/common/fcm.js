@@ -59,7 +59,7 @@ function getAndSendToken() {
 }
 
 // 실시간 알림 수신
-console.log("onMessage 리스너 시작됨");
+//console.log("onMessage 리스너 시작됨");
 setTimeout(() => {
 	messaging.onMessage((payload) => {
 	  console.log("FCM 수신됨:", payload);

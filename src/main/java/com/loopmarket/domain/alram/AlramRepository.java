@@ -4,6 +4,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface AlramRepository extends JpaRepository<AlramEntity, Long> {
@@ -13,4 +14,8 @@ public interface AlramRepository extends JpaRepository<AlramEntity, Long> {
 
     // 읽지 않은 알림만 조회
     List<AlramEntity> findByUserIdAndIsReadFalseOrderByCreatedAtDesc(Integer userId);
+    
+    /** 해당 유저가 가진 알림 중 채팅방 URL이 같은 게 있는지 조회하는 메서드 */
+    Optional<AlramEntity> findByUserIdAndUrlAndType(Integer userId, String url, String type);
+
 }

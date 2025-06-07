@@ -62,7 +62,7 @@ public class ChatSocketController {
         // 3. 상대방이 채팅방에 없으면 알림 전송
         //if (!chatSessionTracker.isUserInRoom(saved.getRoomId(), receiverId)) {
         	System.out.println("알림 생성 시도!");
-            alramService.createAlram(
+            alramService.createOrUpdateChatAlram(
                 AlramDTO.builder()
                     .userId(receiverId)
                     .senderId(saved.getSenderId())
