@@ -31,9 +31,9 @@ public class FirebaseConfig {
 
             return FirebaseApp.initializeApp(options);
         }
-        FirebaseApp app = FirebaseApp.getInstance();
-        System.out.println("FirebaseApp name: " + app.getName());
-        System.out.println("FirebaseApp options: " + app.getOptions());
+        //FirebaseApp app = FirebaseApp.getInstance();
+        //System.out.println("FirebaseApp name: " + app.getName());
+        //System.out.println("FirebaseApp options: " + app.getOptions());
 
         return FirebaseApp.getInstance(); // 이미 초기화된 경우 그대로 반환
     }

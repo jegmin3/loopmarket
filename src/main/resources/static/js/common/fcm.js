@@ -63,9 +63,9 @@ function getAndSendToken() {
 setTimeout(() => {
 	messaging.onMessage((payload) => {
 	  console.log("FCM 수신됨:", payload);
-	  const title = payload.data.title;
-	  const body = payload.data.body;
-	  showAlert("info", title, body);
+	  //const title = payload.data.title;
+	  //const body = payload.data.body;
+	  //showAlert("info", title, body);
 	  $("#notifBadge").show().text("●");
 	});
 }, 500); // 0.5초 뒤에 리스너 등록
