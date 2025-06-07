@@ -34,15 +34,18 @@
 
 <!-- 알림 모달창 -->
 <div class="modal fade" id="notifModal" tabindex="-1" aria-labelledby="notifModalLabel" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-scrollable modal-sm">
-    <div class="modal-content">
-      <div class="modal-header">
+  <div class="modal-dialog modal-dialog-scrollable modal-md"> <!-- 중간 크기 -->
+    <div class="modal-content rounded-3 shadow">
+      <div class="modal-header bg-primary text-white">
         <h5 class="modal-title" id="notifModalLabel">알림</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="닫기"></button>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="닫기"></button>
       </div>
-      <div class="modal-body" id="notifList">
-        <p class="text-muted">알림이 없습니다.</p>
-        <!-- JS가 여기를 동적으로 덮어씀 -->
+	  <button class="btn btn-sm btn-outline-secondary ms-auto me-3 mt-2 mark-all-read">전체 읽음</button>
+      <div class="modal-body p-0">
+        <div id="notifList" class="notif-scroll-box">
+          <p class="text-muted text-center m-4">알림이 없습니다.</p>
+        <!-- JS가 동적으로 덮어씀 -->
+        </div>
       </div>
     </div>
   </div>

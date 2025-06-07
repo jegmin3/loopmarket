@@ -34,7 +34,7 @@ public class MemberApiController {
                 memberRepository.save(member);
                 System.out.println("로그인 사용자 토큰 저장됨: " + member.getUserId());
             } else {
-                System.out.println("동일한 토큰, 저장 생략: " + token);
+                //System.out.println("동일한 토큰, 저장 생략: " + token);
             }
 
         } else {

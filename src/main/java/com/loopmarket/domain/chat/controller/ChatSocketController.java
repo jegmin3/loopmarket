@@ -71,7 +71,7 @@ public class ChatSocketController {
 		        ? saved.getSentAt().format(DateTimeFormatter.ofPattern("HH:mm"))
 		        : "";
 
-		String title = nickname + " 님의 채팅";
+		String title = nickname + " 님과의 채팅";
 		String body = content + " (" + time + ")";
 
 		// 4. 알림 저장 or 업데이트

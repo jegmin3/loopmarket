@@ -29,12 +29,12 @@ const messaging = firebase.messaging();
 // 익명 로그인 → 로그인 완료 후 getToken 요청
 firebase.auth().onAuthStateChanged((user) => {
   if (user) {
-    console.log("기존 익명 사용자 로그인 유지:", user.uid);
+    //console.log("기존 익명 사용자 로그인 유지:", user.uid);
     getAndSendToken();
   } else {
     firebase.auth().signInAnonymously()
       .then(() => {
-        console.log("새 익명 로그인 완료");
+        //console.log("새 익명 로그인 완료");
         getAndSendToken();
       })
       .catch((err) => {
@@ -59,13 +59,28 @@ function getAndSendToken() {
 }
 
 // 실시간 알림 수신
-//console.log("onMessage 리스너 시작됨");
-setTimeout(() => {
+$(document).ready(function () {
+	// FCM 메시지 수신 리스너 등록
 	messaging.onMessage((payload) => {
 	  console.log("FCM 수신됨:", payload);
-	  //const title = payload.data.title;
-	  //const body = payload.data.body;
-	  //showAlert("info", title, body);
+	  // 알림올때 소리나게 ㅋㅋ
+	  const audio = new Audio("/sound/alram.mp3");
+	  audio.play();
+	  // 알림 뱃지 표시
 	  $("#notifBadge").show().text("●");
+	  
+	  // 벨 아이콘 진동 애니메이션
+	  const bell = document.querySelector("#notifIcon i");
+	  if (bell) {
+	    bell.classList.add("bell-shake");
+	    setTimeout(() => bell.classList.remove("bell-shake"), 800);
+	  }
+
+	  // 뱃지 깜빡임 애니메이션
+	  const badge = document.getElementById("notifBadge");
+	  if (badge) {
+	    badge.classList.add("blink");
+	    setTimeout(() => badge.classList.remove("blink"), 3000);
+	  }
 	});
-}, 500); // 0.5초 뒤에 리스너 등록
+});
