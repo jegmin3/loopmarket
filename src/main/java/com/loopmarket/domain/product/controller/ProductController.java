@@ -9,6 +9,7 @@ import com.loopmarket.domain.member.MemberEntity;
 import com.loopmarket.domain.member.MemberRepository;
 import com.loopmarket.domain.product.entity.ProductEntity;
 import com.loopmarket.domain.product.service.ProductService;
+import com.loopmarket.domain.wishlist.service.WishlistService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -32,6 +33,7 @@ public class ProductController {
   private final CategoryService categoryService;
   private final ImageService imageService;
   private final LocationService locationService;
+  private final WishlistService wishlistService;
 
   // 상품 목록 필터링 (카테고리, 가격, 검색어, 위치 기반)
   @GetMapping("/products")
@@ -91,6 +93,19 @@ public class ProductController {
     model.addAttribute("mainCategories", categoryRepository.findMainCategories());
     model.addAttribute("recommendedDongNames", locationService.getRecommendedDongNames());
     productList.sort(Comparator.comparing(ProductEntity::getCreatedAt).reversed());
+
+    // 각 상품마다 상대 시간, 동네명 설정
+    productList.forEach(p -> {
+      p.setRelativeTime(formatRelativeTime(p.getCreatedAt()));
+      p.setDongName(extractDongName(p.getLocationText()));
+
+      long wishCount = wishlistService.getWishlistCountByProductId(p.getProductId());
+      int viewCount = p.getViewCount() != null ? p.getViewCount() : 0;
+
+      p.setIsBest(wishCount >= 5 || viewCount >= 30);
+    });
+
+
     model.addAttribute("productList", productList);
     model.addAttribute("viewName", "product/productList");
 
@@ -112,8 +127,8 @@ public class ProductController {
     @ModelAttribute ProductEntity product,
     @RequestParam("images") List<MultipartFile> images,
     @RequestParam("mainImageIndex") int mainImageIndex,
-    @RequestParam("latitude") Double latitude,
-    @RequestParam("longitude") Double longitude,
+    @RequestParam(value = "latitude", required = false) Double latitude,
+    @RequestParam(value = "longitude", required = false) Double longitude,
     HttpSession session) {
 
     MemberEntity loginUser = (MemberEntity) session.getAttribute("loginUser");
@@ -142,6 +157,8 @@ public class ProductController {
   // 상품 상세 페이지
   @GetMapping("/products/{id}")
   public String showProductDetail(@PathVariable Long id, Model model) {
+    // 조회수 증가
+    productService.incrementViewCount(id);
     ProductEntity product = productService.findById(id);
 
     MemberEntity seller = memberRepository.findById(product.getUserId().intValue()).orElse(null);
@@ -149,12 +166,42 @@ public class ProductController {
       product.setSellerNickname(seller.getNickname());
       model.addAttribute("profileImagePath", imageService.getProfilePath(seller.getUserId()));
     }
-
     product.setRelativeTime(formatRelativeTime(product.getCreatedAt()));
+
+    //찜수
+    long wishCount = wishlistService.getWishlistCountByProductId(id);
+    model.addAttribute("wishCount", wishCount);
+
+    //상품 상태메세지
+    String conditionText = getConditionText(product.getConditionScore());
+    model.addAttribute("conditionText", conditionText);
+
+    // 상세페이지 내부
+    List<ProductEntity> otherProducts = productService.getOtherProductsBySeller(product.getUserId(), id);
+    model.addAttribute("otherProducts", otherProducts);
+
+    List<ProductEntity> similarProducts = productService.getSimilarProducts(id, product.getCtgCode());
+    model.addAttribute("similarProducts", similarProducts);
+
+
+
+
+    // 동네명 추출해서 모델에 추가
+    String dongName = extractDongName(product.getLocationText());
+    model.addAttribute("dongName", dongName);
+
     model.addAttribute("product", product);
     model.addAttribute("viewName", "product/productDetail");
     return "layout/layout";
   }
+
+  public String extractDongName(String locationText) {
+    if (locationText == null || locationText.isBlank()) return "";
+    String[] parts = locationText.trim().split(" ");
+    return parts.length >= 2 ? parts[0] + " " + parts[1] : locationText;
+  }
+
+
 
   // 상품 수정 폼
   @GetMapping("/products/edit/{id}")
@@ -192,4 +239,16 @@ public class ProductController {
     productService.updateProductWithImages(id, product, images, mainImageIndex);
     return "redirect:/products/" + id;
   }
+
+  public String getConditionText(int score) {
+    if (score <= 0) return "❔ 상태 정보 없음";
+    if (score <= 14) return "🔧 수리가 필요해요 (" + score + "점)";
+    else if (score <= 30) return "⚠ 상태가 좋지 않아요 (" + score + "점)";
+    else if (score <= 69) return "👣 사용감 있어요 (" + score + "점)";
+    else if (score <= 80) return "👍 중고지만, 상태 좋아요 (" + score + "점)";
+    else if (score <= 94) return "✨ 거의 새 거예요 (" + score + "점)";
+    else return "🆕 새 상품이에요 (" + score + "점)";
+  }
+
+
 }

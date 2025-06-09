@@ -55,7 +55,7 @@ public class WishlistService {
                 .map(Wishlist::getProdId)
                 .collect(Collectors.toList()); // Java 11 호환
     }
-    
+
     @Transactional
     // 찜 해제 전용 API 처리용 메서드
     public void removeWishlist(Long userId, Long prodId) {
@@ -83,4 +83,10 @@ public class WishlistService {
         String path = imageService.getThumbnailPath(productId);
         return path != null ? path : "/images/no-image.png";
     }
+
+  // 상품별 찜 수 반환
+  public long getWishlistCountByProductId(Long productId) {
+    return wishlistRepository.countByProdId(productId);
+  }
+
 }

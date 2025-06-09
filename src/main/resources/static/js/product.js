@@ -326,6 +326,45 @@ document.addEventListener("DOMContentLoaded", () => {
     conditionText.textContent = text;
     conditionHidden.value = status;
     conditionPercent.textContent = score + "%";
+
+    document.querySelector("form").addEventListener("submit", function (e) {
+      // 이미지 용량 검사
+      const maxFileSize = 5 * 1024 * 1024; // 5MB
+      for (let file of selectedFiles) {
+        if (file.size > maxFileSize) {
+          alert("⚠ 이미지 용량이 너무 커요 (최대 5MB). 다시 선택해주세요.");
+          e.preventDefault();
+          return;
+        }
+      }
+
+      // 상품 설명 검사
+      const description = document.querySelector("textarea[name='description']");
+      if (!description.value || description.value.trim().length < 10) {
+        alert("⚠ 상품 설명을 10자 이상 입력해주세요.");
+        e.preventDefault();
+        return;
+      }
+
+      // 거래 방식 체크
+      const isDirectChecked = document.getElementById("isDirect").checked;
+      const isDeliveryChecked = document.getElementById("isDelivery").checked;
+      const isNonfaceChecked = document.getElementById("isNonface").checked;
+      if (!isDirectChecked && !isDeliveryChecked && !isNonfaceChecked) {
+        alert("⚠ 거래 방식을 하나 이상 선택해주세요.");
+        e.preventDefault();
+        return;
+      }
+
+      // 위치 미지정 검사 (직거래 or 비대면일 때)
+      const locationText = document.getElementById("locationText").value;
+      if ((isDirectChecked || isDeliveryChecked) && (!locationText || locationText.trim() === "")) {
+        alert("⚠ 거래 희망 장소를 선택해주세요.");
+        e.preventDefault();
+        return;
+      }
+    });
+
   });
 
   // ---------------- 희망 거래 방식 (위치/택배비) ----------------

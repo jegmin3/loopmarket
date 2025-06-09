@@ -168,6 +168,21 @@
       <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
       <script type="text/javascript"
               src="//dapi.kakao.com/v2/maps/sdk.js?appkey=d4ca8876da8e183543e1cfbbd669097d&libraries=services"></script>
+
+      <script>
+        // 택배 체크 시 위도/경도가 비어있다면 빈 문자열로 설정 (null → 오류 방지용)
+        document.getElementById('isNonface').addEventListener('change', function () {
+          const latInput = document.getElementById('latitude');
+          const lngInput = document.getElementById('longitude');
+
+          // 체크 상태일 때만 처리
+          if (this.checked) {
+            if (!latInput.value) latInput.value = "";
+            if (!lngInput.value) lngInput.value = "";
+          }
+        });
+      </script>
+
     </div>
   </div>
 </div>

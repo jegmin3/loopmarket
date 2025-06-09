@@ -1,7 +1,7 @@
 <div th:fragment="content">
-	
+
   <div class="container my-5">
-	
+
     <div class="row justify-content-center">
       <div class="col-md-10">
         <div class="row g-4">
@@ -10,7 +10,7 @@
 
 			  <!-- 버튼 + 이미지 같은 정렬 그룹 -->
 			  <div class="d-flex flex-column align-items-start">
-			    
+
 			    <!-- ← 목록으로 버튼 -->
 			    <a th:href="@{/products}" class="btn btn-outline-secondary btn-sm mb-2">← 목록으로</a>
 
@@ -51,19 +51,27 @@
 			          style="width: 6px; height: 6px; opacity: 0.4;"></span>
 			  </div>
 
-			  <!-- 판매자 정보 -->
-			  <a th:href="@{/sellers/{id}(id=${product.userId})}"
-			     class="d-flex align-items-center mt-3 text-decoration-none text-dark">
-			    <img th:src="${profileImagePath}"
-			         alt="프로필 이미지"
-			         class="rounded-circle border me-3"
-			         style="width: 40px; height: 40px; object-fit: cover; aspect-ratio: 1 / 1;" />
-			    <div class="text-start text-muted small">
-			      판매자: <span class="fw-semibold" th:text="${product.sellerNickname}">정민</span> ·
-			      <span th:text="${product.relativeTime}">3일 전</span>
-			    </div>
-			  </a>
-			</div>
+            <!-- 판매자 정보 -->
+            <a th:href="@{/sellers/{id}(id=${product.userId})}"
+               class="d-flex align-items-center mt-3 text-decoration-none text-dark">
+              <img th:src="${profileImagePath}"
+                   alt="프로필 이미지"
+                   class="rounded-circle border me-3"
+                   style="width: 40px; height: 40px; object-fit: cover; aspect-ratio: 1 / 1;" />
+              <div class="text-start text-muted small">
+                <div>
+                  판매자: <span class="fw-semibold" th:text="${product.sellerNickname}">정민</span>
+                </div>
+                <div th:text="${dongName + ' · ' + product.relativeTime}">서울 중구 · 5시간 전</div>
+                <div>
+                  <span th:text="'조회수 ' + ${product.viewCount} + '회'">조회수 10회</span>
+                  <span class="ms-2" th:text="'찜 ' + ${wishCount} + '명'">찜 2명</span>
+                </div>
+              </div>
+            </a>
+
+
+          </div>
 
           <!-- 오른쪽: 상품 정보 -->
           <div class="col-md-6">
@@ -78,10 +86,11 @@
                 th:text="${#numbers.formatInteger(product.price, 3, 'COMMA')} + '원'">가격</h3>
 
             <ul class="list-unstyled small">
-              <li class="mb-2"><strong>설명:</strong><br>
-                <span th:text="${product.description}">상품 설명</span>
+              <li class="mb-2"><strong>상세 설명</strong><br>
+                <span th:text="${product.description}" style="white-space: pre-line;">상품 설명</span>
               </li>
-              <li><strong>상품 상태:</strong> <span th:text="${product.condition}">USED</span></li>
+
+              <li><strong>상품 상태:</strong> <span th:text="${conditionText}">사용감 있어요</span></li>
               <li><strong>거래 방식:</strong>
                 <span th:if="${product.saleType == 'SALE'}">판매</span>
                 <span th:if="${product.saleType == 'DONATION'}">나눔</span>
@@ -91,8 +100,7 @@
                 <span th:if="${product.isDelivery ?: false}">택배 </span>
                 <span th:if="${product.isNonface ?: false}">비대면</span>
               </li>
-              <li><strong>거래 위치:</strong><br>
-                <span th:text="${product.locationText}">부산진구 전포동</span>
+              <li><strong>거래 위치:</strong><span th:text="${product.locationText}">부산진구 전포동</span>
               </li>
             </ul>
 
@@ -149,6 +157,61 @@
       </div>
     </div>
   </div>
+  <h5 class="fw-semibold mt-5">이 판매자가 판매하는 다른 물품</h5>
+
+  <!-- 다른 상품이 없을 경우 -->
+  <div th:if="${#lists.isEmpty(otherProducts)}" class="text-muted mt-2 mb-5">
+    현재 이 판매자는 이 상품만 판매하고 있어요.
+  </div>
+
+  <!-- 다른 상품이 있을 경우에만 카드 보여줌 -->
+  <div class="row row-cols-1 row-cols-md-4 g-4 mt-2" th:if="${!#lists.isEmpty(otherProducts)}">
+    <div class="col" th:each="p : ${otherProducts}">
+      <a th:href="@{'/products/' + ${p.productId}}" class="text-decoration-none text-dark">
+        <div class="card h-100 shadow-sm position-relative">
+          <div class="position-absolute top-0 start-0 z-20" style="padding: 4px;">
+            <div th:replace="fragment/status_badge :: statusBadge(${p.status})"></div>
+          </div>
+          <img th:src="@{${p.thumbnailPath}}"
+               class="card-img-top"
+               style="width: 100%; height: 200px; object-fit: cover;" />
+          <div class="card-body">
+            <h6 class="card-title fw-bold text-truncate" th:text="${p.title}">상품명</h6>
+            <p class="card-text small text-muted">
+              <span th:text="${#numbers.formatInteger(p.price, 3, 'COMMA')} + '원'">가격</span> |
+              <span th:text="${p.relativeTime}">시간</span>
+            </p>
+          </div>
+        </div>
+      </a>
+    </div>
+  </div>
+
+  <h5 class="fw-semibold mt-5">이 상품과 비슷한 상품</h5>
+  <div th:if="${#lists.isEmpty(similarProducts)}" class="text-muted mt-2 mb-5">
+    이 상품과 비슷한 상품이 아직 없어요.
+  </div>
+  <div class="row row-cols-1 row-cols-md-4 g-4 mt-2" th:if="${!#lists.isEmpty(similarProducts)}">
+    <div class="col" th:each="s : ${similarProducts}">
+      <a th:href="@{'/products/' + ${s.productId}}" class="text-decoration-none text-dark">
+        <div class="card h-100 shadow-sm position-relative">
+          <div class="position-absolute top-0 start-0 z-20" style="padding: 4px;">
+            <div th:replace="fragment/status_badge :: statusBadge(${s.status})"></div>
+          </div>
+          <img th:src="@{${s.thumbnailPath}}" class="card-img-top"
+               style="width: 100%; height: 200px; object-fit: cover;" />
+          <div class="card-body">
+            <h6 class="card-title fw-bold text-truncate" th:text="${s.title}">상품명</h6>
+            <p class="card-text small text-muted">
+              <span th:text="${#numbers.formatInteger(s.price, 3, 'COMMA')} + '원'">가격</span> |
+              <span th:text="${s.relativeTime}">시간</span>
+            </p>
+          </div>
+        </div>
+      </a>
+    </div>
+  </div>
+
 
   <!-- 지도 & 슬라이더 & 찜 JS -->
   <script src="//dapi.kakao.com/v2/maps/sdk.js?appkey=d4ca8876da8e183543e1cfbbd669097d&libraries=services"></script>
