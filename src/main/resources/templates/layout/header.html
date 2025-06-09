@@ -20,8 +20,17 @@
         </ul>
       </div>
 
-      <!-- 오른쪽 영역: 알림 + 햄버거 버튼 -->
+      <!-- 오른쪽 영역: 관리자버튼/알림 + 햄버거 버튼 -->
       <div class="d-flex align-items-center">
+		<!-- 관리자 아이콘 -->
+		<ul class="navbar-nav flex-row align-items-center me-2"
+		    th:if="${session.userRole == 'ADMIN' or session.userRole == 'MANAGER'}">
+		  <li class="nav-item">
+		    <a class="nav-link position-relative text-primary" href="/admin" title="관리자 페이지">
+		      <i class="bi bi-gear-fill fs-5"></i>
+		    </a>
+		  </li>
+		</ul>
 		<!-- 알림 아이콘 -->
 		<ul class="navbar-nav flex-row align-items-center me-2">
 		  <li class="nav-item dropdown" id="notificationDropdown" th:if="${session.loginUser != null}">
@@ -46,17 +55,13 @@
 
     <!-- 접히는 메뉴 내용 (오른쪽 메뉴들) -->
     <div class="collapse navbar-collapse" id="navbarNav">
-      <ul class="navbar-nav ms-auto me-3 text-end">
+      <ul class="navbar-nav flex-lg-row ms-auto me-3 text-end">
         <li class="nav-item">
           <a class="nav-link [[${#httpServletRequest.requestURI.startsWith('/mypage')} ? 'active' : '']]" style="white-space: nowrap;" th:href="@{/mypage}">마이페이지</a>
         </li>
         <li class="nav-item">
           <a class="nav-link" style="white-space: nowrap;" th:href="@{/chat/list}">나의 채팅</a>
         </li>
-		<li class="nav-item"
-		    th:if="${session.userRole == 'ADMIN' or session.userRole == 'MANAGER'}">
-		    <a class="nav-link" href="/admin">관리자 페이지</a>
-		</li>
         <li class="nav-item" th:if="${session.loginUser == null}">
           <a class="nav-link" style="white-space: nowrap;" th:href="@{/member/login}">로그인</a>
         </li>
