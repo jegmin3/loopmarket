@@ -23,6 +23,7 @@ public class AdminAlramController {
 	/**
 	 * 알림 전송
 	 */
+	//@PreAuthorize("hasRole('ADMIN')")
 	@PostMapping("/send")
 	public ResponseEntity<?> sendAdminAlram(@RequestBody AlramRequestDTO req) {
 	    if (req.getUserId() != null) {

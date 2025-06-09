@@ -27,7 +27,10 @@ function connect(callback) {
 		socketConnected = false;
 		
 		// 서버 연결 후 구독 시작
-	    stompClient.connect({}, function () {
+	    stompClient.connect({
+			userId : senderId.toString(), // 현재 로그인한 사용자 ID
+			roomId : roomId.toString()    // 현재 채팅방 ID
+		}, function () {
 	        console.log("✅ WebSocket 연결됨");
 	
 			socketConnected = true; // 소켓 연결 완료 표시

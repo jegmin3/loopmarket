@@ -30,7 +30,6 @@ import com.loopmarket.domain.image.service.ImageService;
 import com.loopmarket.domain.member.MemberEntity;
 import com.loopmarket.domain.product.entity.ProductEntity;
 import com.loopmarket.domain.product.repository.ProductRepository;
-import com.loopmarket.domain.product.service.ProductService;
 
 import lombok.RequiredArgsConstructor;
 
@@ -43,7 +42,6 @@ public class ChatController extends BaseController {
 	private final SimpMessagingTemplate messagingTemplate;
 	private final ProductRepository productRepository;
 	private final ChatRoomRepository chatRoomRepository;
-	private final ProductService productService;
 	private final ImageService imageService;
 	
 	/** 채팅기록에서 해당 채팅방 진입 */

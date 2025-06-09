@@ -136,9 +136,10 @@ public class AlramService {
      */
     public void createAdminAlram(AlramDTO dto) {
         try {
-            //System.out.println("관리자 알림 생성 시도");
-            //System.out.println("알림 제목: " + dto.getTitle());
-            //System.out.println("알림 내용: " + dto.getContent());
+            if (dto.getUserId() == null) {
+                log.warn("userId가 null입니다. 알림을 생성하지 않습니다.");
+                return;
+            }
 
             AlramEntity entity = AlramEntity.builder()
                     .userId(dto.getUserId())
@@ -149,7 +150,7 @@ public class AlramService {
                     .isRead(false)
                     .build();
 
-            alramRepository.save(entity);
+            alramRepository.save(entity); //db저장
             //System.out.println("관리자 알림 저장 완료: " + entity);
 
             // FCM 전송
@@ -160,7 +161,7 @@ public class AlramService {
                 data.put("body", dto.getContent());
 
                 Message message = Message.builder()
-                        .setToken(receiver.getFcmToken())
+                        .setToken(receiver.getFcmToken()) // 개별사용자에게만 전송
                         .putAllData(data)
                         .build();
 
