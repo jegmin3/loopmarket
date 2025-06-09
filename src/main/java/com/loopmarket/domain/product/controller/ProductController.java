@@ -149,6 +149,8 @@ public class ProductController {
   // 상품 상세 페이지
   @GetMapping("/products/{id}")
   public String showProductDetail(@PathVariable Long id, Model model) {
+    // 조회수 증가
+    productService.incrementViewCount(id);
     ProductEntity product = productService.findById(id);
 
     MemberEntity seller = memberRepository.findById(product.getUserId().intValue()).orElse(null);

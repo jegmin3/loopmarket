@@ -60,6 +60,8 @@ public class ProductEntity {
 
   @Column(name = "longitude")
   private Double longitude;
+  @Column(name = "view_count")
+  private Integer viewCount;
 
 
   @Transient private String thumbnailPath;      // 대표 이미지 경로 (DB 저장 안됨)
