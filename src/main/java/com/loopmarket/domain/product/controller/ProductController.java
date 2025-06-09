@@ -19,6 +19,7 @@ import org.springframework.web.multipart.MultipartFile;
 import javax.servlet.http.HttpSession;
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -69,18 +70,42 @@ public class ProductController {
     List<ProductEntity> productList;
     List<Category> subCategories = null;
 
-    if (lat != null && lng != null) {
-      // 위치 + 가격 필터
+    if (lat != null && lng != null && category != null && !category.isBlank()) {
+      try {
+        Integer categoryCode = Integer.parseInt(category);
+        subCategories = categoryRepository.findByUpCtgCodeOrderBySeqAsc(categoryCode);
+
+        if (!subCategories.isEmpty()) {
+          productList = productService.getNearbyProductsByMainCategory(categoryCode, lat, lng, min, max);
+        } else {
+          productList = productService.getNearbyProductsByCategory(categoryCode, lat, lng, min, max);
+        }
+
+        model.addAttribute("subCategories", subCategories);
+        model.addAttribute("selectedMainCategory", categoryCode);
+
+      } catch (NumberFormatException e) {
+        productList = productService.getNearbyProducts(lat, lng).stream()
+          .filter(p -> p.getPrice() != null && p.getPrice() >= min && p.getPrice() <= max)
+          .collect(Collectors.toList());
+      }
+
+    } else if (lat != null && lng != null) {
+      // 위치 필터만
       productList = productService.getNearbyProducts(lat, lng).stream()
-        .filter(p -> p.getPrice() >= min && p.getPrice() <= max)
+        .filter(p -> p.getPrice() != null && p.getPrice() >= min && p.getPrice() <= max)
         .collect(Collectors.toList());
+
     } else if (search != null && !search.isBlank()) {
-      // 검색만
+      // 검색
       productList = productService.searchProductsByKeyword(search);
+
     } else if (category == null || category.equalsIgnoreCase("ALL") || category.isBlank()) {
-      // 가격 필터만
+      // 전체 or 가격만 필터
       productList = productService.getProductsByPriceRange(min, max);
+
     } else {
+      // 카테고리 필터만
       try {
         Integer categoryCode = Integer.parseInt(category);
         subCategories = categoryRepository.findByUpCtgCodeOrderBySeqAsc(categoryCode);
@@ -98,9 +123,12 @@ public class ProductController {
       }
     }
 
+
     // 공통으로 설정되는 데이터
     model.addAttribute("mainCategories", categoryRepository.findMainCategories());
     model.addAttribute("recommendedDongNames", locationService.getRecommendedDongNames());
+    productList.sort(Comparator.comparing(ProductEntity::getCreatedAt).reversed());
+
     model.addAttribute("productList", productList);
     model.addAttribute("viewName", "product/productList");
 

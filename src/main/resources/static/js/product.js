@@ -57,19 +57,53 @@ document.addEventListener("DOMContentLoaded", () => {
     btn.addEventListener("click", () => {
       // 모든 버튼에서 active 제거
       buttons.forEach(b => b.classList.remove("active"));
-
-      // 클릭한 버튼에 active 추가
       btn.classList.add("active");
 
-      // 페이지 이동
       const value = btn.dataset.value;
-      if (!value) {
-        window.location.href = "/products";
-      } else {
-        window.location.href = `/products?category=${value}`;
+
+      // 현재 URL의 lat, lng 먼저 가져오기
+      const currentParams = new URLSearchParams(window.location.search);
+      let lat = currentParams.get("lat");
+      let lng = currentParams.get("lng");
+
+      // URL에 없으면 localStorage에서 백업으로 가져오기
+      if (!lat) lat = localStorage.getItem("selectedLat");
+      if (!lng) lng = localStorage.getItem("selectedLng");
+
+      // 새 URL 구성
+      let newUrl = "/products";
+      const urlParams = new URLSearchParams();
+      if (value) urlParams.set("category", value);
+      if (lat) urlParams.set("lat", lat);
+      if (lng) urlParams.set("lng", lng);
+
+      if (urlParams.toString()) {
+        newUrl += "?" + urlParams.toString();
       }
+
+      window.location.href = newUrl;
     });
   });
+
+
+  const locationFilterBtn = document.getElementById("locationFilterBtn");
+  if (locationFilterBtn) {
+    locationFilterBtn.addEventListener("click", () => {
+      const lat = localStorage.getItem("selectedLat");
+      const lng = localStorage.getItem("selectedLng");
+
+      if (!lat || !lng) {
+        alert("위치를 먼저 선택해주세요.");
+        return;
+      }
+
+      const url = new URL(window.location.href);
+      url.searchParams.set("lat", lat);
+      url.searchParams.set("lng", lng);
+      window.location.href = url.toString();
+    });
+  }
+
 
   //open ai 서비스 이용
   document.getElementById("aiGenerateBtn").addEventListener("click", async () => {
@@ -493,22 +527,78 @@ document.addEventListener("DOMContentLoaded", () => {
       updatePreview(); // 순서 변경 후 미리보기 갱신 및 대표사진 재설정
     }
   });
+});
+// URL에 lat, lng 없으면 localStorage 값으로 강제 세팅 (초기 진입 시용)
+document.addEventListener("DOMContentLoaded", () => {
+  const url = new URL(window.location.href);
+  const lat = url.searchParams.get("lat");
+  const lng = url.searchParams.get("lng");
 
-  //Kakao 지도 API로 주소 → 좌표 변환 함수 만들기
-  function getCoordsFromAddress(address, callback) {
-    const geocoder = new kakao.maps.services.Geocoder();
-    geocoder.addressSearch(address, function(result, status) {
-      if (status === kakao.maps.services.Status.OK) {
-        const lat = parseFloat(result[0].y); // 위도
-        const lng = parseFloat(result[0].x); // 경도
-        callback(lat, lng); // 좌표를 콜백으로 넘김
-      } else {
-        alert("주소 → 좌표 변환 실패");
-      }
+  // category, minPrice, maxPrice, status, search 등 모든 쿼리 제외 시만 실행
+  const allowAutoInject = url.pathname === "/products" && url.search === "";
+
+  const localLat = localStorage.getItem("selectedLat");
+  const localLng = localStorage.getItem("selectedLng");
+
+  if ((!lat || !lng) && allowAutoInject && localLat && localLng) {
+    url.searchParams.set("lat", localLat);
+    url.searchParams.set("lng", localLng);
+    window.location.replace(url.toString());
+  }
+});
+
+document.addEventListener("DOMContentLoaded", () => {
+  // 1. 메인 진입 시 lat/lng 쿼리 → localStorage 저장
+  const urlParams = new URLSearchParams(window.location.search);
+  const lat = urlParams.get("lat");
+  const lng = urlParams.get("lng");
+
+  if (lat && lng) {
+    localStorage.setItem("selectedLat", lat);
+    localStorage.setItem("selectedLng", lng);
+  }
+
+  // 2. "전체 상품 보기" 버튼 클릭 시 → localStorage 초기화 + 전체 목록 이동
+  const allProductBtn = document.getElementById("allProductBtn");
+  if (allProductBtn) {
+    allProductBtn.addEventListener("click", (e) => {
+      e.preventDefault();
+      localStorage.removeItem("selectedLat");
+      localStorage.removeItem("selectedLng");
+      window.location.href = "/products";
     });
   }
 
+  // 3. 카테고리 버튼 클릭 시 → 내 위치 기준으로 해당 카테고리 상품 보기
+  const categoryButtons = document.querySelectorAll(".category-btn");
+  categoryButtons.forEach(btn => {
+    btn.addEventListener("click", () => {
+      const category = btn.dataset.value;
+      const lat = localStorage.getItem("selectedLat");
+      const lng = localStorage.getItem("selectedLng");
 
+      let url = `/products?category=${category}`;
+      if (lat && lng) {
+        url += `&lat=${lat}&lng=${lng}`;
+      }
+
+      window.location.href = url;
+    });
+  });
 });
 
-window.handleCategoryChange = handleCategoryChange;
+
+//Kakao 지도 API로 주소 → 좌표 변환 함수 만들기
+function getCoordsFromAddress(address, callback) {
+  const geocoder = new kakao.maps.services.Geocoder();
+  geocoder.addressSearch(address, function(result, status) {
+    if (status === kakao.maps.services.Status.OK) {
+      const lat = parseFloat(result[0].y); // 위도
+      const lng = parseFloat(result[0].x); // 경도
+      callback(lat, lng); // 좌표를 콜백으로 넘김
+    } else {
+      alert("주소 → 좌표 변환 실패");
+    }
+  });
+}
+window.getCoordsFromAddress = getCoordsFromAddress;

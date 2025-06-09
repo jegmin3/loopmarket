@@ -28,11 +28,14 @@ public interface ProductRepository extends JpaRepository<ProductEntity, Long> {
     // 여러 소분류 코드에 해당하는 상품들 검색
     List<ProductEntity> findByCtgCodeIn(List<Integer> ctgCodes);
 
-    List<ProductEntity> findByPriceBetween(Integer min, Integer max);
-    List<ProductEntity> findByCtgCodeInAndPriceBetween(List<Integer> ctgCodes, Integer min, Integer max);
-    List<ProductEntity> findByCtgCodeAndPriceBetween(Integer ctgCode, Integer min, Integer max);
+    // 소분류 + 상태 + 숨김 여부 필터
+    List<ProductEntity> findByIsHiddenFalseAndStatusAndCtgCode(String status, Integer ctgCode);
 
-     // 검색어가 제목이나 설명에 포함된 상품 조회
+    // 대분류(하위 소분류 목록) + 상태 + 숨김 여부 필터
+    List<ProductEntity> findByIsHiddenFalseAndStatusAndCtgCodeIn(String status, List<Integer> ctgCodes);
+
+
+  // 검색어가 제목이나 설명에 포함된 상품 조회
     List<ProductEntity> findByTitleContainingIgnoreCaseOrDescriptionContainingIgnoreCase(String title, String description);
 
     // 상품 등록 수 통계용-1

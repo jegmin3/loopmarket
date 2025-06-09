@@ -46,6 +46,8 @@ function getLocation() {
 function success(position) {
   const lat = position.coords.latitude;
   const lng = position.coords.longitude;
+  localStorage.setItem('selectedLat', lat);
+  localStorage.setItem('selectedLng', lng);
 
   fetch(`https://dapi.kakao.com/v2/local/geo/coord2regioncode.json?x=${lng}&y=${lat}`, {
     headers: {
@@ -96,36 +98,27 @@ function setLocationFallback() {
 
 // 모달에서 위치 선택 시 처리
 function setLocation(fullLocation) {
-  // 전체 주소 → ex: "부산광역시 수영구 광안동"
-  const dongName = extractDongFromFull(fullLocation); // ex: "광안동"
-
-  // 위치 버튼 텍스트 변경
+  const dongName = extractDongFromFull(fullLocation);
   document.getElementById('current-location').innerText = dongName;
 
-  // 메인 제목에 동 이름 반영 (존재할 때만)
   const titleSpan = document.getElementById('location-title');
   if (titleSpan) titleSpan.innerText = dongName;
 
-  // 로컬 스토리지에 전체 주소 저장
   localStorage.setItem('selectedDong', fullLocation);
 
-  // 모달 부드럽게 닫기 (fade-out 애니메이션 유지)
-  const modalEl = document.getElementById('locationModal');
-  const modalInstance =
-    bootstrap.Modal.getInstance(modalEl) || new bootstrap.Modal(modalEl); // 인스턴스 없으면 생성
-  modalInstance.hide(); // ✨ Bootstrap 방식으로 자연스럽게 닫힘
-
-//     사용자가 위치(예: 부전동)를 선택한 후, 해당 주소를 위도/경도로 변환하여
-//     해당 위치 기준으로 반경 25km 이내 상품 목록을 요청함
-  getCoordsFromAddress(fullLocation, function(lat, lng) {
-    window.location.href = `/products?lat=${lat}&lng=${lng}`;
-    // 위도, 경도 localStorage에 저장 (자동 적용용)
+  // 주소 → 좌표 변환 후 저장 → 모달 닫기까지 정확히 순서 보장
+  getCoordsFromAddress(fullLocation, (lat, lng) => {
     localStorage.setItem("selectedLat", lat);
     localStorage.setItem("selectedLng", lng);
 
+    // 위도/경도 저장 완료 후 모달 닫기
+    const modalEl = document.getElementById('locationModal');
+    const modalInstance = bootstrap.Modal.getInstance(modalEl) || new bootstrap.Modal(modalEl);
+    modalInstance.hide();
+
+    // 위치 바뀐 거 사용자에게 바로 보이게 하려면 새로고침도 가능
+    // window.location.reload(); ← 필요 시
   });
-
-
 }
 
 
@@ -290,6 +283,22 @@ function cleanAddress(fullAddress) {
 }
 
 
+function getCoordsFromAddress(address, callback) {
+  const geocoder = new kakao.maps.services.Geocoder();
+  geocoder.addressSearch(address, function(result, status) {
+    if (status === kakao.maps.services.Status.OK) {
+      const lat = parseFloat(result[0].y); // 위도
+      const lng = parseFloat(result[0].x); // 경도
+      callback(lat, lng); // 콜백 호출
+    } else {
+      alert("주소 → 좌표 변환 실패");
+    }
+  });
+}
+
+
+window.getCoordsFromAddress = getCoordsFromAddress;
+
 
 // 엔터 키 입력 시 검색 실행
 function handleLocationKey(event) {
@@ -299,6 +308,26 @@ function handleLocationKey(event) {
 }
 
 
+document.addEventListener("DOMContentLoaded", () => {
+  const categoryLinks = document.querySelectorAll(".category-link");
+
+  categoryLinks.forEach(link => {
+    link.addEventListener("click", (e) => {
+      e.preventDefault();
+
+      const category = link.dataset.value;
+      const lat = localStorage.getItem("selectedLat");
+      const lng = localStorage.getItem("selectedLng");
+
+      let url = `/products?category=${category}`;
+      if (lat && lng) {
+        url += `&lat=${lat}&lng=${lng}`;
+      }
+
+      window.location.href = url;
+    });
+  });
+});
 
 
 

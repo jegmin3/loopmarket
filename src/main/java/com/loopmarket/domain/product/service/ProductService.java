@@ -128,30 +128,61 @@ public class ProductService {
 		return soldProducts;
 	}
 
-	// 소분류 코드로 상품 목록 조회
-	public List<ProductEntity> getProductsByCategory(Integer ctgCode) {
-	    List<ProductEntity> products = productRepository.findByIsHiddenFalseAndCtgCode(ctgCode);
-	    for (ProductEntity product : products) {
-	        Long productId = product.getProductId();
-	        product.setThumbnailPath(imageService.getThumbnailPath(productId));
-	        product.setImagePaths(imageService.getAllImagePaths(productId));
-	    }
-	    return products;
-	}
+  public List<ProductEntity> getNearbyProductsByCategory(Integer ctgCode, double lat, double lng, int min, int max) {
+    List<ProductEntity> allProducts = productRepository.findByIsHiddenFalseAndStatusAndCtgCode("ONSALE", ctgCode);
 
-	// 대분류 코드로 하위 카테고리 상품 조회
-	public List<ProductEntity> getProductsByMainCategory(Integer mainCategoryCode) {
-	    List<Integer> subCategoryCodes = categoryRepository.findSubCategoryCodesByMainCode(mainCategoryCode);
-	    List<ProductEntity> products = productRepository.findByIsHiddenFalseAndCtgCodeIn(subCategoryCodes);
+    double radiusKm = 25.0;
+    List<ProductEntity> nearby = allProducts.stream()
+      .filter(product -> {
+        Double productLat = product.getLatitude();
+        Double productLng = product.getLongitude();
+        if (productLat == null || productLng == null) return false;
 
-	    for (ProductEntity product : products) {
-	        Long productId = product.getProductId();
-	        product.setThumbnailPath(imageService.getThumbnailPath(productId));
-	        product.setImagePaths(imageService.getAllImagePaths(productId));
-	    }
+        double distance = calculateDistanceKm(lat, lng, productLat, productLng);
+        return distance <= radiusKm
+          && product.getPrice() != null
+          && product.getPrice() >= min
+          && product.getPrice() <= max;
+      })
+      .collect(Collectors.toList());
 
-	    return products;
-	}
+    for (ProductEntity product : nearby) {
+      Long productId = product.getProductId();
+      product.setThumbnailPath(imageService.getThumbnailPath(productId));
+      product.setImagePaths(imageService.getAllImagePaths(productId));
+    }
+
+    return nearby;
+  }
+
+  public List<ProductEntity> getNearbyProductsByMainCategory(Integer mainCategoryCode, double lat, double lng, int min, int max) {
+    List<Integer> subCategoryCodes = categoryRepository.findSubCategoryCodesByMainCode(mainCategoryCode);
+    List<ProductEntity> allProducts = productRepository.findByIsHiddenFalseAndStatusAndCtgCodeIn("ONSALE", subCategoryCodes);
+
+    double radiusKm = 25.0;
+    List<ProductEntity> nearby = allProducts.stream()
+      .filter(product -> {
+        Double productLat = product.getLatitude();
+        Double productLng = product.getLongitude();
+        if (productLat == null || productLng == null) return false;
+
+        double distance = calculateDistanceKm(lat, lng, productLat, productLng);
+        return distance <= radiusKm
+          && product.getPrice() != null
+          && product.getPrice() >= min
+          && product.getPrice() <= max;
+      })
+      .collect(Collectors.toList());
+
+    for (ProductEntity product : nearby) {
+      Long productId = product.getProductId();
+      product.setThumbnailPath(imageService.getThumbnailPath(productId));
+      product.setImagePaths(imageService.getAllImagePaths(productId));
+    }
+
+    return nearby;
+  }
+
 
 //	public List<ProductEntity> getProductsByMainCategory(Integer mainCategoryCode) {
 //		List<Integer> subCategoryCodes = categoryRepository.findSubCategoryCodesByMainCode(mainCategoryCode);

@@ -42,7 +42,8 @@
     <h2 class="mb-4 text-center">📦 전체 상품 목록</h2>
     <div class="mt-3">
       <button id="locationFilterBtn" class="btn btn-primary">📍 이 위치 기준으로 보기</button>
-      <a href="/products" class="btn btn-outline-secondary">전체 상품 보기</a>
+      <button id="allProductBtn" class="btn btn-outline-secondary">전체 상품 보기</button>
+
     </div>
     <!-- 검색 & 지역 위치 영역 (fragment 불러오기) -->
     <div th:replace="fragment/searchAndLocation :: searchAndLocation"
@@ -77,7 +78,7 @@
 
           <!-- 카테고리 버튼 반복 -->
           <button type="button"
-                  class="btn btn-outline-secondary text-start"
+                  class="btn btn-outline-secondary text-start category-btn"
                   style="width: 100%;"
                   th:each="cat : ${mainCategories}"
                   th:data-value="${cat.ctgCode}"
