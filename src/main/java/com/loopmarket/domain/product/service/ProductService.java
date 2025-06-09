@@ -6,6 +6,7 @@ import com.loopmarket.domain.product.dto.CategoryProductStatsDTO;
 import com.loopmarket.domain.product.dto.WeeklyProductStatsDTO;
 import com.loopmarket.domain.product.entity.ProductEntity;
 import com.loopmarket.domain.product.repository.ProductRepository;
+import com.loopmarket.domain.wishlist.repository.WishlistRepository;
 import lombok.RequiredArgsConstructor;
 
 import org.springframework.data.domain.Page;
@@ -27,8 +28,9 @@ public class ProductService {
 	private final ProductRepository productRepository; // 상품 데이터베이스 작업용 리포지토리
 	private final ImageService imageService; // 이미지 저장 및 조회 서비스
 	private final CategoryRepository categoryRepository; // 카테고리 정보 조회용 리포지토리
+  private final WishlistRepository wishlistRepository;
 
-	/**
+  /**
 	 * 상품 정보와 이미지들을 함께 저장하는 메서드
 	 *
 	 * @param product        저장할 상품 엔티티
@@ -55,25 +57,31 @@ public class ProductService {
 	 *
 	 * @return 대표 이미지와 이미지 리스트가 포함된 상품 리스트
 	 */
-	public List<ProductEntity> getAllProducts() {
-		List<ProductEntity> products = productRepository.findAll();
+  public List<ProductEntity> getAllProducts() {
+    List<ProductEntity> products = productRepository.findAll();
 
-		for (ProductEntity product : products) {
-			Long productId = product.getProductId();
+    for (ProductEntity product : products) {
+      Long productId = product.getProductId();
 
-			// 대표 이미지 경로 조회 후 상품 엔티티에 세팅
-			String thumbnailPath = imageService.getThumbnailPath(productId);
-			product.setThumbnailPath(thumbnailPath);
+      // 대표 이미지 경로 조회 후 상품 엔티티에 세팅
+      String thumbnailPath = imageService.getThumbnailPath(productId);
+      product.setThumbnailPath(thumbnailPath);
 
-			// 전체 이미지 경로 리스트 조회 후 상품 엔티티에 세팅 (null 방지)
-			List<String> imagePaths = imageService.getAllImagePaths(productId);
-			product.setImagePaths(imagePaths != null ? imagePaths : List.of());
-		}
+      // 전체 이미지 경로 리스트 조회 후 상품 엔티티에 세팅 (null 방지)
+      List<String> imagePaths = imageService.getAllImagePaths(productId);
+      product.setImagePaths(imagePaths != null ? imagePaths : List.of());
 
-		return products;
-	}
+      // 인기 상품 조건 세팅: 찜 5 이상 or 조회수 30 이상
+      long wishCount = wishlistRepository.countByProdId(productId);
+      Integer viewCount = product.getViewCount() != null ? product.getViewCount() : 0;
 
-	// 결제 페이지에 필요하여 추가했습니다 - jw
+      product.setIsBest(wishCount >= 5 || viewCount >= 30);
+    }
+    return products;
+  }
+
+
+  // 결제 페이지에 필요하여 추가했습니다 - jw
 	public ProductEntity getProductById(Long id) {
 		return productRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("상품이 존재하지 않습니다."));
 	}
@@ -429,7 +437,7 @@ public class ProductService {
       p.setRelativeTime(formatRelativeTimeInternal(p.getCreatedAt()));
     }
 
-    // 최대 8개까지만 보여줄게
+    // 최대 8개까지
     return list.stream().limit(8).collect(Collectors.toList());
   }
 

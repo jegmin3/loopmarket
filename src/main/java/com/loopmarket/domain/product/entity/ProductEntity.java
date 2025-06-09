@@ -63,6 +63,24 @@ public class ProductEntity {
   @Column(name = "view_count")
   private Integer viewCount;
 
+  @Transient
+  private boolean isBest;
+
+  public boolean getIsBest() {
+    return isBest;
+  }
+
+  public void setIsBest(boolean isBest) {
+    this.isBest = isBest;
+  }
+  @Transient
+  public boolean isDeliveryOnly() {
+    return Boolean.TRUE.equals(isNonface)
+      && !Boolean.TRUE.equals(isDirect)
+      && !Boolean.TRUE.equals(isDelivery)
+      && (locationText == null || locationText.isBlank());
+  }
+
 
   @Transient private String thumbnailPath;      // 대표 이미지 경로 (DB 저장 안됨)
   @Transient private List<String> imagePaths;   // 이미지 경로 리스트 (DB 저장 안됨)

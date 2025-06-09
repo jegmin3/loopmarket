@@ -137,10 +137,16 @@
                    class="position-absolute top-0 start-0 w-100 h-100"
                    style="background-color: rgba(120, 120, 120, 0.4); z-index: 10;"></div>
 
-              <!-- 상태 뱃지 (z-20) -->
-              <div class="position-absolute top-0 start-0 z-20">
+              <!-- 상태 뱃지 + BEST 뱃지 -->
+              <div class="position-absolute top-0 start-0 z-20 d-flex flex-column" style="padding: 4px;">
                 <div th:replace="fragment/status_badge :: statusBadge(${product.status})"></div>
+
+                <!-- 인기 BEST 뱃지 -->
+                <div th:if="${product.isBest}" class="badge bg-danger text-white rounded-end px-2 py-1 small mt-1">
+                  BEST
+                </div>
               </div>
+
 
 
 
@@ -166,7 +172,10 @@
             <div class="card-body">
               <h5 class="card-title" th:text="${product.title}">상품명</h5>
               <p class="card-text fw-bold" th:text="${#numbers.formatInteger(product.price, 3, 'COMMA') + '원'}">가격</p>
-              <p class="card-text text-muted small" th:text="${product.dongName + ' · ' + product.relativeTime}">부전동 · 2시간 전</p>
+              <p class="card-text text-muted small"
+                 th:text="${product.isDeliveryOnly} ? '택배전용 · ' + ${product.relativeTime} : ${product.dongName} + ' · ' + ${product.relativeTime}">
+              </p>
+
 
 
             </div>

@@ -121,8 +121,8 @@ public class ProductController {
     @ModelAttribute ProductEntity product,
     @RequestParam("images") List<MultipartFile> images,
     @RequestParam("mainImageIndex") int mainImageIndex,
-    @RequestParam("latitude") Double latitude,
-    @RequestParam("longitude") Double longitude,
+    @RequestParam(value = "latitude", required = false) Double latitude,
+    @RequestParam(value = "longitude", required = false) Double longitude,
     HttpSession session) {
 
     MemberEntity loginUser = (MemberEntity) session.getAttribute("loginUser");
