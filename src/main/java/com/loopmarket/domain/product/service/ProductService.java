@@ -128,31 +128,62 @@ public class ProductService {
 		return soldProducts;
 	}
 
-	// 소분류 코드로 상품 목록 조회
-	public List<ProductEntity> getProductsByCategory(Integer ctgCode) {
-	    List<ProductEntity> products = productRepository.findByIsHiddenFalseAndCtgCode(ctgCode);
-	    for (ProductEntity product : products) {
-	        Long productId = product.getProductId();
-	        product.setThumbnailPath(imageService.getThumbnailPath(productId));
-	        product.setImagePaths(imageService.getAllImagePaths(productId));
-	    }
-	    return products;
-	}
+  public List<ProductEntity> getNearbyProductsByCategory(Integer ctgCode, double lat, double lng, int min, int max) {
+    List<ProductEntity> allProducts = productRepository.findByIsHiddenFalseAndStatusAndCtgCode("ONSALE", ctgCode);
 
-	// 대분류 코드로 하위 카테고리 상품 조회
-	public List<ProductEntity> getProductsByMainCategory(Integer mainCategoryCode) {
-	    List<Integer> subCategoryCodes = categoryRepository.findSubCategoryCodesByMainCode(mainCategoryCode);
-	    List<ProductEntity> products = productRepository.findByIsHiddenFalseAndCtgCodeIn(subCategoryCodes);
+    double radiusKm = 25.0;
+    List<ProductEntity> nearby = allProducts.stream()
+      .filter(product -> {
+        Double productLat = product.getLatitude();
+        Double productLng = product.getLongitude();
+        if (productLat == null || productLng == null) return false;
 
-	    for (ProductEntity product : products) {
-	        Long productId = product.getProductId();
-	        product.setThumbnailPath(imageService.getThumbnailPath(productId));
-	        product.setImagePaths(imageService.getAllImagePaths(productId));
-	    }
+        double distance = calculateDistanceKm(lat, lng, productLat, productLng);
+        return distance <= radiusKm
+          && product.getPrice() != null
+          && product.getPrice() >= min
+          && product.getPrice() <= max;
+      })
+      .collect(Collectors.toList());
 
-	    return products;
-	}
-	
+    for (ProductEntity product : nearby) {
+      Long productId = product.getProductId();
+      product.setThumbnailPath(imageService.getThumbnailPath(productId));
+      product.setImagePaths(imageService.getAllImagePaths(productId));
+    }
+
+    return nearby;
+  }
+
+  public List<ProductEntity> getNearbyProductsByMainCategory(Integer mainCategoryCode, double lat, double lng, int min, int max) {
+    List<Integer> subCategoryCodes = categoryRepository.findSubCategoryCodesByMainCode(mainCategoryCode);
+    List<ProductEntity> allProducts = productRepository.findByIsHiddenFalseAndStatusAndCtgCodeIn("ONSALE", subCategoryCodes);
+
+    double radiusKm = 25.0;
+    List<ProductEntity> nearby = allProducts.stream()
+      .filter(product -> {
+        Double productLat = product.getLatitude();
+        Double productLng = product.getLongitude();
+        if (productLat == null || productLng == null) return false;
+
+        double distance = calculateDistanceKm(lat, lng, productLat, productLng);
+        return distance <= radiusKm
+          && product.getPrice() != null
+          && product.getPrice() >= min
+          && product.getPrice() <= max;
+      })
+      .collect(Collectors.toList());
+
+    for (ProductEntity product : nearby) {
+      Long productId = product.getProductId();
+      product.setThumbnailPath(imageService.getThumbnailPath(productId));
+      product.setImagePaths(imageService.getAllImagePaths(productId));
+    }
+
+    return nearby;
+  }
+
+
 //	public List<ProductEntity> getProductsByMainCategory(Integer mainCategoryCode) {
 //		List<Integer> subCategoryCodes = categoryRepository.findSubCategoryCodesByMainCode(mainCategoryCode);
 //		List<ProductEntity> products = productRepository.findByCtgCodeIn(subCategoryCodes);
@@ -168,7 +199,7 @@ public class ProductService {
 
 	// 전체 가격 필터
 	public List<ProductEntity> getProductsByPriceRange(Integer min, Integer max) {
-	    List<ProductEntity> products = productRepository.findByIsHiddenFalseAndPriceBetween(min, max);
+    List<ProductEntity> products = productRepository.findByIsHiddenFalseAndPriceBetweenOrderByCreatedAtDesc(min, max);
 	    for (ProductEntity product : products) {
 	        Long productId = product.getProductId();
 	        product.setThumbnailPath(imageService.getThumbnailPath(productId));
@@ -176,7 +207,7 @@ public class ProductService {
 	    }
 	    return products;
 	}
-	
+
 //	public List<ProductEntity> getProductsByPriceRange(Integer min, Integer max) {
 //		List<ProductEntity> products = productRepository.findByPriceBetween(min, max);
 //		for (ProductEntity product : products) {
@@ -198,7 +229,7 @@ public class ProductService {
 	    }
 	    return products;
 	}
-	
+
 //	public List<ProductEntity> getProductsByMainCategoryAndPrice(Integer mainCategoryCode, Integer min, Integer max) {
 //		List<Integer> subCategoryCodes = categoryRepository.findSubCategoryCodesByMainCode(mainCategoryCode);
 //		List<ProductEntity> products = productRepository.findByCtgCodeInAndPriceBetween(subCategoryCodes, min, max);
@@ -272,8 +303,37 @@ public class ProductService {
 	                    ((Number) row[2]).intValue()))    // count
 	            .collect(Collectors.toList());
 	}
-	
-	@Transactional
+
+  @Transactional
+  public void updateProductWithImages(Long id, ProductEntity updatedProduct, List<MultipartFile> images, int mainImageIndex) {
+    ProductEntity existing = productRepository.findById(id)
+      .orElseThrow(() -> new NoSuchElementException("해당 상품이 존재하지 않습니다: " + id));
+
+    existing.setTitle(updatedProduct.getTitle());
+    existing.setPrice(updatedProduct.getPrice());
+    existing.setSaleType(updatedProduct.getSaleType());
+    existing.setCtgCode(updatedProduct.getCtgCode());
+    existing.setCondition(updatedProduct.getCondition());
+    existing.setConditionScore(updatedProduct.getConditionScore());
+    existing.setDescription(updatedProduct.getDescription());
+    existing.setIsDirect(updatedProduct.getIsDirect());
+    existing.setIsDelivery(updatedProduct.getIsDelivery());
+    existing.setIsNonface(updatedProduct.getIsNonface());
+    existing.setLocationText(updatedProduct.getLocationText());
+    existing.setLatitude(updatedProduct.getLatitude());
+    existing.setLongitude(updatedProduct.getLongitude());
+    existing.setShippingFee(updatedProduct.getShippingFee());
+    existing.setUpdateAt(LocalDateTime.now());
+
+/*    if (images != null && !images.isEmpty()) {
+      imageService.replaceImagesForProduct(id, images, mainImageIndex);
+    }*/
+
+    productRepository.save(existing);
+  }
+
+
+  @Transactional
 	public void updateHiddenStatus(Long productId, boolean hidden) {
 	    ProductEntity product = productRepository.findById(productId)
 	        .orElseThrow(() -> new RuntimeException("상품 없음"));
@@ -291,11 +351,45 @@ public class ProductService {
 	public void deleteProductById(Long productId) {
 	    productRepository.deleteById(productId);
 	}
-	
+
 	public Page<ProductEntity> getProductsPage(Pageable pageable) {
 	    return productRepository.findAll(pageable);
 	}
-	
-	
-	
+
+  public List<ProductEntity> getNearbyProducts(double lat, double lng) {
+    List<ProductEntity> allProducts = productRepository.findByIsHiddenFalseAndStatus("ONSALE");
+
+    double radiusKm = 25.0;
+    List<ProductEntity> nearby = allProducts.stream()
+      .filter(product -> {
+        Double productLat = product.getLatitude();
+        Double productLng = product.getLongitude();
+        if (productLat == null || productLng == null) return false;
+
+        double distance = calculateDistanceKm(lat, lng, productLat, productLng);
+        return distance <= radiusKm;
+      })
+      .collect(Collectors.toList());
+
+    for (ProductEntity product : nearby) {
+      Long productId = product.getProductId();
+      product.setThumbnailPath(imageService.getThumbnailPath(productId));
+      product.setImagePaths(imageService.getAllImagePaths(productId));
+    }
+
+    return nearby;
+  }
+
+  private double calculateDistanceKm(double lat1, double lng1, double lat2, double lng2) {
+    double earthRadius = 6371.0; // 지구 반지름 (단위: km)
+
+    double dLat = Math.toRadians(lat2 - lat1);
+    double dLng = Math.toRadians(lng2 - lng1);
+    double a = Math.sin(dLat / 2) * Math.sin(dLat / 2)
+      + Math.cos(Math.toRadians(lat1)) * Math.cos(Math.toRadians(lat2))
+      * Math.sin(dLng / 2) * Math.sin(dLng / 2);
+    double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    return earthRadius * c;
+  }
+
 }
