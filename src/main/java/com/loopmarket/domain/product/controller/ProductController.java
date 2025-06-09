@@ -91,6 +91,13 @@ public class ProductController {
     model.addAttribute("mainCategories", categoryRepository.findMainCategories());
     model.addAttribute("recommendedDongNames", locationService.getRecommendedDongNames());
     productList.sort(Comparator.comparing(ProductEntity::getCreatedAt).reversed());
+
+    // 각 상품마다 상대 시간, 동네명 설정
+    productList.forEach(p -> {
+      p.setRelativeTime(formatRelativeTime(p.getCreatedAt()));
+      p.setDongName(extractDongName(p.getLocationText()));
+    });
+
     model.addAttribute("productList", productList);
     model.addAttribute("viewName", "product/productList");
 
@@ -151,10 +158,23 @@ public class ProductController {
     }
 
     product.setRelativeTime(formatRelativeTime(product.getCreatedAt()));
+
+    // 동네명 추출해서 모델에 추가
+    String dongName = extractDongName(product.getLocationText());
+    model.addAttribute("dongName", dongName);
+
     model.addAttribute("product", product);
     model.addAttribute("viewName", "product/productDetail");
     return "layout/layout";
   }
+
+  public String extractDongName(String locationText) {
+    if (locationText == null || locationText.isBlank()) return "";
+    String[] parts = locationText.trim().split(" ");
+    return parts.length >= 2 ? parts[0] + " " + parts[1] : locationText;
+  }
+
+
 
   // 상품 수정 폼
   @GetMapping("/products/edit/{id}")
