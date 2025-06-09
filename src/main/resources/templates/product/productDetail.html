@@ -110,34 +110,46 @@
             <!-- 버튼 영역 -->
             <div class="d-flex flex-column gap-2 mt-4">
 
+              <!-- 예약 상태 안내 -->
               <div th:if="${product.status == 'RESERVED'}"
                    class="alert alert-warning text-center fw-semibold w-100 mb-0">
                 해당 상품은 <strong>예약중</strong>입니다.
               </div>
 
-			  <div class="d-flex gap-2 justify-content-between mt-3">
-			    <!-- 찜하기 -->
-			    <button type="button" class="btn btn-outline-danger flex-grow-1">
-			      <i id="heart-icon" class="bi bi-heart"></i> 찜하기
-			    </button>
+              <div class="d-flex gap-2 justify-content-between mt-3">
+                <!-- 찜하기 -->
+                <button type="button" class="btn btn-outline-danger flex-grow-1">
+                  <i id="heart-icon" class="bi bi-heart"></i> 찜하기
+                </button>
 
-			    <!-- 채팅하기 -->
-			    <form th:if="${session.loginUser != null and session.loginUser.userId != product.userId}"
-			          th:action="@{/chat/start}" method="get" class="flex-grow-1">
-			      <input type="hidden" name="productId" th:value="${product.productId}" />
-			      <input type="hidden" name="targetId" th:value="${product.userId}" />
-			      <button type="submit" class="btn btn-outline-primary w-100">
-			        <i class="bi bi-chat-dots"></i> 채팅하기
-			      </button>
-			    </form>
+                <!-- 채팅하기 -->
+                <form th:if="${session.loginUser != null and session.loginUser.userId != product.userId}"
+                      th:action="@{/chat/start}" method="get" class="flex-grow-1">
+                  <input type="hidden" name="productId" th:value="${product.productId}" />
+                  <input type="hidden" name="targetId" th:value="${product.userId}" />
+                  <button type="submit" class="btn btn-outline-primary w-100">
+                    <i class="bi bi-chat-dots"></i> 채팅하기
+                  </button>
+                </form>
+              </div>
 
-			    <!-- 택배로 구매하기 -->
-			    <a th:if="${product.status == 'ONSALE' and (product.isDelivery ?: false)}"
-			       th:href="@{/pay/checkout(productId=${product.productId})}"
-			       class="btn btn-outline-success flex-grow-1 text-center">
-			      택배로 구매하기
-			    </a>
-			  </div>
+              <!-- 택배로 구매하기 -->
+              <a th:if="${product.status == 'ONSALE' and (product.isDelivery ?: false)}"
+                 th:href="@{/pay/checkout(productId=${product.productId})}"
+                 class="btn btn-outline-success w-100 text-center">
+                택배로 구매하기
+              </a>
+
+              <!-- 신고하기 (로그인 사용자 & 본인 상품이 아닐 경우만) -->
+              <div th:if="${session.loginUser != null and session.loginUser.userId != product.userId}">
+                <form th:action="@{/report/create}" method="get">
+                  <input type="hidden" name="productId" th:value="${product.productId}" />
+                  <input type="hidden" name="reportedUserId" th:value="${product.userId}" />
+                  <button type="submit" class="btn btn-outline-warning w-100">
+                    <i class="bi bi-flag"></i> 신고하기
+                  </button>
+                </form>
+              </div>
             </div>
           </div>
 
