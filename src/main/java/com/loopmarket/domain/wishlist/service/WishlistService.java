@@ -63,16 +63,18 @@ public class WishlistService {
     }
 
     // 찜 목록을 WishlistDto로 변환해서 반환
+    // 찜 목록을 WishlistDto로 변환해서 반환 (숨김 상품 제외)
     public List<WishlistDto> getWishlistDtos(Long userId) {
         List<Long> prodIds = getWishlistProductIds(userId);
 
         return productRepository.findAllById(prodIds).stream()
+                .filter(p -> !Boolean.TRUE.equals(p.getIsHidden())) // 숨김 상품 제외
                 .map(p -> WishlistDto.builder()
                         .productId(p.getProductId())
                         .title(p.getTitle())
                         .thumbnailPath(getThumbnail(p.getProductId()))
                         .price(p.getPrice())
-                        .status(p.getStatus())
+                        .status(p.getStatus()) // 상태는 그대로 DTO에 담음
                         .build())
                 .collect(Collectors.toList());
     }
