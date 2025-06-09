@@ -9,6 +9,7 @@
         <button class="btn btn-outline-secondary text-start w-100 admin-link" data-url="/admin/products">상품 관리</button>
         <button class="btn btn-outline-secondary text-start w-100 admin-link" data-url="/admin/report">신고 관리</button>
         <!--<button class="btn btn-outline-secondary text-start w-100 admin-link" data-url="/admin/ads">광고 관리</button>-->
+		<button class="btn btn-outline-secondary text-start w-100 admin-link" data-url="/admin/categories">카테고리 관리</button>
         <button class="btn btn-outline-secondary text-start w-100 admin-link" data-url="/admin/notice">공지사항 관리</button>
         <button class="btn btn-outline-secondary text-start w-100 admin-link" data-url="/admin/notifications">알림 전송</button>
       </div>
@@ -43,7 +44,15 @@
 		          .fail(function () {
 		            console.error('❌ admin_products.js 로드 실패');
 		          });
-		      }
+		      }	else if (url === '/admin/categories') {
+			    $.getScript('/js/admin_category.js')
+				.done(function () {
+	              console.log('✅ admin_category.js 로딩 완료');
+	            })
+	            .fail(function () {
+	              console.error('❌ admin_category.js 로드 실패');
+	            });
+			  }
 
 		    },
 		    error: function(xhr, status, error) {

@@ -55,31 +55,6 @@ $(document).ready(function () {
       if (products.length === 0) {
         tbody.html('<tr><td colspan="5">상품이 없습니다.</td></tr>');
       } else {
-        /*products.forEach(product => {
-          const categoryName = getCategoryName(product.ctgCode);
-          const statusName = getStatusName(product.status, product.ishidden);
-
-          const isHidden = product.ishidden;
-          const buttonLabel = isHidden ? '🔓 공개하기' : '🔒 숨기기';
-          const buttonClass = isHidden ? 'btn btn-sm btn-success' : 'btn btn-sm btn-dark';
-          const rowClass = isHidden ? 'table-secondary' : '';
-          const buttonTitle = isHidden ? '숨긴 상품을 다시 보이게 합니다' : '상품을 숨깁니다';
-
-          const row = `
-            <tr class="${rowClass}">
-              <td>${product.title}</td>
-              <td>${product.price.toLocaleString()}원</td>
-              <td>${categoryName}</td>
-              <td>${statusName}</td>
-              <td>
-                <button class="btn btn-sm btn-danger" onclick="deleteProduct('${product.productId}')">삭제</button>
-                <button class="${buttonClass}" title="${buttonTitle}" onclick="toggleHide('${product.productId}', ${isHidden})">
-                  ${buttonLabel}
-                </button>
-              </td>
-            </tr>`;
-          tbody.append(row);
-        });*/
 		
 		products.forEach(product => {
 		  const categoryName = getCategoryName(product.ctgCode);
@@ -120,7 +95,7 @@ $(document).ready(function () {
       loading = false;
     });
   }
-
+  
   // 페이징 버튼 상태 업데이트
   function updatePaginationControls() {
     $('#pageInfo').text(`${currentPage + 1} / ${totalPages}`);
@@ -170,6 +145,7 @@ $(document).ready(function () {
     if (currentPage < totalPages - 1) loadProducts(currentPage + 1);
   });
 
+  // refreshCategoryList();  // 카테고리 목록 UI 채우기
   // 초기 실행 흐름
   loadCategories().then(() => {
     loadProducts(0);
