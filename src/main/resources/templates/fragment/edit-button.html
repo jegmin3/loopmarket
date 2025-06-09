@@ -1,7 +1,10 @@
 <!-- templates/fragments/edit-button.html -->
 <div th:fragment="editButton(productId, writerId)">
-  <div th:if="${session.loginUser != null and session.loginUser.userId == writerId}" class="mt-2">
-    <a th:href="@{/products/edit/{id}(id=${productId})}" class="btn btn-outline-secondary w-100">
+  <div th:if="${session.loginUser != null and session.loginUser.userId == writerId}"
+       class="d-inline-block ms-2" style="flex-shrink: 0;">
+    <a th:href="@{/products/edit/{id}(id=${productId})}"
+       class="btn btn-outline-secondary btn-sm px-2 py-1"
+       style="font-size: 0.85rem;">
       ✏️ 글 수정하기
     </a>
   </div>
