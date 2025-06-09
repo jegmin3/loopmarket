@@ -1,5 +1,7 @@
 package com.loopmarket.domain.pay.service;
 
+import com.loopmarket.domain.alram.AlramDTO;
+import com.loopmarket.domain.alram.AlramService;
 import com.loopmarket.domain.image.service.ImageService;
 import com.loopmarket.domain.pay.dto.ConfirmableItem;
 import com.loopmarket.domain.pay.entity.MoneyTransaction;
@@ -32,6 +34,7 @@ public class PayServiceImpl implements PayService {
 	private final PaymentRepository paymentRepository;
 	private final ProductService productService;
 	private final ImageService imageService;
+	private final AlramService alramService;
 
 	/**
 	 * 페이 충전 : 포트원 결제 성공 이후 -> 잔액 증가 + 거래 기록
@@ -120,6 +123,18 @@ public class PayServiceImpl implements PayService {
 		// 5. 결제 보류 정보 저장
 		Payment payment = Payment.create(buyerId, sellerId, productId, amount, tx.getTransactionId());
 		paymentRepository.save(payment);
+		
+		// 알림 전송 (판매자에게: 상품이 결제되어 보류 중임)
+		AlramDTO alram = AlramDTO.builder()
+		    .userId(sellerId.intValue())   // 알림 받을 사람: 판매자
+		    .senderId(buyerId.intValue())  // 구매자 ID
+		    .type("PAYMENT")
+		    .title("상품이 구매되었습니다")
+		    .content("구매자가 상품을 결제했습니다. 구매 확정 시 정산 금액이 입금됩니다.")
+		    .url("/mypage") // 클릭 시 이동 경로
+		    .build();
+
+		alramService.createAdminAlram(alram);
 
 		return payment.getPaymentId();
 	}
@@ -147,6 +162,18 @@ public class PayServiceImpl implements PayService {
 				.orElse(new UserMoney(payment.getSellerId(), 0));
 		sellerMoney.charge(payment.getAmount());
 		userMoneyRepository.save(sellerMoney);
+		
+		// 판매자에게 알림 전송
+		AlramDTO alram = AlramDTO.builder()
+			    .userId(payment.getSellerId().intValue())
+			    .senderId(payment.getBuyerId().intValue())
+			    .type("PAYMENT")
+			    .title("구매 확정 완료")
+			    .content("구매 확정되어 정산 금액이 입금되었습니다.")
+			    .url("/mypage")
+			    .build();
+
+		alramService.createAdminAlram(alram);
 
 		return sellerMoney.getBalance();
 	}
@@ -213,6 +240,18 @@ public class PayServiceImpl implements PayService {
 		Payment payment = Payment.create(buyerId, sellerId, productId, amount, outTx.getTransactionId());
 		payment.complete(); // 상태 → COMPLETED
 		paymentRepository.save(payment);
+		
+		// 알림 전송 (즉시결제 완료)
+		AlramDTO alram = AlramDTO.builder()
+		    .userId(sellerId.intValue())   // 알림 받는 사람: 판매자
+		    .senderId(buyerId.intValue())  // 구매자
+		    .type("PAYMENT")
+		    .title("상품이 결제되었습니다")
+		    .content("구매자가 상품을 결제했습니다. 정산 금액이 입금되었습니다.")
+		    .url("/mypage")
+		    .build();
+
+		alramService.createAdminAlram(alram);
 
 		// 7. 판매자 최종 잔액 반환
 		return sellerMoney.getBalance();

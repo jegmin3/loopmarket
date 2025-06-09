@@ -141,17 +141,34 @@ public class AlramService {
                 return;
             }
 
-            AlramEntity entity = AlramEntity.builder()
-                    .userId(dto.getUserId())
-                    .senderId(dto.getSenderId()) // null 가능
-                    .type(dto.getType())         // "ADMIN"
-                    .title(dto.getTitle())
-                    .content(dto.getContent())
-                    .isRead(false)
-                    .build();
+            // ✅ 중복 알림 확인 (userId + url + type 기준)
+            Optional<AlramEntity> optional = alramRepository.findByUserIdAndUrlAndType(
+                dto.getUserId(), dto.getUrl(), dto.getType()
+            );
 
-            alramRepository.save(entity); //db저장
-            //System.out.println("관리자 알림 저장 완료: " + entity);
+            AlramEntity entity;
+
+            if (optional.isPresent()) {
+                // ✅ 기존 알림이 있으면 업데이트
+                entity = optional.get();
+                entity.setContent(dto.getContent());
+                entity.setTitle(dto.getTitle());
+                entity.setSenderId(dto.getSenderId());
+                entity.setIsRead(false); // 읽음 상태 초기화
+            } else {
+                // ✅ 없으면 새로 생성
+                entity = AlramEntity.builder()
+                        .userId(dto.getUserId())
+                        .senderId(dto.getSenderId()) // null 가능
+                        .type(dto.getType())         // "ADMIN"
+                        .title(dto.getTitle())
+                        .content(dto.getContent())
+                        .url(dto.getUrl())
+                        .isRead(false)
+                        .build();
+            }
+
+            alramRepository.save(entity); // db저장 (insert or update)
 
             // FCM 전송
             MemberEntity receiver = memberRepository.findById(dto.getUserId()).orElse(null);
@@ -178,6 +195,5 @@ public class AlramService {
             e.printStackTrace();
         }
     }
-
 }
 
