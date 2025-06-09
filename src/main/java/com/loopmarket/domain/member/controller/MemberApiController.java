@@ -38,7 +38,7 @@ public class MemberApiController {
             }
 
         } else {
-            System.out.println("로그인되지 않은 사용자의 FCM 토큰 수신: " + token);
+            //System.out.println("로그인되지 않은 사용자의 FCM 토큰 수신: " + token);
         }
     } //saveFcmToekn끝
     

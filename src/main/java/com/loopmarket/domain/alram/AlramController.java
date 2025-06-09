@@ -100,7 +100,8 @@ public class AlramController {
             MemberEntity member = (MemberEntity) loginUser;
             return member.getUserId(); // users 테이블의 PK
         }
-        throw new IllegalStateException("로그인 사용자 아님");
+        //throw new IllegalStateException("로그인 사용자 아님");
+		return null;
     }
 
     
