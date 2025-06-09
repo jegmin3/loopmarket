@@ -52,14 +52,9 @@
 
 
     <!-- 상품 등록 버튼 -->
-    <!--
-    <div class="text-end mb-3" sec:authorize="isAuthenticated()">
-      <a href="/products/new" class="btn btn-primary">상품 등록</a>
-    </div>
-    -->
-    <!-- 임시: 로그인 여부 상관없이 버튼 항상 표시 -->
     <div class="text-end mb-3">
-      <a href="/products/new" class="btn btn-primary">상품 등록</a>
+      <button class="btn btn-primary" onclick="goToProductForm()">상품 등록</button>
+
     </div>
 
     <!-- 카테고리 필터 -->
@@ -190,4 +185,17 @@
     <!-- 상품 슬라이드 기능 스크립트 로드 -->
     <script th:src="@{/js/product.js}"></script>
     <script th:src="@{/js/render.js}"></script>
-</div>
+    <script th:inline="javascript">
+      const isLoggedIn = [[${session.loginUser != null}]];
+
+      function goToProductForm() {
+        if (!isLoggedIn) {
+          alert("로그인이 필요합니다.");
+          window.location.href = "/member/login";
+        } else {
+          window.location.href = "/products/new";
+        }
+      }
+    </script>
+
+  </div>
