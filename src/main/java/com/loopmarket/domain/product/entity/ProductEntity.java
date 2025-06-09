@@ -3,6 +3,9 @@ package com.loopmarket.domain.product.entity;
 import lombok.Data;
 
 import javax.persistence.*;
+
+import com.loopmarket.domain.category.entity.Category;
+
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -18,7 +21,14 @@ public class ProductEntity {
   private Long userId;               // 상품 등록자 사용자 ID
   private String title;              // 상품 제목
   private Integer price;             // 상품 가격
+  
+  @Column(name = "ctg_code")
   private Integer ctgCode;            // 카테고리 코드
+  
+  @ManyToOne
+  @JoinColumn(name = "ctg_code", insertable = false, updatable = false)
+  private Category category;
+  
   private String saleType;           // 판매 유형 (예: 판매, 기부)
 
   private Boolean isDirect;          // 직접 거래 가능 여부

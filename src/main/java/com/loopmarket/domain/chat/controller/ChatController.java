@@ -6,6 +6,7 @@ import java.util.NoSuchElementException;
 
 import javax.servlet.http.HttpSession;
 
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -14,14 +15,16 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.bind.annotation.SessionAttribute;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.loopmarket.common.controller.BaseController;
+import com.loopmarket.domain.chat.dto.ChatMessageDTO;
+import com.loopmarket.domain.chat.dto.ChatMessageDTO.MessageType;
 import com.loopmarket.domain.chat.dto.ChatRoomSummaryDTO;
 import com.loopmarket.domain.chat.dto.UnreadChatDTO;
 import com.loopmarket.domain.chat.entity.ChatMessageEntity;
 import com.loopmarket.domain.chat.entity.ChatRoomEntity;
+import com.loopmarket.domain.chat.repository.ChatRoomRepository;
 import com.loopmarket.domain.chat.service.ChatService;
 import com.loopmarket.domain.member.MemberEntity;
 import com.loopmarket.domain.product.entity.ProductEntity;
@@ -36,6 +39,8 @@ public class ChatController extends BaseController {
 	
 	private final ChatService chatService;
 	private final ProductRepository productRepository;
+	private final SimpMessagingTemplate messagingTemplate;
+	private final ChatRoomRepository chatRoomRepository;
 	
 	/** 채팅기록에서 해당 채팅방 진입 */
 	@GetMapping("/room/{roomId}")
@@ -163,8 +168,11 @@ public class ChatController extends BaseController {
 	// 안읽은 메시지 반환
     @GetMapping("/api/unread-summary")
     @ResponseBody
-    public List<UnreadChatDTO> getUnreadSummary(@SessionAttribute MemberEntity loginUser) {
-        return chatService.getUnreadSummariesWithLastMessage(loginUser.getUserId());
+    public List<UnreadChatDTO> getUnreadSummary(HttpSession session) {
+		MemberEntity loginUser = getLoginUser();
+	    Integer userId = loginUser.getUserId();
+	    
+        return chatService.getUnreadSummariesWithLastMessage(userId);
     }
 	
 	/** 채팅창 나가기 */
@@ -174,10 +182,38 @@ public class ChatController extends BaseController {
 	                        RedirectAttributes redirectAttributes) {
 		
 		MemberEntity loginUser = getLoginUser(); 
+	    if (loginUser == null) {
+	        redirectAttributes.addFlashAttribute("errorMessage", "세션이 만료되었습니다.");
+	        return "redirect:/member/login";
+	    }
 	    Integer userId = loginUser.getUserId();
 
 	    // 나가기 처리
 	    chatService.leaveRoom(roomId, userId);
+	    
+	    // 상대방에게 알림 전송 (채팅방 정보 조회)
+	    ChatRoomEntity room = chatRoomRepository.findById(roomId).orElse(null);
+	    if (room == null) {
+	        // 이미 삭제된 상태일 수 있음
+	        redirectAttributes.addFlashAttribute("successMessage", "채팅방이 이미 종료되었습니다.");
+	        return "redirect:/chat/list";
+	    }
+	    
+	    //Integer targetId = room.getUser1Id().equals(userId) ? room.getUser2Id() : room.getUser1Id();
+	    
+	    ChatMessageDTO leaveNotice = new ChatMessageDTO();
+	    leaveNotice.setType(MessageType.LEAVE);
+	    leaveNotice.setRoomId(roomId);
+	    leaveNotice.setSenderId(userId);
+	    leaveNotice.setContent("상대가 채팅방을 나갔습니다. 지금부터 보내는 메시지는 전달되지 않습니다.");
+//	    messagingTemplate.convertAndSendToUser(
+//	        targetId.toString(),
+//	        "/queue/room." + roomId,
+//	        leaveNotice
+//	    );
+	    // 유저별로 보내지 않음 (방 전체에 브로드캐스트)
+	    messagingTemplate.convertAndSend("/queue/room." + roomId, leaveNotice);
+
 
 	    redirectAttributes.addFlashAttribute("successMessage", "채팅방을 나갔습니다.");
 	    return "redirect:/chat/list";

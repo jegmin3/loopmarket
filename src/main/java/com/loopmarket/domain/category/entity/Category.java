@@ -3,7 +3,12 @@ package com.loopmarket.domain.category.entity;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.List;
+
 import javax.persistence.*;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.loopmarket.domain.product.entity.ProductEntity;
 
 @Entity
 @Getter
@@ -26,4 +31,8 @@ public class Category {
   private Integer ctgShow;
 
   private Integer seq;
+  
+  @OneToMany(mappedBy = "category")
+  @JsonIgnore
+  private List<ProductEntity> products;
 }
