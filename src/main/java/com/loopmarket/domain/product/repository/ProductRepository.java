@@ -1,6 +1,5 @@
 package com.loopmarket.domain.product.repository;
 
-import com.loopmarket.domain.product.dto.CategoryProductStatsDTO;
 import com.loopmarket.domain.product.entity.ProductEntity;
 
 import java.util.List;
@@ -21,22 +20,25 @@ public interface ProductRepository extends JpaRepository<ProductEntity, Long> {
 
     List<ProductEntity> findByUserIdAndStatus(long userId, String status);
 
-    // ✅ 거래중 상태들만 가져오기 위한 메서드 추가
+    // 거래중 상태들만 가져오기 위한 메서드 추가
     List<ProductEntity> findByUserIdAndStatusIn(Long userId, List<String> statuses);
 
     List<ProductEntity> findByCtgCode(Integer ctgCode);
-    // 🔹 여러 소분류 코드에 해당하는 상품들 검색
+    // 여러 소분류 코드에 해당하는 상품들 검색
     List<ProductEntity> findByCtgCodeIn(List<Integer> ctgCodes);
 
-    List<ProductEntity> findByPriceBetween(Integer min, Integer max);
-    List<ProductEntity> findByCtgCodeInAndPriceBetween(List<Integer> ctgCodes, Integer min, Integer max);
-    List<ProductEntity> findByCtgCodeAndPriceBetween(Integer ctgCode, Integer min, Integer max);
+    // 소분류 + 상태 + 숨김 여부 필터
+    List<ProductEntity> findByIsHiddenFalseAndStatusAndCtgCode(String status, Integer ctgCode);
 
-     // 검색어가 제목이나 설명에 포함된 상품 조회
+    // 대분류(하위 소분류 목록) + 상태 + 숨김 여부 필터
+    List<ProductEntity> findByIsHiddenFalseAndStatusAndCtgCodeIn(String status, List<Integer> ctgCodes);
+
+
+  // 검색어가 제목이나 설명에 포함된 상품 조회
     List<ProductEntity> findByTitleContainingIgnoreCaseOrDescriptionContainingIgnoreCase(String title, String description);
-    
+
     // 상품 등록 수 통계용-1
-    @Query(value = 
+    @Query(value =
     	    "SELECT " +
     	    "    DATE_FORMAT(created_at, '%Y-%u') AS week, " +
     	    "    COUNT(*) AS count " +
@@ -46,10 +48,10 @@ public interface ProductRepository extends JpaRepository<ProductEntity, Long> {
     	    "ORDER BY week",
     	    nativeQuery = true)
     List<Object[]> countProductByWeekLastMonth();
-    
+
     // 상품 등록 수 통계용-2
     int countByCreatedAtAfter(java.time.LocalDateTime dateTime);
-    
+
     // 카테고리별 상품 통계용
     @Query(value = "SELECT p.ctg_code, c.ctg_name, COUNT(*) FROM products p JOIN category c ON p.ctg_code = c.ctg_code GROUP BY p.ctg_code, c.ctg_name", nativeQuery = true)
     List<Object[]> countProductsByCategory();
@@ -65,9 +67,11 @@ public interface ProductRepository extends JpaRepository<ProductEntity, Long> {
 
     // 숨김(false)이고 가격 범위 조건
     List<ProductEntity> findByIsHiddenFalseAndPriceBetween(Integer min, Integer max);
-    
+
     List<ProductEntity> findByCtgCodeAndPriceBetweenAndIsHiddenFalse(Integer ctgCode, Integer min, Integer max);
 
     List<ProductEntity> findByIsHiddenFalseAndCtgCodeIn(List<Integer> ctgCodes);
-    
+
+    List<ProductEntity> findByIsHiddenFalseAndPriceBetweenOrderByCreatedAtDesc(Integer min, Integer max);
+
 }

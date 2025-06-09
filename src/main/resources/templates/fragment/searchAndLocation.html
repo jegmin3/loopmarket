@@ -2,10 +2,15 @@
   <div class="container my-5 text-center">
 
     <!-- 위치 기반 검색 제목 -->
-    <h2 class="mb-3">📍 <span id="location-title">상봉동</span>에서 아이폰 찾고 계신가요?</h2>
+    <h2 class="mb-3" th:if="${showSearchTitle}">📍
+      <span id="location-title">상봉동</span>에서
+      <span th:text="${param.search ?: '아이폰'}"></span> 찾고 계신가요?
+    </h2>
 
     <!-- 위치 + 검색창 한 줄로 정렬 -->
     <div class="d-flex justify-content-center align-items-center gap-2 flex-wrap mt-4">
+      <input type="hidden" id="latitude" th:value="${param.lat}" />
+      <input type="hidden" id="longitude" th:value="${param.lng}" />
 
       <!-- 위치 변경 버튼 (모달 열기) -->
       <button id="location-btn"
@@ -19,7 +24,6 @@
       <form th:action="@{/products}" method="get" class="d-flex gap-2 align-items-center">
         <input type="text"
                class="form-control"
-               style="width: 500px;"
                name="search"
                placeholder="검색어를 입력해주세요"
                th:value="${param.search}" />

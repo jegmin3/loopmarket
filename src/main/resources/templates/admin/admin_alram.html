@@ -1,0 +1,109 @@
+<!-- 전체 알림 관리 페이지 -->
+<div th:fragment="content">
+  <div class="container mt-5">
+    <div class="card shadow-sm">
+      <div class="card-body">
+        <h3 class="card-title text-center mb-4">🔔 관리자 알림 전송</h3>
+
+        <form id="adminAlramForm">
+          <div class="mb-3">
+            <label for="title" class="form-label">알림 제목</label>
+            <input type="text" class="form-control" id="title" name="title" required />
+          </div>
+
+          <div class="mb-3">
+            <label for="content" class="form-label">알림 내용</label>
+            <textarea class="form-control" id="content" name="content" rows="3" required></textarea>
+          </div>
+
+          <div class="mb-3">
+            <label for="userId" class="form-label">대상 사용자 ID (비워두면 전체)</label>
+            <input type="number" class="form-control" id="userId" name="userId" />
+          </div>
+
+          <div class="d-grid">
+            <button type="submit" class="btn btn-primary">알림 전송</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+  
+  <!-- 최근 알림 목록 -->
+  <hr class="my-5" />
+  <h5>📜 최근 관리자 알림 목록</h5>
+  <div class="table-responsive">
+    <table class="table table-bordered table-sm" id="adminAlramTable">
+      <thead class="table-light">
+        <tr>
+          <th>제목</th>
+          <th>내용</th>
+          <th>보낸사람</th>
+          <th>받은사람</th>
+          <th>보낸시간</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
+
+  <!-- JS: 알림 전송 -->
+  <script>
+	function fetchAdminAlrams() {
+	  fetch("/admin/alram/list")
+	    .then(res => res.json())
+	    .then(list => {
+	      const tbody = document.querySelector("#adminAlramTable tbody");
+	      tbody.innerHTML = "";
+	      list.forEach(a => {
+	        const row = document.createElement("tr");
+	        row.innerHTML = `
+	          <td>${a.title}</td>
+	          <td>${a.content}</td>
+	          <td>${a.senderId ?? "관리자"}</td>
+	          <td>${a.receiverName}(ID: ${a.userId})</td>
+	          <td>${a.createdAt?.replace("T", " ").substring(0, 16) ?? "-"}</td>
+	        `;
+	        tbody.appendChild(row);
+	      });
+	    });
+	}
+
+	fetchAdminAlrams(); // 최초 로드 시 호출
+	
+	// 알림 폼 제출시
+    document.getElementById("adminAlramForm").addEventListener("submit", function (e) {
+      e.preventDefault();
+
+      const form = e.target;
+	  const data = {
+	    title: form.elements["title"]?.value.trim(),
+	    content: form.elements["content"]?.value.trim(),
+	    url: form.elements["url"]?.value.trim() || null,
+	    userId: form.elements["userId"]?.value.trim()
+	      ? parseInt(form.elements["userId"].value.trim())
+	      : null
+	  };
+
+      fetch("/admin/alram/send", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(data)
+      })
+        .then(response => {
+          if (!response.ok) throw new Error("전송 실패");
+          return response.text();
+        })
+        .then(result => {
+          alert("알림 전송 완료");
+          form.reset();
+        })
+        .catch(err => {
+          console.error("알림 전송 오류:", err);
+          alert("전송 중 오류가 발생했습니다");
+        });
+    });
+  </script>
+</div>
