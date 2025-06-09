@@ -3,6 +3,15 @@
     <div class="row justify-content-center">
       <div class="col-12 col-lg-8">
 
+		<div class="container mt-3" th:if="${msg}">
+		  <div class="alert alert-success alert-dismissible fade show" role="alert">
+		    <i class="bi bi-check-circle-fill"></i>
+		    <span th:text="${msg}">신고가 접수되었습니다.</span>
+		    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+		  </div>
+		</div>
+		
+		
         <!-- 프로필 카드 -->
         <div class="card shadow-sm rounded-4 p-4 mb-4">
           <div class="d-flex justify-content-between align-items-center flex-wrap">
@@ -35,18 +44,21 @@
 		<div th:insert="pay/widget-card :: widgetCard(${confirmables}, ${myProducts})"></div>
 
         <!-- 탭 메뉴 -->
-		<ul class="nav nav-tabs nav-fill mb-3 shadow-sm rounded-3 overflow-hidden" id="mypageTabs">
-		  <li class="nav-item w-25">
+		<ul class="nav nav-tabs nav-fill mb-3 shadow-sm rounded-3 overflow-hidden" id="mypageTabs" style="display:flex;">
+		  <li class="nav-item" style="flex: 1 1 20%;">
 		    <a class="nav-link custom-tab active text-center" id="tab-selling-products" href="#">판매 중 상품</a>
 		  </li>
-		  <li class="nav-item w-25">
+		  <li class="nav-item" style="flex: 1 1 20%;">
 		    <a class="nav-link custom-tab text-center" id="tab-wishlist" href="#">찜</a>
 		  </li>
-		  <li class="nav-item w-25">
+		  <li class="nav-item" style="flex: 1 1 20%;">
 		    <a class="nav-link custom-tab text-center" id="tab-purchase-history" href="#">구매 내역</a>
 		  </li>
-		  <li class="nav-item w-25">
+		  <li class="nav-item" style="flex: 1 1 20%;">
 		    <a class="nav-link custom-tab text-center" id="tab-sales-history" href="#">판매 내역</a>
+		  </li>
+		  <li class="nav-item" style="flex: 1 1 20%;">
+		    <a class="nav-link custom-tab text-center" id="tab-report-history" href="#">신고 내역</a>
 		  </li>
 		</ul>
 
