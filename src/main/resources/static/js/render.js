@@ -46,6 +46,8 @@ function getLocation() {
 function success(position) {
   const lat = position.coords.latitude;
   const lng = position.coords.longitude;
+  localStorage.setItem('selectedLat', lat);
+  localStorage.setItem('selectedLng', lng);
 
   fetch(`https://dapi.kakao.com/v2/local/geo/coord2regioncode.json?x=${lng}&y=${lat}`, {
     headers: {
@@ -96,22 +98,31 @@ function setLocationFallback() {
 
 // 모달에서 위치 선택 시 처리
 function setLocation(fullLocation) {
-  // 전체 주소: "부산광역시 수영구 광안동"
-  const dongName = extractDongFromFull(fullLocation); // 마지막 단어 추출 (광안동)
-
-  // 왼쪽 버튼은 전체 주소
+  const dongName = extractDongFromFull(fullLocation);
   document.getElementById('current-location').innerText = dongName;
 
-  // 문장 안 제목에는 동만
-  document.getElementById('location-title').innerText = dongName;
+  const titleSpan = document.getElementById('location-title');
+  if (titleSpan) titleSpan.innerText = dongName;
 
-  // 저장은 전체 주소로
   localStorage.setItem('selectedDong', fullLocation);
 
-  // 모달 닫기
-  const modal = bootstrap.Modal.getInstance(document.getElementById('locationModal'));
-  modal.hide();
+  // 주소 → 좌표 변환 후 저장 → 모달 닫기까지 정확히 순서 보장
+  getCoordsFromAddress(fullLocation, (lat, lng) => {
+    localStorage.setItem("selectedLat", lat);
+    localStorage.setItem("selectedLng", lng);
+
+    // 위도/경도 저장 완료 후 모달 닫기
+    const modalEl = document.getElementById('locationModal');
+    const modalInstance = bootstrap.Modal.getInstance(modalEl) || new bootstrap.Modal(modalEl);
+    modalInstance.hide();
+
+    // 위치 바뀐 거 사용자에게 바로 보이게 하려면 새로고침도 가능
+    // window.location.reload(); ← 필요 시
+  });
 }
+
+
+
 
 
 // 전체 주소에서 동만 추출하는 함수
@@ -272,6 +283,22 @@ function cleanAddress(fullAddress) {
 }
 
 
+function getCoordsFromAddress(address, callback) {
+  const geocoder = new kakao.maps.services.Geocoder();
+  geocoder.addressSearch(address, function(result, status) {
+    if (status === kakao.maps.services.Status.OK) {
+      const lat = parseFloat(result[0].y); // 위도
+      const lng = parseFloat(result[0].x); // 경도
+      callback(lat, lng); // 콜백 호출
+    } else {
+      alert("주소 → 좌표 변환 실패");
+    }
+  });
+}
+
+
+window.getCoordsFromAddress = getCoordsFromAddress;
+
 
 // 엔터 키 입력 시 검색 실행
 function handleLocationKey(event) {
@@ -281,6 +308,26 @@ function handleLocationKey(event) {
 }
 
 
+document.addEventListener("DOMContentLoaded", () => {
+  const categoryLinks = document.querySelectorAll(".category-link");
+
+  categoryLinks.forEach(link => {
+    link.addEventListener("click", (e) => {
+      e.preventDefault();
+
+      const category = link.dataset.value;
+      const lat = localStorage.getItem("selectedLat");
+      const lng = localStorage.getItem("selectedLng");
+
+      let url = `/products?category=${category}`;
+      if (lat && lng) {
+        url += `&lat=${lat}&lng=${lng}`;
+      }
+
+      window.location.href = url;
+    });
+  });
+});
 
 
 

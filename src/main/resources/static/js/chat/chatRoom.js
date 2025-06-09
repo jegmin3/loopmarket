@@ -27,7 +27,10 @@ function connect(callback) {
 		socketConnected = false;
 		
 		// 서버 연결 후 구독 시작
-	    stompClient.connect({}, function () {
+	    stompClient.connect({
+			userId : senderId.toString(), // 현재 로그인한 사용자 ID
+			roomId : roomId.toString()    // 현재 채팅방 ID
+		}, function () {
 	        console.log("✅ WebSocket 연결됨");
 	
 			socketConnected = true; // 소켓 연결 완료 표시
@@ -88,7 +91,7 @@ function connect(callback) {
 			}
 	
 	    }, function (error) {
-	        console.warn("❌ WebSocket 연결 실패", error);
+	        console.warn("❌ WebSocket 연결 실패 또는 종료됨", error);
 			socketConnected = false;
 			$("#sendBtn").prop("disabled", true); // 실패 시 전송버튼 다시 잠금
 			// 웹소켓 연결 재시도(최대 3회로 설정해둠)

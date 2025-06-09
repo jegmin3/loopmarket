@@ -58,7 +58,7 @@ footer {
   animation: blink 1s ease-in-out 3;
 }
 /* 알림 모달 커스터마이징 */
-.notif-card { background-color: rgb(242, 245, 247); border-radius: 7px;}
+.notif-card { background-color: rgb(253, 253, 253); border-radius: 7px;}
 .notif-card:hover {
   border-radius: 10px;
   background-color: rgb(217, 223, 232);
@@ -70,7 +70,6 @@ footer {
   cursor: default;
   opacity: 0.7;
 }
-
 .notif-card a:hover {
   text-decoration: underline;
 }

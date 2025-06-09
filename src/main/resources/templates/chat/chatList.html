@@ -11,19 +11,27 @@
         <a th:each="summary : ${chatSummaries}"
            th:href="@{/chat/room/{id}(id=${summary.room.roomId})}"
            class="list-group-item list-group-item-action d-flex justify-content-between align-items-center py-3 fs-6">
-
-            <div class="d-flex flex-column">
+			
+		   <!-- 프로필 이미지 -->
+		   <div class="me-3 flex-shrink-0">
+		       <img th:src="${summary.profileImagePath}"
+		            alt=""
+		            class="rounded-circle border"
+		            style="width: 60px; height: 60px; object-fit: cover;" />
+		   </div>
+			
+		   <!-- 닉네임 + 메시지 -->
+			<div class="flex-grow-1">
                 <!-- 닉네임 -->
-                <div>
-                    <i class="bi bi-person-circle me-2"></i>
-                    <strong th:text="${summary.opponentNickname}">상대방</strong>
-                </div>
+			    <div class="fw-bold mb-1" th:text="${summary.opponentNickname}">상대방</div>
                 <!-- 마지막 메시지 -->
-                <div class="text-muted small" th:id="'chat-msg-' + ${summary.room.roomId}" th:text="${summary.lastMessage}">(메시지 없음)</div>
+                <div class="text-muted small" 
+					 th:id="'chat-msg-' + ${summary.room.roomId}" 
+					 th:text="${summary.lastMessage}">(메시지 없음)</div>
             </div>
 			
    			<!-- 채팅방 목록 우측에 채팅온 개수(뱃지) -->
-		   <div class="text-end" style="min-width: 60px;">
+		   <div class="text-end ms-3" style="min-width: 70px;">
 		       <!-- badge 추가 -->
 		       <span class="badge rounded-pill bg-danger"
 		             th:id="'chat-badge-' + ${summary.room.roomId}"
@@ -31,7 +39,9 @@
 		           <!-- JS에서 숫자 삽입 -->
 		       </span><br/>
     			<!-- 마지막 메시지 시간 -->
-		       <small class="text-muted" th:if="${summary.lastTime != null}" th:id="'chat-time-' + ${summary.room.roomId}"
+		       <small class="text-muted" 
+			   		  th:if="${summary.lastTime != null}" 
+					  th:id="'chat-time-' + ${summary.room.roomId}"
 		              th:text="${#temporals.format(summary.lastTime, 'MM/dd HH:mm')}">00:00</small>
 		   </div>
         </a>

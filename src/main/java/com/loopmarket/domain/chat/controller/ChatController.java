@@ -26,6 +26,7 @@ import com.loopmarket.domain.chat.entity.ChatMessageEntity;
 import com.loopmarket.domain.chat.entity.ChatRoomEntity;
 import com.loopmarket.domain.chat.repository.ChatRoomRepository;
 import com.loopmarket.domain.chat.service.ChatService;
+import com.loopmarket.domain.image.service.ImageService;
 import com.loopmarket.domain.member.MemberEntity;
 import com.loopmarket.domain.product.entity.ProductEntity;
 import com.loopmarket.domain.product.repository.ProductRepository;
@@ -38,9 +39,10 @@ import lombok.RequiredArgsConstructor;
 public class ChatController extends BaseController {
 	
 	private final ChatService chatService;
-	private final ProductRepository productRepository;
 	private final SimpMessagingTemplate messagingTemplate;
+	private final ProductRepository productRepository;
 	private final ChatRoomRepository chatRoomRepository;
+	private final ImageService imageService;
 	
 	/** 채팅기록에서 해당 채팅방 진입 */
 	@GetMapping("/room/{roomId}")
@@ -85,6 +87,10 @@ public class ChatController extends BaseController {
 	    }
 	    // 상품 정보 가져옴 (productId 타입 오류나서 findbyId(Long) 호출시 명시적으로 타입 변환함..)
 	    ProductEntity product = productRepository.findById(room.getProductId().longValue()).orElseThrow();
+	    // 상품 이미지 가져옴
+	    String productImagePath = imageService.getThumbnailPath(product.getProductId());
+	    model.addAttribute("productImagePath", productImagePath);
+
 	    // 상대방 ID → 닉네임 조회
 	    Integer opponentId = room.getUser1Id().equals(userId) ? room.getUser2Id() : room.getUser1Id();
 	    String targetNickname = chatService.getNicknameByUserId(opponentId);
@@ -135,19 +141,20 @@ public class ChatController extends BaseController {
 	    
 	    // 상대방 닉네임 가져오기
 	    String targetNickname = chatService.getNicknameByUserId(targetId);
-	    //productId 추출 경로 분기
-	    ProductEntity product;
-	    if (existingRoom != null) {
-	        product = productRepository.findById(existingRoom.getProductId().longValue()).orElseThrow();
-	    } else {
-	        product = productRepository.findById(productId.longValue()).orElseThrow();
-	    }
+	    
+	    // 상품 정보 추출
+	    ProductEntity product = (existingRoom != null)
+	            ? productRepository.findById(existingRoom.getProductId().longValue()).orElseThrow()
+	            : productRepository.findById(productId.longValue()).orElseThrow();
+	    // 상품 이미지 경로 가져오기
+	    String productImagePath = imageService.getThumbnailPath(product.getProductId());
 	    
 	    // 뷰 데이터 설정
 	    model.addAttribute("roomId", existingRoom != null ? existingRoom.getRoomId() : null);
 	    model.addAttribute("messageList", messages);
 	    model.addAttribute("targetNickname", targetNickname);
 	    model.addAttribute("product", product);
+	    model.addAttribute("productImagePath", productImagePath);
 	    model.addAttribute("targetId", targetId); // JS에서 방 생성용으로 필요(ajax처리함)
 	    
 	    // 해당 채팅방 페이지로
@@ -227,12 +234,9 @@ public class ChatController extends BaseController {
 			redirectAttributes.addFlashAttribute("errorMessage", "로그인이 필요합니다.");
 			return "redirect:/member/login";
 		}
-		
 		Integer userId = loginUser.getUserId();
 		
 		List<ChatRoomSummaryDTO> summaries = chatService.getChatRoomSummaries(userId);
-	    //List<ChatRoomEntity> activeRooms = chatService.getActiveChatRooms(loginUser.getUserId());
-	    //model.addAttribute("chatRooms", activeRooms);
 	    model.addAttribute("chatSummaries", summaries);
 
 	    return render("chat/chatList", model);

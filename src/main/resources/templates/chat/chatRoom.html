@@ -3,39 +3,30 @@
     <h4 class="mb-4">💬 <span th:text="${targetNickname}">상대방 닉네임</span> 님과의 채팅</h4>
 	<!-- 상품 미리보기 카드 -->
 	<div class="card mb-3 shadow-sm w-100">
-	  <div class="row g-0">
-	    <!-- 상품 이미지 -->
-	    <div class="col-4">
-<!--	      <img th:src="${product.thumbnailPath != null} ? @{${product.thumbnailPath}} : '/images/no-image.png'"
-	           class="img-fluid rounded-start" alt="상품 이미지">-->
+	  <div class="row g-0 align-items-center">
+	    <!-- 상품 이미지: 반응형 & 정사각형 유지 -->
+	    <div class="col-4 col-sm-3">
+	      <img th:src="${productImagePath}" alt="상품 이미지"
+	           class="img-fluid rounded-start"
+	           style="width: 100%; object-fit: cover; aspect-ratio: 1/1; " />
 	    </div>
 
 	    <!-- 상품 정보 -->
-	    <div class="col-8">
-	      <div class="card-body p-2">
-	        <!-- 상품 제목 -->
-	        <h6 class="card-title mb-1 text-truncate" th:text="${product.title}">상품 제목</h6>
+	    <div class="col-8 col-sm-9">
+	      <div class="card-body p-3">
+	        <h6 class="card-title mb-2 text-truncate" th:text="${product.title}">상품 제목</h6>
 
-	        <!-- 가격 -->
-	        <p class="card-text text-muted mb-1" style="font-size: 0.85rem;">
+	        <p class="card-text text-muted mb-2" style="font-size: 0.9rem;">
 	          ₩<span th:text="${#numbers.formatInteger(product.price, 3, 'COMMA')}">0</span>
 	        </p>
 
-	        <!-- 상태 및 거래 방식 -->
-	        <p class="mb-1 small text-secondary">
+	        <p class="mb-2 small text-secondary">
 	          <span th:if="${product.isDirect}" class="badge bg-primary me-1">직거래</span>
 	          <span th:if="${product.isDelivery}" class="badge bg-success me-1">택배</span>
 	          <span th:if="${product.isNonface}" class="badge bg-secondary">비대면</span>
 	        </p>
 
-	        <!-- 거래 장소 -->
-<!--	        <p class="mb-1 text-muted small" th:if="${product.locationText != null}">-->
-<!--	          <i class="bi bi-geo-alt-fill me-1"></i>-->
-<!--	          <span th:text="${product.locationText}">거래 위치</span>-->
-<!--	        </p>-->
-
-	        <!-- 상품 페이지 링크 -->
-	        <a th:href="@{/products/{id}(id=${product.productId})}" class="btn btn-sm btn-outline-primary mt-1">
+	        <a th:href="@{/products/{id}(id=${product.productId})}" class="btn btn-sm btn-outline-primary">
 	          상품 페이지로 이동
 	        </a>
 	      </div>

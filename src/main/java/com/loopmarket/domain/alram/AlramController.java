@@ -51,7 +51,7 @@ public class AlramController {
     public void sendAlram(@RequestBody AlramDTO dto) {
         // 관리자 인증은 생략 (추후 Security로 제한 가능)
         //alramService.createAlram(dto);
-        alramService.createOrUpdateChatAlram(dto);
+        alramService.createAdminAlram(dto);
     }
     
     // 알림 하나를 읽음 처리
@@ -100,7 +100,8 @@ public class AlramController {
             MemberEntity member = (MemberEntity) loginUser;
             return member.getUserId(); // users 테이블의 PK
         }
-        throw new IllegalStateException("로그인 사용자 아님");
+        //throw new IllegalStateException("로그인 사용자 아님");
+		return null;
     }
 
     

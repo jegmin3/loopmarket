@@ -32,7 +32,7 @@ $(document).ready(function () {
 			        href="${isClickable ? n.url : '#'}"
 			        class="alram-link text-decoration-none text-dark ${!isClickable ? 'disabled-link' : ''}"
 			        data-id="${n.alramId}">
-			        <div class="fw-bold ${isClickable ? 'text-primary' : 'text-secondary'} mb-1">[${n.title}]</div>
+			        <div class="fw-bold ${isClickable ? 'text-primary' : 'text-primary'} mb-1">[${n.title}]</div>
 			        <div class="small text-muted text-truncate" style="max-width: 100%;">${n.content}</div>
 			      </a>
 			    </div>

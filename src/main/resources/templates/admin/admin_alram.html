@@ -61,7 +61,7 @@
 	          <td>${a.title}</td>
 	          <td>${a.content}</td>
 	          <td>${a.senderId ?? "관리자"}</td>
-	          <td>${a.receiverName}</td>
+	          <td>${a.receiverName}(ID: ${a.userId})</td>
 	          <td>${a.createdAt?.replace("T", " ").substring(0, 16) ?? "-"}</td>
 	        `;
 	        tbody.appendChild(row);
@@ -76,12 +76,14 @@
       e.preventDefault();
 
       const form = e.target;
-      const data = {
-        title: form.title.value.trim(),
-        content: form.content.value.trim(),
-        url: form.url.value.trim() || null,
-        userId: form.userId.value.trim() ? parseInt(form.userId.value.trim()) : null
-      };
+	  const data = {
+	    title: form.elements["title"]?.value.trim(),
+	    content: form.elements["content"]?.value.trim(),
+	    url: form.elements["url"]?.value.trim() || null,
+	    userId: form.elements["userId"]?.value.trim()
+	      ? parseInt(form.elements["userId"].value.trim())
+	      : null
+	  };
 
       fetch("/admin/alram/send", {
         method: "POST",
