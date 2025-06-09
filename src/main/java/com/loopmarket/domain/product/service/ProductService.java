@@ -141,8 +141,11 @@ public class ProductService {
   public void incrementViewCount(Long productId) {
     ProductEntity product = productRepository.findById(productId)
       .orElseThrow(() -> new RuntimeException("상품을 찾을 수 없습니다."));
-    product.setViewCount(product.getViewCount() + 1);
+
+    int currentCount = product.getViewCount() != null ? product.getViewCount() : 0;
+    product.setViewCount(currentCount + 1);
   }
+
 
 
   public List<ProductEntity> getNearbyProductsByCategory(Integer ctgCode, double lat, double lng, int min, int max) {
