@@ -38,6 +38,7 @@ $(document).ready(function () {
   function loadProducts(page = 0) {
     if (loading) return;
     loading = true;
+	console.log(`📥 loadProducts(${page}) 호출됨`);
     currentPage = page;
 
     $('#product-tbody').empty();
@@ -47,6 +48,8 @@ $(document).ready(function () {
       data: { page: currentPage, size: pageSize },
       method: 'GET'
     }).done(response => {
+	  console.log("📦 전체 응답:", response);
+	  console.log("📄 totalPages:", response.totalPages);
       const products = response.content || [];
       totalPages = response.totalPages || 1;
 
@@ -73,7 +76,7 @@ $(document).ready(function () {
 		        <img src="${thumbnail}" style="width:50px; height:auto; margin-right:5px; vertical-align: middle;">
 		        ${product.title}
 		      </td>
-		      <td>${product.price.toLocaleString()}원</td>
+		      <td>${(product.price ?? 0).toLocaleString()}원</td>
 		      <td>${categoryName}</td>
 		      <td>${statusName}</td>
 		      <td>
@@ -142,6 +145,7 @@ $(document).ready(function () {
   });
 
   $('#nextPageBtn').click(() => {
+	console.log("➡️ 다음 페이지 버튼 클릭됨, currentPage:", currentPage);
     if (currentPage < totalPages - 1) loadProducts(currentPage + 1);
   });
 
