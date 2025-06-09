@@ -10,6 +10,8 @@ import com.loopmarket.domain.product.entity.ProductEntity;
 import com.loopmarket.domain.product.repository.ProductRepository;
 import com.loopmarket.domain.product.service.ProductService;
 import com.loopmarket.domain.purchase.repository.PurchaseRepository;
+import com.loopmarket.domain.report.dto.ReportDTO;
+import com.loopmarket.domain.report.service.ReportService;
 import com.loopmarket.domain.wishlist.dto.WishlistDto;
 import com.loopmarket.domain.wishlist.service.WishlistService;
 
@@ -37,6 +39,7 @@ public class MyPageController extends BaseController {
 	private final MemberRepository memberRepository;
 	private final PayService payService;
 	private final WishlistService wishlistService;
+	private final ReportService reportService;
 
 	private String renderMypage(HttpServletRequest request, Model model, String viewName) {
 		if ("XMLHttpRequest".equals(request.getHeader("X-Requested-With"))) {
@@ -162,42 +165,17 @@ public class MyPageController extends BaseController {
 
 		return renderMypage(request, model, "mypage/my_wishlist");
 	}
+	
+	@GetMapping("/report-history")
+	public String getReportHistory(HttpServletRequest request, HttpSession session, Model model) {
+	    MemberEntity loginUser = (MemberEntity) session.getAttribute("loginUser");
+	    if (loginUser == null) {
+	        // 로그인 안 된 상태면 로그인 페이지로 리다이렉트하거나 에러 처리
+	        return "redirect:/member/login";
+	    }
+	    List<ReportDTO> reports = reportService.findReportsByReporter(loginUser.getUserId());
+	    model.addAttribute("reports", reports);
+	    return renderMypage(request, model, "mypage/report-history");
+	}
 
-//    @PostMapping("/edit") 
-//    public String updateProfile(@ModelAttribute MemberEntity formMember, HttpSession session, Model model) {
-//        MemberEntity member = (MemberEntity) session.getAttribute("loginUser");
-//        if (member == null) {
-//            return "redirect:/member/login";
-//        }
-//
-//        // DB에서 최신 멤버 엔티티 조회
-//        member = memberRepository.findById(member.getUserId()).orElseThrow();
-//
-//        // 변경 가능 필드만 업데이트
-//        member.setNickname(formMember.getNickname());
-//        member.setPhoneNumber(formMember.getPhoneNumber());
-//        member.setBirthdate(formMember.getBirthdate());
-//        member.setProfileImgId(formMember.getProfileImgId());
-//
-//        member.setUpdatedAt(java.time.LocalDateTime.now());
-//
-//        memberRepository.save(member);
-//
-//        // 세션 갱신
-//        session.setAttribute("loginUser", member);
-//
-//        return render("mypage/mypage", model);
-//    }
-
-	/*
-	 * // 상품 삭제 (AJAX)
-	 *
-	 * @PostMapping("/selling/delete/{id}")
-	 *
-	 * @ResponseBody public String deleteMyProduct(@PathVariable("id") Long id,
-	 * Principal principal) { ProductEntity product =
-	 * productRepository.findById(id).orElse(null); if (product != null &&
-	 * product.getSeller().equals(principal.getName())) {
-	 * productRepository.delete(product); return "success"; } return "error"; }
-	 */
 }
