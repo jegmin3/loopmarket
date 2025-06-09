@@ -74,4 +74,6 @@ public interface ProductRepository extends JpaRepository<ProductEntity, Long> {
 
     List<ProductEntity> findByIsHiddenFalseAndPriceBetweenOrderByCreatedAtDesc(Integer min, Integer max);
 
+  List<ProductEntity> findByUserIdAndProductIdNotOrderByCreatedAtDesc(Long userId, Long excludeProductId);
+
 }

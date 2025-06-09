@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -398,6 +399,36 @@ public class ProductService {
       * Math.sin(dLng / 2) * Math.sin(dLng / 2);
     double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
     return earthRadius * c;
+  }
+
+  public List<ProductEntity> getOtherProductsBySeller(Long sellerId, Long excludeProductId) {
+    List<ProductEntity> products = productRepository
+      .findByUserIdAndProductIdNotOrderByCreatedAtDesc(sellerId, excludeProductId);
+
+    // 최대 8개까지만 보여줌
+    products = products.stream().limit(8).collect(Collectors.toList());
+
+    for (ProductEntity p : products) {
+      Long productId = p.getProductId();
+      p.setThumbnailPath(imageService.getThumbnailPath(productId));
+      if (p.getCreatedAt() != null) {
+        p.setRelativeTime(formatRelativeTimeInternal(p.getCreatedAt()));
+      }
+    }
+
+    return products;
+  }
+
+
+
+  private String formatRelativeTimeInternal(LocalDateTime createdAt) {
+    Duration duration = Duration.between(createdAt, LocalDateTime.now());
+    long hours = duration.toHours();
+    long days = duration.toDays();
+    if (hours < 1) return "방금 전";
+    else if (hours < 24) return hours + "시간 전";
+    else if (days < 2) return "1일 전";
+    else return days + "일 전";
   }
 
 }

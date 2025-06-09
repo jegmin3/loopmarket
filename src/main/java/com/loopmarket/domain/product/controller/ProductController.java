@@ -9,6 +9,7 @@ import com.loopmarket.domain.member.MemberEntity;
 import com.loopmarket.domain.member.MemberRepository;
 import com.loopmarket.domain.product.entity.ProductEntity;
 import com.loopmarket.domain.product.service.ProductService;
+import com.loopmarket.domain.wishlist.service.WishlistService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -32,6 +33,7 @@ public class ProductController {
   private final CategoryService categoryService;
   private final ImageService imageService;
   private final LocationService locationService;
+  private final WishlistService wishlistService;
 
   // 상품 목록 필터링 (카테고리, 가격, 검색어, 위치 기반)
   @GetMapping("/products")
@@ -158,8 +160,21 @@ public class ProductController {
       product.setSellerNickname(seller.getNickname());
       model.addAttribute("profileImagePath", imageService.getProfilePath(seller.getUserId()));
     }
-
     product.setRelativeTime(formatRelativeTime(product.getCreatedAt()));
+
+    //찜수
+    long wishCount = wishlistService.getWishlistCountByProductId(id);
+    model.addAttribute("wishCount", wishCount);
+
+    //상품 상태메세지
+    String conditionText = getConditionText(product.getConditionScore());
+    model.addAttribute("conditionText", conditionText);
+
+    // 상세페이지 내부
+    List<ProductEntity> otherProducts = productService.getOtherProductsBySeller(product.getUserId(), id);
+    model.addAttribute("otherProducts", otherProducts);
+
+
 
     // 동네명 추출해서 모델에 추가
     String dongName = extractDongName(product.getLocationText());
@@ -214,4 +229,16 @@ public class ProductController {
     productService.updateProductWithImages(id, product, images, mainImageIndex);
     return "redirect:/products/" + id;
   }
+
+  public String getConditionText(int score) {
+    if (score <= 0) return "❔ 상태 정보 없음";
+    if (score <= 14) return "🔧 수리가 필요해요 (" + score + "점)";
+    else if (score <= 30) return "⚠ 상태가 좋지 않아요 (" + score + "점)";
+    else if (score <= 69) return "👣 사용감 있어요 (" + score + "점)";
+    else if (score <= 80) return "👍 중고지만, 상태 좋아요 (" + score + "점)";
+    else if (score <= 94) return "✨ 거의 새 거예요 (" + score + "점)";
+    else return "🆕 새 상품이에요 (" + score + "점)";
+  }
+
+
 }

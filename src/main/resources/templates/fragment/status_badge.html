@@ -1,0 +1,6 @@
+<!-- status_badge.html -->
+<div th:fragment="statusBadge(status)">
+  <span th:if="${status == 'ONSALE'}" class="badge bg-success">판매중</span>
+  <span th:if="${status == 'RESERVED'}" class="badge bg-warning text-dark">예약중</span>
+  <span th:if="${status == 'SOLD'}" class="badge bg-secondary">판매완료</span>
+</div>

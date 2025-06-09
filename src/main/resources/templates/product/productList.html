@@ -139,13 +139,11 @@
 
               <!-- 상태 뱃지 (z-20) -->
               <div class="position-absolute top-0 start-0 z-20">
-                <div th:if="${product.status == 'SOLD'}"
-                     class="badge bg-dark text-white rounded-end px-2 py-1 small">판매완료</div>
-                <div th:if="${product.status == 'RESERVED'}"
-                     class="badge bg-warning text-dark rounded-end px-2 py-1 small">예약중</div>
-                <div th:if="${product.status == 'ONSALE'}"
-                     class="badge bg-success text-white rounded-end px-2 py-1 small">판매중</div>
+                <div th:replace="fragment/status_badge :: statusBadge(${product.status})"></div>
               </div>
+
+
+
 
               <button th:if="${product.imagePaths.size() > 1}"
                       class="slider-prev btn position-absolute top-50 start-0 translate-middle-y"
