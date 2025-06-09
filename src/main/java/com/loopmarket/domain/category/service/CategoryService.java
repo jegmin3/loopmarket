@@ -1,6 +1,7 @@
 package com.loopmarket.domain.category.service;
 
 import com.loopmarket.domain.category.entity.Category;
+import com.loopmarket.domain.category.entity.CategoryWithCountDTO;
 import com.loopmarket.domain.category.repository.CategoryRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -56,4 +57,30 @@ public class CategoryService {
     return subCategory.getUpCtgCode(); // 대분류 코드 반환
   }
 
+
+  // 카테고리 + 상품 수
+  public List<CategoryWithCountDTO> findCategoriesWithProductCount() {
+	  return categoryRepository.findCategoriesWithProductCount();
+  }
+  // 카테고리 추가
+  public void addCategory(String name, Integer upCtgCode) {
+	    Category category = new Category();
+	    category.setCtgName(name);
+	    category.setUpCtgCode(upCtgCode);  // null이면 상위 카테고리로 저장됨
+	    categoryRepository.save(category);
+	}
+  // 상품 없을 때만 삭제
+  public boolean deleteCategoryIfNoProducts(int ctgCode) {
+	  int productCount = categoryRepository.countProductsInCategory(ctgCode);
+	  if (productCount == 0) {
+	      categoryRepository.deleteById(ctgCode);
+	      return true;
+	  } else {
+	      return false;
+	  }
+  }
+
+
 }
+
+

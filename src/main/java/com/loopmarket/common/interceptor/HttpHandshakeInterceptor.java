@@ -9,6 +9,7 @@ import org.springframework.web.socket.server.HandshakeInterceptor;
 
 import com.loopmarket.domain.member.MemberEntity;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 import java.util.Map;
 
@@ -29,24 +30,24 @@ public class HttpHandshakeInterceptor implements HandshakeInterceptor {
         // HTTP 요청에서 세션 꺼내기
         if (request instanceof ServletServerHttpRequest) {
         	// 자바 11버전이라 intaceof확인후 명시적으로 캐스팅 함 (16이상은 안해도 괜찮)
-        	ServletServerHttpRequest servletRequest = (ServletServerHttpRequest) request;
-            HttpSession session = servletRequest.getServletRequest().getSession(false); // false → 세션 없으면 null 반환
+        	HttpServletRequest servletRequest = ((ServletServerHttpRequest) request).getServletRequest();
+            HttpSession session = servletRequest.getSession(); // false → 세션 없으면 null 반환
 
             if (session != null) {
                 MemberEntity loginUser = (MemberEntity) session.getAttribute("loginUser");
-
                 // 로그인 사용자 정보가 있는 경우 WebSocket 허용
                 if (loginUser != null) {
                     // WebSocket 세션 속성에 userId 저장 → 이후 컨트롤러에서 꺼내 사용 가능
-                    attributes.put("userId", loginUser.getUserId());
+                    String userId = loginUser.getUserId().toString();
+                    System.out.println("WebSocket 세션에 userId 주입: " + userId);
+                    attributes.put("userId", userId);  // ✅ 여기에 null이 안 들어가야 함
                     return true;
                 }
             }
         }
 
-        // 로그인하지 않은 사용자는 연결 거부
-        System.out.println("WebSocket handshake 거부: 로그인 세션 없음");
-        return false;
+        // 로그인 안 했어도 handshake는 통과 (하지만 서버 처리에선 userId null 체크하면 됨)
+        return true;
     }
 
     /**
