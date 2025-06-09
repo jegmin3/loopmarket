@@ -108,10 +108,10 @@ public class ProductService {
 		return imageService.getThumbnailPath(productId);
 	}
 
-	// 이미지 가져올려고 썼습니다
+	// 이미지 가져올려고 썼습니다 (이미지 없을시 경로 변경했습니다-kw)
 	public String getProfileImagePath(String profileImgId) {
 		if (profileImgId == null || profileImgId.trim().isEmpty()) {
-			return "/images/default-profile.png";
+			return "/img/default-profile.png";
 		}
 		return "/images/profiles/" + profileImgId;
 	}

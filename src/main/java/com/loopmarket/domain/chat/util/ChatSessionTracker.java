@@ -15,9 +15,11 @@ public class ChatSessionTracker {
 
     public void userEnterRoom(Long roomId, Integer userId) {
         roomSessionMap.computeIfAbsent(roomId, k -> ConcurrentHashMap.newKeySet()).add(userId);
+        //System.out.println(" userEnterRoom 호출됨: " + roomId + ", " + userId);
     }
 
     public void userLeaveRoom(Long roomId, Integer userId) {
+    	System.out.println(" userLeaveRoom 호출됨: " + roomId + ", " + userId);
         Set<Integer> users = roomSessionMap.get(roomId);
         if (users != null) {
             users.remove(userId);
@@ -26,8 +28,30 @@ public class ChatSessionTracker {
             }
         }
     }
-
+    
+    // 접속시 sessionId기반 맵에 저장
+    private final Map<String, Integer> sessionIdToUserId = new ConcurrentHashMap<>();
+    private final Map<String, Long> sessionIdToRoomId = new ConcurrentHashMap<>();
+    
     public boolean isUserInRoom(Long roomId, Integer userId) {
         return roomSessionMap.getOrDefault(roomId, Set.of()).contains(userId);
+    }
+    
+    public void register(String sessionId, Integer userId, Long roomId) {
+        sessionIdToUserId.put(sessionId, userId);
+        sessionIdToRoomId.put(sessionId, roomId);
+    }
+
+    public void unregister(String sessionId) {
+        sessionIdToUserId.remove(sessionId);
+        sessionIdToRoomId.remove(sessionId);
+    }
+
+    public Integer getUserId(String sessionId) {
+        return sessionIdToUserId.get(sessionId);
+    }
+
+    public Long getRoomId(String sessionId) {
+        return sessionIdToRoomId.get(sessionId);
     }
 }

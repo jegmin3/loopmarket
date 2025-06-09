@@ -56,35 +56,39 @@ public class ChatSocketController {
 		    ? room.getUser2Id()
 		    : room.getUser1Id();
 
-		// 1. 보낸 사람 닉네임 조회
-		MemberEntity sender = memberRepository.findById(saved.getSenderId()).orElse(null);
-		String nickname = sender != null ? sender.getNickname() : "알 수 없음";
-
-		// 2. 메시지 내용 15자 제한
-		String content = saved.getContent();
-		if (content != null && content.length() > 15) {
-		    content = content.substring(0, 15) + "...";
-		}
-
-		// 3. 전송 시간 sentAt → HH:mm 포맷
-		String time = saved.getSentAt() != null
-		        ? saved.getSentAt().format(DateTimeFormatter.ofPattern("HH:mm"))
-		        : "";
-
-		String title = nickname + " 님과의 채팅";
-		String body = content + " (" + time + ")";
-
-		// 4. 알림 저장 or 업데이트
-		alramService.createOrUpdateChatAlram(
-		    AlramDTO.builder()
-		        .userId(receiverId)
-		        .senderId(saved.getSenderId())
-		        .type("CHAT")
-		        .title(title)
-		        .content(body)
-		        .url("/chat/room/" + saved.getRoomId()) //
-		        .build()
-		);
+		if (!chatSessionTracker.isUserInRoom(saved.getRoomId(), receiverId)) {
+			// 1. 보낸 사람 닉네임 조회
+			MemberEntity sender = memberRepository.findById(saved.getSenderId()).orElse(null);
+			String nickname = sender != null ? sender.getNickname() : "알 수 없음";
+	
+			// 2. 메시지 내용 15자 제한
+			String content = saved.getContent();
+			if (content != null && content.length() > 15) {
+			    content = content.substring(0, 15) + "...";
+			}
+	
+			// 3. 전송 시간 sentAt → HH:mm 포맷
+			String time = saved.getSentAt() != null
+			        ? saved.getSentAt().format(DateTimeFormatter.ofPattern("HH:mm"))
+			        : "";
+	
+			String title = nickname + " 님과의 채팅";
+			String body = content + " (" + time + ")";
+	
+			// 4. 알림 저장 or 업데이트
+			alramService.createOrUpdateChatAlram(
+			    AlramDTO.builder()
+			        .userId(receiverId)
+			        .senderId(saved.getSenderId())
+			        .type("CHAT")
+			        .title(title)
+			        .content(body)
+			        .url("/chat/room/" + saved.getRoomId()) //
+			        .build()
+			);
+			
+			System.out.println("🔔 알림 전송됨 (상대방이 방에 없음)");
+		} else { System.out.println("알림 전송 생략 (상대방이 이미 방에 있음)"); } 
 
 		// ----------------알림용 로직 끝-----------------
 

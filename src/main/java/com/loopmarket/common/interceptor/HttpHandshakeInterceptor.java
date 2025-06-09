@@ -40,7 +40,7 @@ public class HttpHandshakeInterceptor implements HandshakeInterceptor {
                     // WebSocket 세션 속성에 userId 저장 → 이후 컨트롤러에서 꺼내 사용 가능
                     String userId = loginUser.getUserId().toString();
                     System.out.println("WebSocket 세션에 userId 주입: " + userId);
-                    attributes.put("userId", userId);  // ✅ 여기에 null이 안 들어가야 함
+                    attributes.put("userId", userId);  // 여기에 null이 안 들어가야 함
                     return true;
                 }
             }
