@@ -46,7 +46,7 @@ public class MemberController extends BaseController {
 	public String loginGET(Model model) {
 		return render("member/login", model);
 	}
-
+	
 	@PostMapping("/login")
 	public String login(@ModelAttribute MemberDTO dto, HttpSession session, RedirectAttributes redirectAttributes) {
 	    Optional<MemberEntity> optionalMember = memberRepository.findByEmail(dto.getEmail());
@@ -109,12 +109,12 @@ public class MemberController extends BaseController {
 		return "redirect:/member/login"; // 로그인 페이지로 이동
 	}
 
-	// 회원가입
+	// 회원가입으로 이동
 	@GetMapping("/signup")
 	public String signupGET(Model model) {
 		return render("member/signup", model);
 	}
-
+	// 회원가입 폼 제출 시
     @PostMapping("/signup")
     public String signupPOST(@ModelAttribute MemberDTO dto, RedirectAttributes redirectAttributes) {
         // MemberEntity엔티티 객체를 Builder 패턴을 이용해 생성
