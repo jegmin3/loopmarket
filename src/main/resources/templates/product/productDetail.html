@@ -1,70 +1,79 @@
 <div th:fragment="content">
+	
   <div class="container my-5">
+	
     <div class="row justify-content-center">
       <div class="col-md-10">
         <div class="row g-4">
+			<!-- 왼쪽: 이미지 슬라이더 + 판매자 정보 -->
+			<div class="col-md-6">
 
-          <!-- 왼쪽: 이미지 슬라이더 + 판매자 정보 -->
-          <div class="col-md-6">
+			  <!-- 버튼 + 이미지 같은 정렬 그룹 -->
+			  <div class="d-flex flex-column align-items-start">
+			    
+			    <!-- ← 목록으로 버튼 -->
+			    <a th:href="@{/products}" class="btn btn-outline-secondary btn-sm mb-2">← 목록으로</a>
 
-            <!-- 뒤로가기 버튼 -->
-            <div class="mb-2">
-              <a th:href="@{/products}" class="btn btn-outline-secondary btn-sm">← 목록으로</a>
-            </div>
+			    <!-- 이미지 슬라이더 -->
+			    <div class="position-relative" style="height: 300px; overflow: hidden;">
+			      <div class="slider-track d-flex"
+			           th:if="${product.imagePaths != null}"
+			           th:style="${#lists.size(product.imagePaths) == 1} ?
+			           'width: 100%; height: 100%; transition: transform 0.5s ease;' :
+			           'width:' + (${#lists.size(product.imagePaths)} * 100) + '%; height: 100%; transition: transform 0.5s ease;'"
+			           th:attr="data-count=${product.imagePaths.size()}">
 
-            <!-- 이미지 슬라이더 -->
-            <div class="position-relative" style="height: 300px; overflow: hidden;">
-              <div class="slider-track d-flex"
-                   th:if="${product.imagePaths != null}"
-                   th:style="${#lists.size(product.imagePaths) == 1} ?
-                   'width: 100%; height: 100%; transition: transform 0.5s ease;' :
-                   'width:' + (${#lists.size(product.imagePaths)} * 100) + '%; height: 100%; transition: transform 0.5s ease;'"
-                   th:attr="data-count=${product.imagePaths.size()}">
+			        <div th:each="img : ${product.imagePaths}"
+			             th:style="${#lists.size(product.imagePaths) == 1} ?
+			             'width: 100%; height: 100%; display: flex; align-items: center; justify-content: center;' :
+			             'width:' + (100 / ${#lists.size(product.imagePaths)}) + '%; height: 100%; display: flex; align-items: center; justify-content: center; flex-shrink: 0;'">
+			          <img th:src="@{${img}}" style="max-width: 100%; max-height: 100%; object-fit: contain;" />
+			        </div>
+			      </div>
 
-                <div th:each="img : ${product.imagePaths}"
-                     th:style="${#lists.size(product.imagePaths) == 1} ?
-                     'width: 100%; height: 100%; display: flex; align-items: center; justify-content: center;' :
-                     'width:' + (100 / ${#lists.size(product.imagePaths)}) + '%; height: 100%; display: flex; align-items: center; justify-content: center; flex-shrink: 0;'">
-                  <img th:src="@{${img}}" style="max-width: 100%; max-height: 100%; object-fit: contain;" />
-                </div>
-              </div>
+			      <!-- 슬라이드 버튼 -->
+			      <button th:if="${product.imagePaths.size() > 1}"
+			              class="slider-prev btn position-absolute top-50 start-0 translate-middle-y"
+			              onclick="slideImage(this, -1)">❮</button>
 
-              <button th:if="${product.imagePaths.size() > 1}"
-                      class="slider-prev btn position-absolute top-50 start-0 translate-middle-y"
-                      onclick="slideImage(this, -1)">❮</button>
+			      <button th:if="${product.imagePaths.size() > 1}"
+			              class="slider-next btn position-absolute top-50 end-0 translate-middle-y"
+			              onclick="slideImage(this, 1)">❯</button>
+			    </div>
+			  </div>
 
-              <button th:if="${product.imagePaths.size() > 1}"
-                      class="slider-next btn position-absolute top-50 end-0 translate-middle-y"
-                      onclick="slideImage(this, 1)">❯</button>
-            </div>
+			  <!-- dot 표시 -->
+			  <div th:if="${product.imagePaths.size() > 1}"
+			       class="d-flex justify-content-center gap-1 mt-2">
+			    <span th:each="i : ${#numbers.sequence(0, #lists.size(product.imagePaths) - 1)}"
+			          class="dot bg-dark rounded-circle"
+			          th:attr="data-index=${i}"
+			          style="width: 6px; height: 6px; opacity: 0.4;"></span>
+			  </div>
 
-            <!-- 이미지 dot -->
-            <div th:if="${product.imagePaths.size() > 1}"
-                 class="d-flex justify-content-center gap-1 mt-2">
-              <span th:each="i : ${#numbers.sequence(0, #lists.size(product.imagePaths) - 1)}"
-                    class="dot bg-dark rounded-circle"
-                    th:attr="data-index=${i}"
-                    style="width: 6px; height: 6px; opacity: 0.4;"></span>
-            </div>
-
-            <!-- 판매자 정보 -->
-            <a th:href="@{/sellers/{id}(id=${product.userId})}"
-               class="d-flex align-items-center mt-3 text-decoration-none text-dark">
-              <img th:src="${profileImagePath}"
-                   alt="프로필 이미지"
-                   class="rounded-circle border me-3"
-                   style="width: 40px; height: 40px; object-fit: cover; aspect-ratio: 1 / 1;" />
-              <div class="text-start text-muted small">
-                판매자: <span class="fw-semibold" th:text="${product.sellerNickname}">정민</span> ·
-                <span th:text="${product.relativeTime}">3일 전</span>
-              </div>
-            </a>
-
-          </div>
+			  <!-- 판매자 정보 -->
+			  <a th:href="@{/sellers/{id}(id=${product.userId})}"
+			     class="d-flex align-items-center mt-3 text-decoration-none text-dark">
+			    <img th:src="${profileImagePath}"
+			         alt="프로필 이미지"
+			         class="rounded-circle border me-3"
+			         style="width: 40px; height: 40px; object-fit: cover; aspect-ratio: 1 / 1;" />
+			    <div class="text-start text-muted small">
+			      판매자: <span class="fw-semibold" th:text="${product.sellerNickname}">정민</span> ·
+			      <span th:text="${product.relativeTime}">3일 전</span>
+			    </div>
+			  </a>
+			</div>
 
           <!-- 오른쪽: 상품 정보 -->
           <div class="col-md-6">
-            <h4 class="fw-bold mb-1" th:text="${product.title}">상품 제목</h4>
+			<div class="d-flex justify-content-between align-items-center">
+			  <h4 class="fw-bold mb-1" th:text="${product.title}">상품 제목</h4>
+
+			  <div th:if="${session.loginUser != null and session.loginUser.userId == product.userId}"
+			       th:replace="fragment/edit-button :: editButton(${product.productId}, ${product.userId})">
+			  </div>
+			</div>
             <h3 class="text-danger fw-bold mb-3"
                 th:text="${#numbers.formatInteger(product.price, 3, 'COMMA')} + '원'">가격</h3>
 
@@ -98,33 +107,29 @@
                 해당 상품은 <strong>예약중</strong>입니다.
               </div>
 
-              <div class="d-flex gap-2">
-                <!-- 찜 버튼 -->
-                <button type="button" class="btn btn-outline-danger w-100">
-                  <i id="heart-icon" class="bi bi-heart"></i> 찜하기
-                </button>
+			  <div class="d-flex gap-2 justify-content-between mt-3">
+			    <!-- 찜하기 -->
+			    <button type="button" class="btn btn-outline-danger flex-grow-1">
+			      <i id="heart-icon" class="bi bi-heart"></i> 찜하기
+			    </button>
 
-                <!-- 채팅하기 -->
-                <!-- 상품 등록자가 아닐 경우에만 보여줌 -->
-                <div th:if="${session.loginUser != null and session.loginUser.userId != product.userId}">
-					<form th:action="@{/chat/start}" method="get">
-					  <input type="hidden" name="productId" th:value="${product.productId}" />
-					  <input type="hidden" name="targetId" th:value="${product.userId}" />
-					  <button type="submit" class="btn btn-outline-primary w-100 mt-3">
-					    <i class="bi bi-chat-dots"></i> 채팅하기
-					  </button>
-					</form>
-                </div>
-                <!-- 택배 구매 -->
-                <a th:if="${product.status == 'ONSALE' and (product.isDelivery ?: false)}"
-                   th:href="@{/pay/checkout(productId=${product.productId})}"
-                   class="btn btn-outline-success w-100 text-center">
-                  택배로 구매하기
-                </a>
+			    <!-- 채팅하기 -->
+			    <form th:if="${session.loginUser != null and session.loginUser.userId != product.userId}"
+			          th:action="@{/chat/start}" method="get" class="flex-grow-1">
+			      <input type="hidden" name="productId" th:value="${product.productId}" />
+			      <input type="hidden" name="targetId" th:value="${product.userId}" />
+			      <button type="submit" class="btn btn-outline-primary w-100">
+			        <i class="bi bi-chat-dots"></i> 채팅하기
+			      </button>
+			    </form>
 
-                <!-- 글 수정하기 버튼 추가 -->
-                <div th:replace="fragment/edit-button :: editButton(${product.productId}, ${product.userId})"></div>
-              </div>
+			    <!-- 택배로 구매하기 -->
+			    <a th:if="${product.status == 'ONSALE' and (product.isDelivery ?: false)}"
+			       th:href="@{/pay/checkout(productId=${product.productId})}"
+			       class="btn btn-outline-success flex-grow-1 text-center">
+			      택배로 구매하기
+			    </a>
+			  </div>
             </div>
           </div>
 
