@@ -98,7 +98,13 @@ public class ProductController {
     productList.forEach(p -> {
       p.setRelativeTime(formatRelativeTime(p.getCreatedAt()));
       p.setDongName(extractDongName(p.getLocationText()));
+
+      long wishCount = wishlistService.getWishlistCountByProductId(p.getProductId());
+      int viewCount = p.getViewCount() != null ? p.getViewCount() : 0;
+
+      p.setIsBest(wishCount >= 5 || viewCount >= 30);
     });
+
 
     model.addAttribute("productList", productList);
     model.addAttribute("viewName", "product/productList");
