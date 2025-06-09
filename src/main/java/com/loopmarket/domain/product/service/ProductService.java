@@ -419,6 +419,19 @@ public class ProductService {
     return products;
   }
 
+  public List<ProductEntity> getSimilarProducts(Long excludeId, Integer ctgCode) {
+    List<ProductEntity> list = productRepository.findByCtgCodeAndProductIdNotOrderByCreatedAtDesc(ctgCode, excludeId);
+
+    for (ProductEntity p : list) {
+      Long productId = p.getProductId();
+      p.setThumbnailPath(imageService.getThumbnailPath(productId));
+      p.setImagePaths(imageService.getAllImagePaths(productId));
+      p.setRelativeTime(formatRelativeTimeInternal(p.getCreatedAt()));
+    }
+
+    // 최대 8개까지만 보여줄게
+    return list.stream().limit(8).collect(Collectors.toList());
+  }
 
 
   private String formatRelativeTimeInternal(LocalDateTime createdAt) {

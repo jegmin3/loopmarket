@@ -174,6 +174,10 @@ public class ProductController {
     List<ProductEntity> otherProducts = productService.getOtherProductsBySeller(product.getUserId(), id);
     model.addAttribute("otherProducts", otherProducts);
 
+    List<ProductEntity> similarProducts = productService.getSimilarProducts(id, product.getCtgCode());
+    model.addAttribute("similarProducts", similarProducts);
+
+
 
 
     // 동네명 추출해서 모델에 추가
