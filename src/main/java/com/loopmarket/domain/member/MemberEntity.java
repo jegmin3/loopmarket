@@ -73,8 +73,9 @@ public class MemberEntity {
     private String phoneNumber;
 
     private LocalDateTime lastLoginAt;
-
-    @Column(length = 255) // FCM 토큰은 긴 문자열이므로 충분한 길이 설정
+    
+    // entity -> dto 변환해야 하는데..ㅠ
+    @Column(name = "fcm_token", length = 255) // FCM 토큰은 긴 문자열이므로 충분한 길이 설정
     private String fcmToken; // 사용자의 FCM 기기 토큰
 
     public enum LoginType {
