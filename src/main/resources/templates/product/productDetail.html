@@ -31,12 +31,11 @@
 
               <button th:if="${product.imagePaths.size() > 1}"
                       class="slider-prev btn position-absolute top-50 start-0 translate-middle-y"
-                      onclick="slideImage(this, -1, event)">❮</button>
+                      onclick="slideImage(this, -1)">❮</button>
 
               <button th:if="${product.imagePaths.size() > 1}"
                       class="slider-next btn position-absolute top-50 end-0 translate-middle-y"
-                      onclick="slideImage(this, 1, event)">❯</button>
-
+                      onclick="slideImage(this, 1)">❯</button>
             </div>
 
             <!-- 이미지 dot -->
@@ -86,8 +85,6 @@
               <li><strong>거래 위치:</strong><br>
                 <span th:text="${product.locationText}">부산진구 전포동</span>
               </li>
-              <div id="distance-warning" class="text-danger fw-semibold mt-2 small"></div>
-
             </ul>
 
             <!-- 지도 -->
@@ -100,31 +97,23 @@
                    class="alert alert-warning text-center fw-semibold w-100 mb-0">
                 해당 상품은 <strong>예약중</strong>입니다.
               </div>
-              <div th:if="${product.status == 'SOLD'}"
-                   class="alert alert-secondary text-center fw-semibold w-100 mb-0">
-                해당 상품은 <strong>판매완료</strong>된 상태입니다.
-              </div>
-
 
               <div class="d-flex gap-2">
-                <!-- 찜 버튼 - 판매완료가 아닐 때만 표시 -->
-                <div th:if="${product.status != 'SOLD'}">
-                  <button type="button" class="btn btn-outline-danger w-100">
-                    <i id="heart-icon" class="bi bi-heart"></i> 찜하기
-                  </button>
-                </div>
+                <!-- 찜 버튼 -->
+                <button type="button" class="btn btn-outline-danger w-100">
+                  <i id="heart-icon" class="bi bi-heart"></i> 찜하기
+                </button>
 
-              <!-- 채팅하기 -->
-			  <!-- 상품 등록자가 아닐 경우에만 보여줌 -->
-              <div th:if="${session.loginUser != null and session.loginUser.userId != product.userId}">
+                <!-- 채팅하기 -->
+                <!-- 상품 등록자가 아닐 경우에만 보여줌 -->
+                <div th:if="${session.loginUser != null and session.loginUser.userId != product.userId}">
                   <form th:action="@{/chat/start}" method="get">
-                      <input type="hidden" name="targetId" th:value="${product.userId}" />
-					  <input type="hidden" name="productId" th:value="${product.productId}" />
-                      <button type="submit" class="btn btn-outline-primary w-100 mt-3">
-                          <i class="bi bi-chat-dots"></i> 채팅하기
-                      </button>
+                    <input type="hidden" name="targetId" th:value="${product.userId}" />
+                    <button type="submit" class="btn btn-outline-primary w-100 mt-3">
+                      <i class="bi bi-chat-dots"></i> 채팅하기
+                    </button>
                   </form>
-              </div>
+                </div>
                 <!-- 택배 구매 -->
                 <a th:if="${product.status == 'ONSALE' and (product.isDelivery ?: false)}"
                    th:href="@{/pay/checkout(productId=${product.productId})}"
@@ -175,43 +164,9 @@
       button.addEventListener("click", () => {
         fetch(`/api/wishlist/toggle?productId=${productId}`, { method: "POST" })
           .then(res => res.ok ? icon.classList.toggle("bi-heart") || icon.classList.toggle("bi-heart-fill")
-                             : alert("로그인이 필요합니다."))
+            : alert("로그인이 필요합니다."))
           .catch(() => alert("요청 실패"));
       });
     });
   </script>
-  <script th:src="@{/js/product.js}"></script>
-  <script th:inline="javascript">
-    document.addEventListener('DOMContentLoaded', function () {
-      const currentLat = parseFloat(localStorage.getItem("selectedLat"));
-      const currentLng = parseFloat(localStorage.getItem("selectedLng"));
-
-      const productLat = [[${product.latitude}]];
-      const productLng = [[${product.longitude}]];
-
-      if (!isNaN(currentLat) && !isNaN(currentLng)) {
-        const distance = calculateDistance(currentLat, currentLng, productLat, productLng);
-        const warningEl = document.getElementById("distance-warning");
-
-        if (distance > 25) {
-          warningEl.innerText = `⚠ 현재 위치에서 약 ${distance.toFixed(1)}km 떨어져 있어요. 직거래가 어려울 수 있어요.`;
-        } else {
-          warningEl.innerText = `📍 현재 위치 기준 약 ${distance.toFixed(1)}km 거리입니다.`;
-        }
-      }
-
-      function calculateDistance(lat1, lng1, lat2, lng2) {
-        function toRad(x) { return x * Math.PI / 180; }
-        const R = 6371;
-        const dLat = toRad(lat2 - lat1);
-        const dLon = toRad(lng2 - lng1);
-        const a = Math.sin(dLat / 2) ** 2 +
-          Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) *
-          Math.sin(dLon / 2) ** 2;
-        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-        return R * c;
-      }
-    });
-  </script>
-
 </div>

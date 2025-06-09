@@ -304,7 +304,36 @@ public class ProductService {
 	            .collect(Collectors.toList());
 	}
 
-	@Transactional
+  @Transactional
+  public void updateProductWithImages(Long id, ProductEntity updatedProduct, List<MultipartFile> images, int mainImageIndex) {
+    ProductEntity existing = productRepository.findById(id)
+      .orElseThrow(() -> new NoSuchElementException("해당 상품이 존재하지 않습니다: " + id));
+
+    existing.setTitle(updatedProduct.getTitle());
+    existing.setPrice(updatedProduct.getPrice());
+    existing.setSaleType(updatedProduct.getSaleType());
+    existing.setCtgCode(updatedProduct.getCtgCode());
+    existing.setCondition(updatedProduct.getCondition());
+    existing.setConditionScore(updatedProduct.getConditionScore());
+    existing.setDescription(updatedProduct.getDescription());
+    existing.setIsDirect(updatedProduct.getIsDirect());
+    existing.setIsDelivery(updatedProduct.getIsDelivery());
+    existing.setIsNonface(updatedProduct.getIsNonface());
+    existing.setLocationText(updatedProduct.getLocationText());
+    existing.setLatitude(updatedProduct.getLatitude());
+    existing.setLongitude(updatedProduct.getLongitude());
+    existing.setShippingFee(updatedProduct.getShippingFee());
+    existing.setUpdateAt(LocalDateTime.now());
+
+/*    if (images != null && !images.isEmpty()) {
+      imageService.replaceImagesForProduct(id, images, mainImageIndex);
+    }*/
+
+    productRepository.save(existing);
+  }
+
+
+  @Transactional
 	public void updateHiddenStatus(Long productId, boolean hidden) {
 	    ProductEntity product = productRepository.findById(productId)
 	        .orElseThrow(() -> new RuntimeException("상품 없음"));

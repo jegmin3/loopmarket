@@ -10,8 +10,8 @@
       </div>
 
       <!-- 상품 등록 폼: 이미지 포함 multipart/form-data 전송 -->
-	  <form th:action="@{'/products/' + ${product.productId}}" method="post" th:object="${product}" enctype="multipart/form-data">
-	    <input type="hidden" name="_method" value="put" /> <!-- PUT 요청을 흉내냄 (Spring MVC에서 필요) -->
+      <form th:action="@{'/products/' + ${product.productId}}" method="post" th:object="${product}" enctype="multipart/form-data">
+        <input type="hidden" name="_method" value="put" /> <!-- PUT 요청을 흉내냄 (Spring MVC에서 필요) -->
         <!-- 상품 이미지 업로드 섹션 -->
         <div class="mb-3">
           <label class="form-label fw-bold">상품 이미지</label>
@@ -28,15 +28,15 @@
             <input type="file" id="imageInput" name="images" accept="image/*" multiple hidden>
 
             <!-- 이미지 미리보기 표시 영역 -->
-			<div id="previewContainer" class="d-flex flex-wrap gap-2">
-				<div th:each="imgUrl, iterStat : ${product.imagePaths}" style="position: relative;">
-				  <img th:src="@{${imgUrl}}" alt="상품 이미지" style="width: 80px; height: 80px; object-fit: cover; border-radius: 10px;">
-			    <!-- 대표 이미지 표시 -->
-			    <span th:if="${iterStat.index == 0}" style="position: absolute; top: 0; left: 0; background: #0008; color: white; font-size: 12px; padding: 2px 6px; border-radius: 0 0 5px 0;">
+            <div id="previewContainer" class="d-flex flex-wrap gap-2">
+              <div th:each="imgUrl, iterStat : ${product.imagePaths}" style="position: relative;">
+                <img th:src="@{${imgUrl}}" alt="상품 이미지" style="width: 80px; height: 80px; object-fit: cover; border-radius: 10px;">
+                <!-- 대표 이미지 표시 -->
+                <span th:if="${iterStat.index == 0}" style="position: absolute; top: 0; left: 0; background: #0008; color: white; font-size: 12px; padding: 2px 6px; border-radius: 0 0 5px 0;">
 			      대표
 			    </span>
-			  </div>
-			</div>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -79,21 +79,21 @@
         <!-- 소분류 카테고리 선택 -->
         <div class="mb-3">
           <label>소분류 선택</label>
-		  <select id="sub-category" name="ctgCode" class="form-select" required>
-		    <option value="">소분류 선택</option>
-		    <option th:each="sub : ${subCategories}"
-		            th:value="${sub.ctgCode}"
-		            th:text="${sub.ctgName}"
-		            th:selected="${sub.ctgCode == product.ctgCode}">
-		    </option>
-		  </select>
+          <select id="sub-category" name="ctgCode" class="form-select" required>
+            <option value="">소분류 선택</option>
+            <option th:each="sub : ${subCategories}"
+                    th:value="${sub.ctgCode}"
+                    th:text="${sub.ctgName}"
+                    th:selected="${sub.ctgCode == product.ctgCode}">
+            </option>
+          </select>
         </div>
 
         <!-- 상품 상태 슬라이더 -->
         <div class="mb-3">
           <label for="conditionScore">상품 상태</label>
-		  <input type="range" id="conditionScore" name="conditionScore" class="form-range" min="0" max="100"
-		         th:value="${product.conditionScore != null ? product.conditionScore : 50}">
+          <input type="range" id="conditionScore" name="conditionScore" class="form-range" min="0" max="100"
+                 th:value="${product.conditionScore != null ? product.conditionScore : 50}">
           <div class="d-flex justify-content-between mt-2">
             <span id="conditionText" class="small">👣 사용감 있어요</span>
             <span id="conditionPercent" class="small text-muted">50%</span>
