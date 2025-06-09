@@ -36,6 +36,23 @@ public class ImageService {
       }
     }
   }
+  
+  public String uploadProfileImage(Long userId, MultipartFile file) {
+	    try {
+	        String savedPath = s3Service.upload(file);
+	        ImageEntity image = ImageEntity.builder()
+	            .targetTable("users")
+	            .targetId(userId)
+	            .imagePath(savedPath)
+	            .isThumbnail(true)
+	            .imgSeq(0)
+	            .build();
+	        imageRepository.save(image);
+	        return savedPath;
+	    } catch (IOException e) {
+	        throw new RuntimeException("프로필 이미지 업로드 실패", e);
+	    }
+	}
 
   public List<String> getAllImagePaths(Long productId) {
 	  List<ImageEntity> images = imageRepository.findByTargetTableAndTargetId("products", productId);
@@ -63,7 +80,7 @@ public class ImageService {
 
 	    // 이미지가 없거나 경로가 비어 있으면 기본 이미지 경로 반환
 	    if (image == null || image.getImagePath() == null || image.getImagePath().isBlank()) {
-	        return "/img/profile.png";
+	        return "/img/default-profile.png";
 	    }
 
 	    return image.getImagePath();

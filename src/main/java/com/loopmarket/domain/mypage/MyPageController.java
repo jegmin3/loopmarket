@@ -65,7 +65,7 @@ public class MyPageController extends BaseController {
 		model.addAttribute("totalPurchaseCount", purchaseRepository.countByBuyerId(member.getUserId().longValue()));
 
 		// 프로필 이미지 경로 생성 후 모델에 추가
-		String profileImagePath = productService.getProfileImagePath(member.getProfileImgId());
+		String profileImagePath = imageService.getProfilePath(member.getUserId());
 		model.addAttribute("profileImagePath", profileImagePath);
 
 		// 구매 확정 가능한 상품 목록 confirmables 추가 - jw
