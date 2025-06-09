@@ -17,5 +17,6 @@ public class ChatRoomSummaryDTO {
     private LocalDateTime lastTime;  // 마지막 메시지 시간
     private int unreadCount;		 // 안읽은 채팅메시지 개수
     private boolean lastMine; 		 // 내가 보낸 마지막 메시지(읽음/안읽음 처리용)
+    private String profileImagePath; // 상대방 프로필 이미지용
 }
 

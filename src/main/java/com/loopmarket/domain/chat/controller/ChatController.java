@@ -227,12 +227,9 @@ public class ChatController extends BaseController {
 			redirectAttributes.addFlashAttribute("errorMessage", "로그인이 필요합니다.");
 			return "redirect:/member/login";
 		}
-		
 		Integer userId = loginUser.getUserId();
 		
 		List<ChatRoomSummaryDTO> summaries = chatService.getChatRoomSummaries(userId);
-	    //List<ChatRoomEntity> activeRooms = chatService.getActiveChatRooms(loginUser.getUserId());
-	    //model.addAttribute("chatRooms", activeRooms);
 	    model.addAttribute("chatSummaries", summaries);
 
 	    return render("chat/chatList", model);
