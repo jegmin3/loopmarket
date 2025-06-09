@@ -11,6 +11,7 @@
 					<th>가격</th>
 					<th>등록일</th>
 					<th>상태</th>
+					<th>숨기기</th>
 				</tr>
 			</thead>
 			<tbody>
@@ -30,24 +31,27 @@
 					</td>
 					<td th:text="'₩' + ${product.price}">가격</td>
 					<td th:text="${#temporals.format(product.createdAt, 'yyyy-MM-dd')}">등록일</td>
-					<td>
-						<!-- 상태 선택 (숨김 아닐 때만) -->
-						<select class="form-select form-select-sm d-inline w-auto me-2"
-						        th:if="${!product.isHidden}"
-						        data-status-change
-						        th:attr="data-id=${product.productId}">
-						  <option value="ONSALE" th:selected="${product.status == 'ONSALE'}">판매중</option>
-						  <option value="RESERVED" th:selected="${product.status == 'RESERVED'}">예약중</option>
-						</select>
+					<!-- 상태 -->
+					    <td>
+					      <select class="form-select form-select-sm d-inline w-auto"
+					              th:if="${!product.isHidden}"
+					              data-status-change
+					              th:attr="data-id=${product.productId}">
+					        <option value="ONSALE" th:selected="${product.status == 'ONSALE'}">판매중</option>
+					        <option value="RESERVED" th:selected="${product.status == 'RESERVED'}">예약중</option>
+					      </select>
+					    </td>
 
-						<!-- 숨김 토글 버튼 -->
-						<button type="button"
-						        class="btn btn-sm btn-outline-secondary btn-toggle-hide"
-						        th:attr="data-id=${product.productId}"
-						        th:text="${product.isHidden} ? '숨김 해제' : '숨김 처리'">
-						    숨김 처리
-						</button>
-					</td>
+					    <!-- 상품 숨기기 버튼 -->
+					    <td>
+					      <button type="button"
+					              class="btn btn-sm btn-outline-secondary btn-toggle-hide"
+					              th:attr="data-id=${product.productId}"
+					              th:text="${product.isHidden} ? '숨김 해제' : '숨김 처리'">
+					        숨김 처리
+					      </button>
+					    </td>
+					  </tr>
 				</tr>
 				<!-- 판매 중 상품이 없을 경우 -->
 				<tr th:if="${#lists.isEmpty(products)}">
