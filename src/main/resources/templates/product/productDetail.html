@@ -29,10 +29,10 @@
 			      <!-- 슬라이드 버튼 -->
 			      <button th:if="${product.imagePaths.size() > 1}"
 			              class="slider-prev btn position-absolute top-50 start-0 translate-middle-y"
-			              onclick="slideImage(this, -1)">❮</button>
+			              onclick="slideImage(this, -1, event)">❮</button>
 			      <button th:if="${product.imagePaths.size() > 1}"
 			              class="slider-next btn position-absolute top-50 end-0 translate-middle-y"
-			              onclick="slideImage(this, 1)">❯</button>
+			              onclick="slideImage(this, 1, event)">❯</button>
 			    </div>
 
 			    <!-- dot 표시 -->
