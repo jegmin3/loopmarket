@@ -19,14 +19,11 @@
           </li>         
         </ul>
       </div>
-	
-	  <!-- 모바일 오른쪽 정렬용 div -->
-	  <div class="d-flex justify-content-end ms-auto">
-		
-      <!-- 오른쪽 영역: 관리자버튼/알림 + 햄버거 버튼 -->
-      <div class="d-flex align-items-center">
+	  
+	  <!-- 오른쪽 영역: 관리자버튼/알림 + 햄버거 버튼 -->
+      <div class="d-flex align-items-center ms-auto order-lg-2">
 		<!-- 관리자 아이콘 -->
-		<ul class="navbar-nav flex-row align-items-center me-2"
+		<ul class="navbar-nav flex-row me-2 text-end"
 		    th:if="${session.userRole == 'ADMIN' or session.userRole == 'MANAGER'}">
 		  <li class="nav-item">
 		    <a class="nav-link position-relative text-primary" href="/admin" title="관리자 페이지">
@@ -35,7 +32,7 @@
 		  </li>
 		</ul>
 		<!-- 알림 아이콘 -->
-		<ul class="navbar-nav flex-row align-items-center me-2">
+		<ul class="navbar-nav flex-row me-2 text-end">
 		  <li class="nav-item dropdown" id="notificationDropdown" th:if="${session.loginUser != null}">
 		    <a class="nav-link notif-wrapper position-relative" href="#" id="notifIcon" data-bs-toggle="modal" data-bs-target="#notifModal">
 		      <i class="bi bi-bell-fill fs-5"></i>
@@ -47,34 +44,31 @@
 		    </a>
 		  </li>
 		</ul>
-
         <!-- 햄버거 버튼 -->
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
                 aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
           <span class="navbar-toggler-icon"></span>
         </button>
-      </div>
-    </div>
-
-    <!-- 접히는 메뉴 내용 (오른쪽 메뉴들) -->
-    <div class="collapse navbar-collapse" id="navbarNav">
-      <ul class="navbar-nav flex-lg-row ms-auto me-3 text-end">
-        <li class="nav-item" th:if="${session.loginUser != null}">
-          <a class="nav-link [[${#httpServletRequest.requestURI.startsWith('/mypage')} ? 'active' : '']]" style="white-space: nowrap;" th:href="@{/mypage}">마이페이지</a>
-        </li>
-        <li class="nav-item" th:if="${session.loginUser != null}">
-          <a class="nav-link" style="white-space: nowrap;" th:href="@{/chat/list}">나의 채팅</a>
-        </li>
-        <li class="nav-item" th:if="${session.loginUser == null}">
-          <a class="nav-link" style="white-space: nowrap;" th:href="@{/member/login}">로그인</a>
-        </li>
-        <li class="nav-item" th:if="${session.loginUser != null}">
-          <a class="nav-link" style="white-space: nowrap;" th:href="@{/member/logout}">로그아웃</a>
-        </li>
-      </ul>
-    </div>
-	
-	</div> <!-- 모바일 오른쪽 정렬용 div -->
-	
+	   </div> <!-- 오른쪽 영역 div -->
+		
+	    <!-- 접히는 메뉴 내용 (오른쪽 메뉴들) -->
+	    <div class="collapse navbar-collapse mt-lg-0 order-lg-1" id="navbarNav">
+	      <ul class="navbar-nav text-end ms-auto">
+	        <li class="nav-item" th:if="${session.loginUser != null}">
+	          <a class="nav-link [[${#httpServletRequest.requestURI.startsWith('/mypage')} ? 'active' : '']]" style="white-space: nowrap;" th:href="@{/mypage}">마이페이지</a>
+	        </li>
+	        <li class="nav-item" th:if="${session.loginUser != null}">
+	          <a class="nav-link" style="white-space: nowrap;" th:href="@{/chat/list}">나의 채팅</a>
+	        </li>
+	        <li class="nav-item" th:if="${session.loginUser == null}">
+	          <a class="nav-link" style="white-space: nowrap;" th:href="@{/member/login}">로그인</a>
+	        </li>
+	        <li class="nav-item" th:if="${session.loginUser != null}">
+	          <a class="nav-link" style="white-space: nowrap;" th:href="@{/member/logout}">로그아웃</a>
+	        </li>
+	      </ul>
+	    </div>
+		
+	</div> <!--전체 div 끝-->
   </nav>
 </header>
