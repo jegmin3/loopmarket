@@ -1,3 +1,19 @@
+<style>
+  .search-btn svg {
+    vertical-align: middle;
+    display: inline-block;
+  }
+  .search-btn {
+    width: 44px;
+    height: 44px;
+    padding: 0;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+</style>
 <div th:fragment="searchAndLocation">
   <div class="container my-5 text-center">
 
@@ -14,25 +30,31 @@
 
       <!-- 위치 변경 버튼 (모달 열기) -->
       <button id="location-btn"
-              class="btn btn-dark rounded-pill px-4 py-2"
+              class="location-btn rounded-pill px-4 py-2"
               type="button"
               data-bs-toggle="modal" data-bs-target="#locationModal">
         <span id="current-location">위치 찾는 중...</span>
       </button>
 
-      <!-- 검색 입력창과 검색 버튼 -->
-      <form th:action="@{/products}" method="get" class="d-flex gap-2 align-items-center">
-        <input type="text"
-               class="form-control"
-               name="search"
-               placeholder="검색어를 입력해주세요"
-               th:value="${param.search}" />
-        <button class="btn btn-dark" type="submit">🔍</button>
+
+      <!-- 검색 입력창 + 버튼 묶음 -->
+      <form class="d-flex align-items-center search-wrapper" method="get" th:action="@{/products}">
+        <input type="text" name="search" class="search-input" placeholder="검색어를 입력해주세요" th:value="${param.search}" />
+        <button type="submit" class="search-btn">
+          <!-- SVG 아이콘 삽입 -->
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="white" viewBox="0 0 16 16">
+            <path fill-rule="evenodd" d="M1 8a.5.5 0 0 1 .5-.5h11.793l-3.147-3.146a.5.5 0 0 1 .708-.708l4 4a.5.5 0 0 1 0 .708l-4 4a.5.5 0 0 1-.708-.708L13.293 8.5H1.5A.5.5 0 0 1 1 8"/>
+          </svg>
+        </button>
       </form>
 
-    </div> <!-- ✅ 여기에 정렬 div 닫힘 -->
 
-  </div> <!-- ✅ container 닫힘 위치도 명확 -->
+
+
+
+    </div> <!-- 여기에 정렬 div 닫힘 -->
+
+  </div> <!--  container 닫힘 위치도 명확 -->
 
   <!-- 위치 변경용 모달창 -->
   <div class="modal fade" id="locationModal" tabindex="-1" aria-labelledby="locationModalLabel" aria-hidden="true">
@@ -74,3 +96,4 @@
     </div>
   </div>
 </div>
+<link rel="stylesheet" th:href="@{/css/product.css}" />
