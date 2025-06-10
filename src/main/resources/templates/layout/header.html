@@ -22,8 +22,13 @@
 			</div> <!-- 왼쪽 영역 div 끝 -->
 
 			<!-- 로그인 하지 않은 경우: 로그인만 표시 -->
-			<div th:if="${session.loginUser == null}">
-				<a class="nav-link" th:href="@{/member/login}" title="로그인">로그인</a>
+			<div th:if="${session.loginUser == null}" class="d-flex align-items-center">
+			  <a class="nav-link d-flex align-items-center gap-1 text-dark"
+			     th:href="@{/member/login}" title="로그인"
+			     style="transition: 0.2s;">
+			    <i class="bi bi-box-arrow-in-right fs-5"></i>
+			    <span class="fw-semibold">로그인</span>
+			  </a>
 			</div>
 
 			<!-- 로그인 한 경우만 표시 -->
@@ -74,8 +79,24 @@
 
 							$("#userNickname").text(res.nickname);
 							$("#userProfileImg").attr("src", res.profile);
-
-							$menu.show();
+						
+							// 역할 텍스트 출력
+							let roleText = "";
+							switch (res.role) {
+							  case "ADMIN":
+							  case "MANAGER":
+							    roleText = "(관리자)";
+							    break;
+							  case "BUSINESS":
+							    roleText = "(사업자)";
+							    break;
+							  case "USER":
+							  default:
+							    roleText = "(일반 회원)";
+							}
+							$("#userRoleText").text(roleText);
+							
+							$($menu).show();
 						});
 					});
 
