@@ -204,24 +204,40 @@
 	        });
 	    }
 
-	    function loadAdminPage(url) {
-	        fetch(url, {
-	            headers: { 'X-Requested-With': 'XMLHttpRequest' }
-	        })
-	        .then(res => res.text())
-	        .then(html => {
-	            document.getElementById('admin-content').innerHTML = html;
+		function loadAdminPage(url) {
+		    const container = document.getElementById('admin-content');
 
-	            // ⚠️ 꼭 다시 바인딩 해줘야 함
-	            bindUserStatusFormEvents();
-				bindUserRoleFormEvents();
-	            bindPaginationEvents();
-	        })
-	        .catch(err => {
-	            console.error('페이지 로드 실패:', err);
-	            document.getElementById('admin-content').innerHTML = '<p style="color:red;">페이지를 불러오지 못했습니다.</p>';
-	        });
-	    }
+		    // 기본 로딩 텍스트와 애니메이션 시작
+		    container.innerHTML = `<div class="text-center mt-5"><p id="loading-text">Loading.</p></div>`;
+
+		    const loadingText = document.getElementById('loading-text');
+		    let dotCount = 1;
+
+		    // 점 애니메이션: . .. ... 반복
+		    const loadingInterval = setInterval(() => {
+		        dotCount = (dotCount % 3) + 1;
+		        loadingText.textContent = 'Loading' + '.'.repeat(dotCount);
+		    }, 500);
+
+		    fetch(url, {
+		        headers: { 'X-Requested-With': 'XMLHttpRequest' }
+		    })
+		    .then(res => res.text())
+		    .then(html => {
+		        clearInterval(loadingInterval); // 로딩 애니메이션 중지
+		        container.innerHTML = html;
+
+		        // 이벤트 재바인딩
+		        bindUserStatusFormEvents();
+		        bindUserRoleFormEvents();
+		        bindPaginationEvents();
+		    })
+		    .catch(err => {
+		        clearInterval(loadingInterval); // 실패 시에도 중지
+		        console.error('페이지 로드 실패:', err);
+		        container.innerHTML = '<p style="color:red;">페이지를 불러오지 못했습니다.</p>';
+		    });
+		}
 
 	    // ✅ 초기 바인딩 수동 호출
 	    bindUserStatusFormEvents();
