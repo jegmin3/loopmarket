@@ -47,9 +47,8 @@ public class SellerController extends BaseController {
 
         // 썸네일 처리
         for (ProductEntity product : sellingProducts) {
-            product.setThumbnailPath(product.getImagePaths().isEmpty()
-                    ? "/img/no-image.png"
-                    : product.getImagePaths().get(0));
+            product.setThumbnailPath(imageService.getThumbnailPath((product.getProductId())));
+            
         }
         
         String profileImagePath = imageService.getProfilePath(sellerId);
