@@ -51,31 +51,37 @@
 		  $.ajax({
 		    url: url,
 		    method: 'GET',
-		    success: function(data) {
-		      console.log("AJAX 성공", data);
-		      $('#admin-content').html(data);
-			  
+			success: function(data) {
+			  console.log("AJAX 성공", data);
+			  $('#admin-content').html(data);
 
-		      // ✅ URL에 따라 JS 로드
-		      if (url === '/admin/products') {
-		        $.getScript('/js/admin_products.js')
-		          .done(function () {
-		            console.log('✅ admin_products.js 로딩 완료');
-		          })
-		          .fail(function () {
-		            console.error('❌ admin_products.js 로드 실패');
-		          });
-		      }	else if (url === '/admin/categories') {
+			  // ✅ URL에 따라 JS 로드
+			  if (url === '/admin/dashboard') {
+			    $.getScript('/js/admin_dashboard.js')
+			      .done(function () {
+			        console.log('✅ admin_dashboard.js 로딩 완료');
+			      })
+			      .fail(function () {
+			        console.error('❌ admin_dashboard.js 로드 실패');
+			      });
+			  } else if (url === '/admin/products') {
+			    $.getScript('/js/admin_products.js')
+			      .done(function () {
+			        console.log('✅ admin_products.js 로딩 완료');
+			      })
+			      .fail(function () {
+			        console.error('❌ admin_products.js 로드 실패');
+			      });
+			  } else if (url === '/admin/categories') {
 			    $.getScript('/js/admin_category.js')
-				.done(function () {
-	              console.log('✅ admin_category.js 로딩 완료');
-	            })
-	            .fail(function () {
-	              console.error('❌ admin_category.js 로드 실패');
-	            });
+			      .done(function () {
+			        console.log('✅ admin_category.js 로딩 완료');
+			      })
+			      .fail(function () {
+			        console.error('❌ admin_category.js 로드 실패');
+			      });
 			  }
-
-		    },
+			},
 		    error: function(xhr, status, error) {
 		      console.error("AJAX 오류", status, error);
 		      $('#admin-content').html('<p style="color:red;">페이지를 불러오지 못했습니다.</p>');
