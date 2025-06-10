@@ -1,73 +1,49 @@
+<!-- 메인 콘텐츠 Fragment -->
 <div th:fragment="content">
+
+  <!-- 외부 스타일 연결 (index.css) -->
+  <link rel="stylesheet" th:href="@{/css/index.css}">
+
   <div class="container my-5">
-    <!-- 임시 style -->
-    <style>
-      .category-card {
-        border: 1px solid #dee2e6;
-        border-radius: 1rem;
-        transition: transform 0.2s ease, box-shadow 0.2s ease;
-        background-color: #ffffff;
-      }
 
-      .category-card:hover {
-        transform: translateY(-4px);
-        box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
-      }
-
-      .category-card h5 {
-        margin: 0;
-        font-weight: 600;
-        font-size: 1.1rem;
-      }
-    </style>
-
-
-    <!-- 1. 검색창과 위치 정보 영역: fragment로 분리해 재사용 -->
+    <!-- 1. 검색창 및 위치 정보 영역 (fragment로 분리) -->
     <div th:replace="fragment/searchAndLocation :: searchAndLocation"
-         th:with="showSearchTitle=${true}"></div>
+         th:with="showSearchTitle=${true}">
+    </div>
 
-    <!-- 2. 카테고리 카드 리스트 출력 -->
+    <!-- 2. 카테고리 카드 리스트 영역 -->
+    <!-- 한 줄 카테고리 아이콘 메뉴 -->
     <div class="container my-5">
-      <div class="row row-cols-2 row-cols-md-4 g-4 justify-content-center">
-        <!-- mainCategories 리스트를 반복하며 카드 생성 --><!-- 수정된 카테고리 카드 -->
-        <div class="col" th:each="category : ${mainCategories}">
-          <a href="#"
-             class="text-decoration-none text-dark category-link"
+      <div class="d-flex flex-wrap justify-content-center gap-3 category-row">
+
+        <!-- 반복 렌더링: mainCategories 리스트를 순회하며 아이콘 카드 생성 -->
+        <div th:each="category : ${mainCategories}" class="category-icon-card text-center">
+          <a href="#" class="text-decoration-none text-dark category-link"
              th:attr="data-value=${category.ctgCode}">
-            <div class="card text-center category-card h-100 py-4">
-              <div class="card-body">
-                <h5 class="card-title" th:text="${category.ctgName}">카테고리명</h5>
-              </div>
-            </div>
+            <div class="icon" th:text="'📱'"></div>
+            <div class="label" th:text="${category.ctgName}">카테고리명</div>
           </a>
         </div>
+
+
       </div>
     </div>
 
 
-<!--     카카오 맵 SDK 추가 
-    <script type="text/javascript"
-            src="//dapi.kakao.com/v2/maps/sdk.js?appkey=d4ca8876da8e183543e1cfbbd669097d&libraries=services"></script>
-
-    <script th:src="@{/js/render.js}"></script>-->
-
   </div>
 
-  <!--카카오 맵 SDK 추가-->
+  <!-- 카카오 지도 SDK + render.js 스크립트 -->
   <script type="text/javascript"
           src="//dapi.kakao.com/v2/maps/sdk.js?appkey=d4ca8876da8e183543e1cfbbd669097d&libraries=services"></script>
-
   <script th:src="@{/js/render.js}"></script>
-
 
 </div>
 
-<!-- 로그인 모달: 동적으로 내용이 로드되는 부분 -->
+<!-- 로그인 모달 영역 (필요 시 동적으로 내용 삽입됨) -->
 <div class="modal fade" id="loginModal" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content" id="loginModalContent">
-      <!-- 로그인 폼 등의 조각 뷰가 여기에 들어감 -->
+      <!-- 로그인 폼 fragment가 동적으로 삽입될 자리 -->
     </div>
   </div>
-
 </div>
