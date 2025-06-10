@@ -34,10 +34,16 @@ public class DashboardRestController {
         this.moneyTransactionRepository = moneyTransactionRepository;
     }
     
+//    private int countSuccessfulLoginsByDate(LocalDate date) {
+//        LocalDateTime start = date.atStartOfDay(); // 00:00
+//        LocalDateTime end = date.plusDays(1).atStartOfDay(); // 다음날 00:00
+//        return loginHistoryRepository.countByLoginResultAndLoginTimeBetween("SUCCESS", start, end);
+//    }
+    
     private int countSuccessfulLoginsByDate(LocalDate date) {
-        LocalDateTime start = date.atStartOfDay(); // 00:00
-        LocalDateTime end = date.plusDays(1).atStartOfDay(); // 다음날 00:00
-        return loginHistoryRepository.countByLoginResultAndLoginTimeBetween("SUCCESS", start, end);
+        LocalDateTime start = date.atStartOfDay();
+        LocalDateTime end = date.plusDays(1).atStartOfDay();
+        return loginHistoryRepository.countDistinctSuccessLoginsByDate(start, end);
     }
     
     @GetMapping("/today-login-count")
@@ -46,7 +52,7 @@ public class DashboardRestController {
         LocalDateTime start = today.atStartOfDay();
         LocalDateTime end = LocalDateTime.now();
 
-        int count = loginHistoryRepository.countByLoginResultAndLoginTimeBetween("SUCCESS", start, end);
+        int count = loginHistoryRepository.countDistinctSuccessLoginsByDate(start, end);
 
         Map<String, Object> response = new HashMap<>();
         response.put("todayLoginCount", count);
