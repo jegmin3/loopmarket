@@ -23,8 +23,15 @@ document.addEventListener("DOMContentLoaded", function () {
   const savedDong = localStorage.getItem('selectedDong');
   if (savedDong) {
     const dongName = extractDongFromFull(savedDong);
+
     document.getElementById('current-location').innerText = dongName;
     document.getElementById('location-title').innerText = dongName;
+
+    // 💡 여기를 추가해줘야 클래스가 덮어씌워지지 않아!
+    const locationBtn = document.getElementById('location-btn');
+    if (locationBtn) {
+      locationBtn.className = "location-btn rounded-pill px-4 py-2";
+    }
   } else if (navigator.geolocation) {
     navigator.geolocation.getCurrentPosition(success, error);
   } else {
@@ -91,10 +98,16 @@ function error(err) {
 // fallback 위치 기본값 사용
 function setLocationFallback() {
   const fallbackDong = '서울특별시 강남구 역삼동';
-  document.getElementById('current-location').innerText = fallbackDong;
-  document.getElementById('location-title').innerText = extractDongFromFull(fallbackDong); // 동만 추출
+  document.getElementById('current-location').innerText = extractDongFromFull(fallbackDong);
+  document.getElementById('location-title').innerText = extractDongFromFull(fallbackDong);
   localStorage.setItem('selectedDong', fallbackDong);
+
+  const locationBtn = document.getElementById('location-btn');
+  if (locationBtn) {
+    locationBtn.className = "location-btn rounded-pill px-4 py-2";
+  }
 }
+
 
 // 모달에서 위치 선택 시 처리
 function setLocation(fullLocation) {

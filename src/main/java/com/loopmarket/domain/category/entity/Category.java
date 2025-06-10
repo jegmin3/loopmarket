@@ -31,7 +31,7 @@ public class Category {
   private Integer ctgShow;
 
   private Integer seq;
-  
+
   @OneToMany(mappedBy = "category")
   @JsonIgnore
   private List<ProductEntity> products;

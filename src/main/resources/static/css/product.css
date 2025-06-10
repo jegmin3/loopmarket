@@ -1,0 +1,390 @@
+/* ============================================================================
+   🔹 CARD 디자인 (상품 카드)
+============================================================================ */
+.card.h-100 {
+  margin-top: -8px;
+  border-radius: 16px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+  overflow: hidden;
+}
+
+.card.h-100:hover {
+  transform: scale(1.02);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+  z-index: 2;
+}
+
+.card img {
+  object-fit: cover;
+  border-bottom: 1px solid #eee;
+}
+
+.card-body {
+  padding: 14px 16px;
+}
+
+.card-title {
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 6px;
+  color: #222;
+}
+
+.card-text.fw-bold {
+  color: #111;
+  font-size: 15px;
+}
+
+.card-text.text-muted {
+  font-size: 13px;
+  color: #888 !important;
+}
+
+/* 슬라이더 점 */
+.dot {
+  transition: opacity 0.3s;
+}
+
+/* 이전/다음 슬라이드 버튼 */
+.slider-prev,
+.slider-next {
+  opacity: 0;
+  pointer-events: none;
+  color: rgba(0, 0, 0, 0.4);
+  font-size: 20px;
+  background: transparent;
+  border: none;
+  transition: opacity 0.3s ease, color 0.3s ease;
+}
+
+.card:hover .slider-prev,
+.card:hover .slider-next {
+  opacity: 1;
+  pointer-events: auto;
+  color: rgba(0, 0, 0, 0.85);
+}
+
+/* 판매완료 오버레이 */
+.sold-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(120, 120, 120, 0.4);
+  z-index: 2;
+}
+
+/* ============================================================================
+   🔹 SIDEBAR 디자인 (카테고리, 가격 필터 등)
+============================================================================ */
+.col-md-3 {
+  font-family: "Apple SD Gothic Neo", sans-serif;
+  color: #333;
+  padding-top: 0 !important;
+  margin-top: 0 !important;
+}
+
+.col-md-3 h5 {
+  font-size: 18px;
+  font-weight: 700;
+  margin-bottom: 20px;
+  color: #222;
+}
+
+.btn-group-vertical,
+.mt-4.p-3.border.rounded {
+  margin-bottom: 30px;
+  padding: 16px;
+  border-radius: 10px;
+  border: 1px solid #eee;
+  background-color: #fdfdfd;
+}
+
+.btn-group-vertical .btn {
+  font-size: 15px;
+  padding: 10px 12px;
+  border: none;
+  border-radius: 8px;
+  background-color: transparent;
+  color: #444;
+  text-align: left;
+  transition: background-color 0.2s;
+}
+
+.btn-group-vertical .btn:hover {
+  background-color: #f4f4f4;
+  color: #111;
+}
+
+.btn-group-vertical .btn.active {
+  background-color: #d3e9ff;
+  color: #1967d2;
+  font-weight: 600;
+}
+
+.sidebar-location-btn {
+  width: 100%;
+  font-size: 14px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  font-weight: 600;
+  text-align: center;
+  margin-bottom: 8px;
+  transition: all 0.2s;
+  border: none;
+}
+
+.sidebar-location-btn.primary {
+  background-color: #2b6fff;
+  color: white;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
+}
+
+.sidebar-location-btn.primary:hover {
+  background-color: #1a5de4;
+}
+
+.sidebar-location-btn.outline {
+  background-color: white;
+  color: #2b6fff;
+  border: 1.5px solid #bcdffb;
+}
+
+.sidebar-location-btn.outline:hover {
+  background-color: #f3f9ff;
+  border-color: #8dbefc;
+}
+
+/* ============================================================================
+   🔹 가격 필터 스타일
+============================================================================ */
+.mt-4 .btn-outline-secondary,
+.btn-outline-secondary {
+  font-size: 14px;
+  border-radius: 6px;
+  padding: 6px 12px;
+  border: 1px solid #bcdffb;
+  color: #247edb;
+  background-color: white;
+  transition: all 0.2s ease;
+}
+
+.mt-4 .btn-outline-secondary:hover,
+.btn-outline-secondary:hover {
+  background-color: #e6f2fd;
+  color: #125dbe;
+  border-color: #a4ceef;
+}
+
+.mt-4 input.form-control {
+  font-size: 14px;
+  height: 36px;
+  padding: 4px 10px;
+  border: 1px solid #d0e6f9;
+  background-color: #f8fbff;
+  color: #333;
+}
+
+.mt-4 .btn-sm {
+  font-size: 13px;
+  margin-top: 6px;
+}
+
+.mt-4 .btn-primary,
+.btn-primary {
+  background-color: #247edb;
+  border-color: #247edb;
+  font-size: 14px;
+  color: white;
+  font-weight: 600;
+  padding: 8px 16px;
+  border-radius: 8px;
+  transition: all 0.2s ease-in-out;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
+}
+
+.mt-4 .btn-primary:hover,
+.btn-primary:hover {
+  background-color: #1a66c6;
+  border-color: #1a66c6;
+  box-shadow: 0 4px 12px rgba(43, 111, 255, 0.2);
+}
+
+.mt-4 .btn-outline-danger {
+  font-size: 13px;
+  color: #e24c4c;
+  border-color: #e24c4c;
+  background-color: white;
+}
+
+.mt-4 .btn-outline-danger:hover {
+  background-color: #fbecec;
+  color: #b22222;
+  border-color: #d63031;
+}
+
+/* ============================================================================
+   🔹 검색창 + 위치 버튼 및 반응형 레이아웃
+============================================================================ */
+.search-wrapper {
+  gap: 8px;
+  display: flex;
+  align-items: center;
+}
+
+@media (max-width: 576px) {
+  .search-wrapper {
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .search-input,
+  #location-btn {
+    width: 100% !important;
+  }
+}
+
+.search-form {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  margin-top: 16px;
+  flex-wrap: wrap;
+  width: 100%;
+}
+
+.search-input {
+  width: 460px !important;
+  height: 44px;
+  padding: 0 16px;
+  border: 1.5px solid #ddd;
+  border-radius: 24px;
+  font-size: 15px;
+  background-color: #fff;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.search-input:focus {
+  outline: none;
+  border-color: #2b6fff;
+  box-shadow: 0 0 0 3px rgba(43, 111, 255, 0.15);
+}
+
+.search-btn {
+  background-color: #2b6fff;
+  color: white;
+  border-radius: 24px;
+  padding: 10px 16px;
+  font-weight: 600;
+  border: none;
+  transition: background-color 0.2s;
+}
+
+.search-btn:hover {
+  background-color: #1a5de4;
+}
+
+#current-location {
+  color: #2b6fff;
+  font-weight: 600;
+}
+
+.location-btn,
+.product-list-page #location-btn {
+  background-color: #f3f9ff !important;
+  color: #2b6fff !important;
+  font-weight: 600;
+  padding: 8px 20px;
+  border-radius: 999px;
+  border: 1.5px solid #bcdffb;
+  transition: all 0.2s ease-in-out;
+}
+
+.location-btn:hover,
+.product-list-page #location-btn:hover {
+  background-color: #e6f2ff;
+  border-color: #8dbefc;
+  transform: translateY(-1px);
+}
+
+/* ============================================================================
+   🔹 상단 필터 버튼 / 정렬
+============================================================================ */
+.top-filter-btn,
+.top-filter-btn.outline {
+  font-weight: 600;
+  padding: 8px 16px;
+  border-radius: 8px;
+  transition: all 0.2s ease-in-out;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
+  border: none;
+}
+
+.top-filter-btn {
+  background-color: #2b6fff;
+  color: white;
+}
+
+.top-filter-btn:hover {
+  background-color: #1a5de4;
+  box-shadow: 0 4px 12px rgba(43, 111, 255, 0.2);
+}
+
+.top-filter-btn.outline {
+  background-color: white;
+  color: #2b6fff;
+  border: 1.5px solid #bcdffb;
+}
+
+.top-filter-btn.outline:hover {
+  background-color: #f3f9ff;
+  border-color: #8dbefc;
+}
+
+.top-button-group {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+/* ============================================================================
+   🔹 하단 상품 등록 버튼
+============================================================================ */
+.floating-add-btn,
+.floating-register-btn {
+  position: fixed;
+  bottom: 30px;
+  right: 30px;
+  z-index: 9999;
+  background-color: #2b6fff;
+  color: white;
+  border: none;
+  padding: 12px 20px;
+  font-weight: 600;
+  border-radius: 8px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+  transition: background-color 0.2s ease;
+}
+
+.floating-add-btn:hover,
+.floating-register-btn:hover {
+  background-color: #1a5de4;
+}
+
+/* ============================================================================
+   🔹 기타 레이아웃 보정
+============================================================================ */
+.mt-3 > .btn {
+  margin-right: 8px;
+}
+
+.col-md-9,
+.col-md-9 .row {
+  margin-top: 0 !important;
+  padding-top: 0 !important;
+}
