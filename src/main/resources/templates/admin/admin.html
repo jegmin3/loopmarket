@@ -35,17 +35,18 @@
 
   <script th:inline="javascript">
     $(document).ready(function() {
-		function loadAdminPage(url) {
-			$('#toggleSidebar').on('click', function () {
-			  $('#adminSidebar').toggleClass('show');
-			  $('#sidebarOverlay').toggleClass('d-none');
-			});
+		$('#toggleSidebar').on('click', function () {
+		  $('#adminSidebar').toggleClass('show');
+		  $('#sidebarOverlay').toggleClass('d-none');
+		});
 
-			// 오버레이 클릭 시 사이드바 닫기
-			$('#sidebarOverlay').on('click', function () {
-			  $('#adminSidebar').removeClass('show');
-			  $(this).addClass('d-none');
-			});  
+		// 오버레이 클릭 시 사이드바 닫기
+		$('#sidebarOverlay').on('click', function () {
+		  $('#adminSidebar').removeClass('show');
+		  $(this).addClass('d-none');
+		});
+		
+		function loadAdminPage(url) {
 			
 		  console.log("Loading admin page:", url);
 		  $.ajax({
