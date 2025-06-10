@@ -46,22 +46,21 @@
             </table>
 
             <!-- 페이징 -->
-            <nav th:if="${reports.totalPages > 1}">
-                <ul class="pagination justify-content-center">
-                    <li class="page-item" th:classappend="${reports.first} ? 'disabled'">
-                        <a class="page-link" th:href="@{/admin/reports(page=${reports.number - 1})}">이전</a>
-                    </li>
-                    <li class="page-item"
-                        th:each="i : ${#numbers.sequence(0, reports.totalPages - 1)}"
-                        th:classappend="${i == reports.number} ? 'active'">
-                        <a class="page-link" th:href="@{/admin/reports(page=${i})}"
-                           th:text="${i + 1}">1</a>
-                    </li>
-                    <li class="page-item" th:classappend="${reports.last} ? 'disabled'">
-                        <a class="page-link" th:href="@{/admin/reports(page=${reports.number + 1})}">다음</a>
-                    </li>
-                </ul>
-            </nav>
+			<nav th:if="${reports.totalPages > 1}">
+			    <ul class="pagination justify-content-center">
+			        <li class="page-item" th:classappend="${reports.first} ? 'disabled'">
+			            <a href="#" class="page-link ajax-page-link" th:data-url="@{/admin/reports(page=${reports.number - 1})}">이전</a>
+			        </li>
+			        <li class="page-item" 
+			            th:each="i : ${#numbers.sequence(0, reports.totalPages - 1)}"
+			            th:classappend="${i == reports.number} ? 'active'">
+			            <a href="#" class="page-link ajax-page-link" th:data-url="@{/admin/reports(page=${i})}" th:text="${i + 1}">1</a>
+			        </li>
+			        <li class="page-item" th:classappend="${reports.last} ? 'disabled'">
+			            <a href="#" class="page-link ajax-page-link" th:data-url="@{/admin/reports(page=${reports.number + 1})}">다음</a>
+			        </li>
+			    </ul>
+			</nav>
         </div>
     </div>
 	<script src="/js/admin_report.js"></script>
