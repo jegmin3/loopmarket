@@ -14,16 +14,24 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.loopmarket.domain.pay.enums.TransactionStatus;
+import com.loopmarket.domain.pay.enums.TransactionType;
 import com.loopmarket.domain.admin.dashboard.repository.LoginHistoryRepository;
+import com.loopmarket.domain.pay.repository.MoneyTransactionRepository;
+import com.loopmarket.domain.product.repository.ProductRepository;
 
 @RestController
 @RequestMapping("/admin/api/dashboard")
 public class DashboardRestController {
 
     private final LoginHistoryRepository loginHistoryRepository;
+    private final ProductRepository productRepository;
+    private final MoneyTransactionRepository moneyTransactionRepository;
 
-    public DashboardRestController(LoginHistoryRepository loginHistoryRepository) {
+    public DashboardRestController(LoginHistoryRepository loginHistoryRepository,ProductRepository productRepository,MoneyTransactionRepository moneyTransactionRepository) {
         this.loginHistoryRepository = loginHistoryRepository;
+        this.productRepository =  productRepository;
+        this.moneyTransactionRepository = moneyTransactionRepository;
     }
     
     private int countSuccessfulLoginsByDate(LocalDate date) {
@@ -70,4 +78,22 @@ public class DashboardRestController {
         response.put("counts", counts);
         return response;
     }
+    
+    @GetMapping("/trade-stats")
+    public Map<String, Integer> getTradeStats() {
+        List<TransactionType> completedTypes = List.of(TransactionType.BUY_NOW, TransactionType.SAFE_PAY);
+        
+        int completedCount = (int) moneyTransactionRepository.countByTypeInAndStatus(completedTypes, TransactionStatus.SUCCESS);
+        long totalProducts = productRepository.count();
+
+        int uncompletedCount = (int)(totalProducts - completedCount);
+        if (uncompletedCount < 0) uncompletedCount = 0;
+
+        Map<String, Integer> result = new HashMap<>();
+        result.put("성사", completedCount);
+        result.put("미성사", uncompletedCount);
+
+        return result;
+    }
+    
 }

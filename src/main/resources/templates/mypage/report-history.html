@@ -1,0 +1,96 @@
+<div th:fragment="content">
+  <div class="card p-3 shadow-sm rounded-3">
+    <h5 class="mb-3">신고 내역</h5>
+    <div th:if="${#lists.isEmpty(reports)}">
+      <p class="text-muted">신고한 내역이 없습니다.</p>
+    </div>
+	<table class="table table-bordered" th:if="${!#lists.isEmpty(reports)}">
+	  <thead class="table-light">
+	    <tr>
+	      <th>상품명</th>
+	      <th>신고 사유</th>
+	      <th>상세 내용</th>
+	      <th>신고일</th>
+	      <th>처리 상태</th>
+	    </tr>
+	  </thead>
+	  <tbody>
+	      <tr th:each="report, iterStat : ${reports}">
+	        <td th:text="${report.productTitle}"></td>
+	        <td th:text="${report.reason}"></td>
+	        <td th:text="${report.detail}"></td>
+	        <td th:text="${#temporals.format(report.createdAt, 'yyyy-MM-dd HH:mm')}"></td>
+	        <td>
+				<button type="button" class="btn btn-primary btn-sm view-response-btn"
+				        th:attr="data-report-id=${iterStat.index}"
+				        th:attrappend=" data-response-message=${report.responseMessage}"
+				        data-bs-toggle="modal" data-bs-target="#responseModal">
+				  <span th:text="${report.processed} ? '답변 보기' : '대기중'"></span>
+				</button>
+	        </td>
+	      </tr>
+	    </tbody>
+	</table>
+	
+	
+	<!-- 모달 팝업 -->
+	<div class="modal fade" id="responseModal" tabindex="-1" aria-hidden="true">
+	  <div class="modal-dialog">
+	    <div class="modal-content">
+	      <div class="modal-header">
+	        <h5 class="modal-title">관리자 답변</h5>
+	        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+	      </div>
+	      <div class="modal-body" id="modalResponseContent">
+	        <!-- 답변 내용이 여기에 동적으로 채워짐 -->
+	      </div>
+	    </div>
+	  </div>
+	</div>
+  </div>
+  
+  <style>
+    .responsive-table {
+      overflow-x: auto; /* 모바일에서 가로 스크롤 */
+    }
+
+    table.table {
+      table-layout: fixed;
+      width: 100%;
+      min-width: 600px; /* 너무 작아지지 않게 */
+    }
+
+    table.table th,
+    table.table td {
+      word-wrap: break-word;
+      overflow-wrap: break-word;
+      white-space: normal;
+      max-width: 200px;
+      vertical-align: middle;
+    }
+
+    table.table td:nth-child(3) {
+      max-width: 300px;
+    }
+  </style>
+  
+  <script>
+    $(document).ready(function() {
+		const modal = document.getElementById('responseModal');
+		    const modalBody = document.getElementById('modalResponseContent');
+		    document.querySelectorAll('.view-response-btn').forEach(btn => {
+		      btn.addEventListener('click', () => {
+		        const reportId = btn.getAttribute('data-report-id');
+		        // 서버에서 데이터를 미리 받아왔다면 JS 객체로 관리하거나 data-*에 넣어서 사용
+		        // 예: const responseMessage = reports[reportId].responseMessage;
+		        // 임시 예시:
+		        const responseMessage = btn.getAttribute('data-response-message');
+		        modalBody.textContent = responseMessage || '답변이 없습니다.';
+		      });
+		    });
+		  });
+  </script>
+  
+  
+  
+</div>

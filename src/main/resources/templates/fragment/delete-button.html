@@ -1,0 +1,11 @@
+<!-- templates/fragments/delete-button.html -->
+<div th:fragment="deleteButton(productId, writerId)">
+  <div th:if="${session.loginUser != null and session.loginUser.userId == writerId}" class="mt-2">
+    <button type="button"
+            class="btn btn-outline-danger w-100"
+            th:attr="data-id=${productId}"
+            onclick="confirmDelete(this)">
+      🗑️ 글 삭제하기
+    </button>
+  </div>
+</div>

@@ -1,8 +1,68 @@
-<!-- 신고 관리 페이지 -->
-<div th:fragment="content">
-	<div class="container">
-	    <div class="text-center">
-	        <h2 class="reportPage">신고 관리 페이지 입니다.</h2>
-	    </div>
-	</div>
+<div id="admin-content" th:fragment="content">
+    <h2 class="reportPage">신고 관리</h2>
+
+    <div th:if="${reports != null}">
+        <!-- 신고 없을 때 -->
+        <div th:if="${#lists.isEmpty(reports.content)}">
+            <p class="text-muted text-center">신고된 내역이 없습니다.</p>
+        </div>
+
+        <!-- 신고 있을 때 -->
+        <div th:if="${!#lists.isEmpty(reports.content)}">
+            <table class="table table-bordered align-middle text-center">
+                <thead class="table-light">
+                    <tr>
+                        <th>신고 ID</th>
+                        <th>상품</th>
+                        <th>신고자</th>
+                        <th>신고 사유</th>
+                        <th>상세 내용</th>
+                        <th>신고일</th>
+                        <th>처리 상태</th>
+                        <th>작업</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="report : ${reports.content}">
+                        <td th:text="${report.reportId}">1</td>
+                        <td th:text="${report.productTitle != null ? report.productTitle : 'N/A'}">상품 ID</td>
+                        <td th:text="${report.nickname}">신고자</td>
+                        <td th:text="${report.reason}">사유</td>
+                        <td th:text="${report.detail}">내용</td>
+                        <td th:text="${#temporals.format(report.createdAt, 'yyyy-MM-dd HH:mm')}">날짜</td>
+                        <td>
+                            <span th:text="${report.processed ? '처리완료' : '대기중'}"
+                                  th:classappend="${report.processed ? 'text-success' : 'text-danger'}">
+                                상태
+                            </span>
+                        </td>
+                        <td>
+                            <a th:href="@{/admin/reports/{id}(id=${report.reportId})}" class="btn btn-sm btn-outline-primary">
+                                답변 작성
+                            </a>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <!-- 페이징 -->
+            <nav th:if="${reports.totalPages > 1}">
+                <ul class="pagination justify-content-center">
+                    <li class="page-item" th:classappend="${reports.first} ? 'disabled'">
+                        <a class="page-link" th:href="@{/admin/reports(page=${reports.number - 1})}">이전</a>
+                    </li>
+                    <li class="page-item"
+                        th:each="i : ${#numbers.sequence(0, reports.totalPages - 1)}"
+                        th:classappend="${i == reports.number} ? 'active'">
+                        <a class="page-link" th:href="@{/admin/reports(page=${i})}"
+                           th:text="${i + 1}">1</a>
+                    </li>
+                    <li class="page-item" th:classappend="${reports.last} ? 'disabled'">
+                        <a class="page-link" th:href="@{/admin/reports(page=${reports.number + 1})}">다음</a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    </div>
+	<script src="/js/admin_report.js"></script>
 </div>

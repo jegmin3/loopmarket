@@ -52,4 +52,14 @@ document.addEventListener('DOMContentLoaded', () => {
     .catch(err => {
       console.error('잔액 조회 오류:', err);
     });
+	
+	// "안전결제란 무엇인가요?" 링크 클릭 시 설명 카드 토글
+	  const infoLink = document.getElementById('safePayInfoLink');
+	  const infoCard = document.getElementById('safePayInfoCard');
+	  if (infoLink && infoCard) {
+	    infoLink.addEventListener('click', () => {
+	      const isHidden = infoCard.style.display === 'none';
+	      infoCard.style.display = isHidden ? 'block' : 'none';
+	    });
+	  }
 });

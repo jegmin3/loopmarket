@@ -192,4 +192,14 @@ $(document).ready(function() {
 			console.error('잔액 조회 오류', err);
 			$('#pay-balance').text('오류');
 		});
+		
+	// 신고 내역
+	$('#tab-report-history').click(function () {
+	    $('.custom-tab').removeClass('active');
+	    $(this).addClass('active');
+
+	    $.get('/mypage/report-history', function (html) {
+	      $('#mypage-content').html(html);
+	    });
+	  });
 });

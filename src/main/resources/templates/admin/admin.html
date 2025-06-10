@@ -1,13 +1,22 @@
 <div th:fragment="content" style="height: 100vh; display: flex; flex-direction: column; margin: 0;">
   <div class="container-fluid flex-grow-1 d-flex p-0" style="height: 100%;">
+	<!-- 상단 헤더 -->
+	<div class="admin-header d-flex justify-content-between align-items-center p-3 border-bottom" style="background-color: #f8f9fa;">
+	  <button class="btn btn-outline-secondary d-md-none" id="toggleSidebar">
+	    &#9776; <!-- 햄버거 아이콘 -->
+	  </button>
+	</div>
+	
+	
     <!-- 사이드바 -->
-    <div class="sidebar p-3 border-end" style="width: 200px; background-color: #f8f9fa;">
+	<div id="sidebarOverlay" class="overlay d-none"></div>
+    <div class="sidebar p-3 border-end" id="adminSidebar">
       <h5 class="mb-4">관리자 메뉴</h5>
       <div class="btn-group-vertical w-100" role="group">
         <button class="btn btn-outline-secondary text-start w-100 admin-link" data-url="/admin/dashboard">대시보드</button>
         <button class="btn btn-outline-secondary text-start w-100 admin-link" data-url="/admin/user">사용자 관리</button>
         <button class="btn btn-outline-secondary text-start w-100 admin-link" data-url="/admin/products">상품 관리</button>
-        <button class="btn btn-outline-secondary text-start w-100 admin-link" data-url="/admin/report">신고 관리</button>
+        <button class="btn btn-outline-secondary text-start w-100 admin-link" data-url="/admin/reports">신고 관리</button>
         <!--<button class="btn btn-outline-secondary text-start w-100 admin-link" data-url="/admin/ads">광고 관리</button>-->
 		<button class="btn btn-outline-secondary text-start w-100 admin-link" data-url="/admin/categories">카테고리 관리</button>
         <button class="btn btn-outline-secondary text-start w-100 admin-link" data-url="/admin/notice">공지사항 관리</button>
@@ -27,6 +36,17 @@
   <script th:inline="javascript">
     $(document).ready(function() {
 		function loadAdminPage(url) {
+			$('#toggleSidebar').on('click', function () {
+			  $('#adminSidebar').toggleClass('show');
+			  $('#sidebarOverlay').toggleClass('d-none');
+			});
+
+			// 오버레이 클릭 시 사이드바 닫기
+			$('#sidebarOverlay').on('click', function () {
+			  $('#adminSidebar').removeClass('show');
+			  $(this).addClass('d-none');
+			});  
+			
 		  console.log("Loading admin page:", url);
 		  $.ajax({
 		    url: url,
@@ -34,6 +54,7 @@
 		    success: function(data) {
 		      console.log("AJAX 성공", data);
 		      $('#admin-content').html(data);
+			  
 
 		      // ✅ URL에 따라 JS 로드
 		      if (url === '/admin/products') {
@@ -82,18 +103,64 @@
   </script>
 
   <style>
-    .sidebar .btn.active {
-      background-color: #e2e6ea;
-      font-weight: bold;
-    }
+	.sidebar {
+	  width: 200px;
+	  background-color: #f8f9fa;
+	  height: 100vh;
+	  overflow-y: auto;
+	  position: sticky;
+	  top: 0;
+	  flex-shrink: 0;
+	}
 
-    #admin-content {
-      flex-grow: 1;
-      overflow-y: auto;
-      padding: 2rem;
-      background-color: #fff;
-      height: 100vh;
+	#admin-content {
+	  flex-grow: 1;
+	  padding: 2rem;
+	  background-color: #fff;
+	  min-height: 100vh;
+	  overflow-y: auto;
+	}
+
+    /* 모바일: 사이드바 기본 숨김 */
+	@media (max-width: 768px) {
+	  .sidebar {
+	    width: 70%; /* 모바일에서는 화면의 일부만 차지 */
+	    position: fixed;
+	    top: 0;
+	    left: 0;
+	    height: 100%;
+	    z-index: 999;
+	    transform: translateX(-100%);
+	    transition: transform 0.3s ease;
+	  }
+
+	  .sidebar.show {
+	    transform: translateX(0);
+	  }
+
+	  #toggleSidebar {
+	    display: block;
+	    z-index: 1000; /* 사이드바보다 위에 있어야 버튼이 보임 */
+	  }
+
+	  .overlay {
+	    position: fixed;
+	    top: 0;
+	    left: 0;
+	    width: 100vw;
+	    height: 100vh;
+	    background-color: rgba(0, 0, 0, 0.4);
+	    z-index: 998;
+	  }
+	}
+
+    /* PC: 항상 보이게 */
+    @media (min-width: 769px) {
+      #toggleSidebar {
+        display: none;
+      }
     }
+	
   </style>
-
+  
 </div>

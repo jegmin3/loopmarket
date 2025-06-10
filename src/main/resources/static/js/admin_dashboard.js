@@ -1,4 +1,6 @@
+
 $(document).ready(function () {
+  Chart.register(ChartDataLabels);
   console.log("jQuery document ready 실행됨");
 
   // 오늘 로그인 수 가져오기
@@ -149,50 +151,22 @@ $(document).ready(function () {
 		})
 		.catch(err => console.error("전체 상품 수 API 호출 실패:", err));
 		
-	  // 3. 카테고리별 상품 수
-	  fetch('/admin/statistics/category-product-stats')
-	    .then(res => res.json())
-	    .then(data => {
-	      const ctx = document.getElementById('categoryChart');
-	      const labels = data.map(d => d.categoryName);  // 여기 수정!
-	      const counts = data.map(d => d.count);
-
-	      new Chart(ctx, {
-	        type: 'doughnut',
-	        data: {
-	          labels: labels,
-	          datasets: [{
-	            data: counts,
-	            backgroundColor: ['#ff6384', '#36a2eb', '#ffcd56', '#4bc0c0', '#9966ff', '#ff9f40']
-	          }]
-	        },
-	        options: {
-	          responsive: true,
-	          plugins: {
-	            legend: {
-	              position: 'bottom'
-	            }
-	          }
-	        }
-	      });
-	    });
-		
-		// 거래 성사율 파이 차트
-		/*fetch('/admin/statistics/trade-success-rate')
+		// 3. 카테고리별 상품 수 (퍼센트 표시)
+		fetch('/admin/statistics/category-product-stats')
 		  .then(res => res.json())
 		  .then(data => {
-		    // 예: { successCount: 80, failCount: 20 }
-		    const success = data.successCount || 0;
-		    const fail = data.failCount || 0;
+		    const ctx = document.getElementById('categoryChart');
+		    const labels = data.map(d => d.categoryName);
+		    const counts = data.map(d => d.count);
+		    const total = counts.reduce((a, b) => a + b, 0);
 
-		    const ctx = document.getElementById('tradePieChart').getContext('2d');
 		    new Chart(ctx, {
-		      type: 'pie',
+		      type: 'doughnut',
 		      data: {
-		        labels: ['성공', '실패'],
+		        labels: labels,
 		        datasets: [{
-		          data: [success, fail],
-		          backgroundColor: ['#4CAF50', '#F44336'], // 초록 / 빨강
+		          data: counts,
+		          backgroundColor: ['#ff6384', '#36a2eb', '#ffcd56', '#4bc0c0', '#9966ff', '#ff9f40']
 		        }]
 		      },
 		      options: {
@@ -204,19 +178,107 @@ $(document).ready(function () {
 		          tooltip: {
 		            callbacks: {
 		              label: function(context) {
-		                const total = success + fail;
 		                const value = context.parsed;
 		                const percent = total > 0 ? ((value / total) * 100).toFixed(1) : 0;
-		                return `${context.label}: ${value}건 (${percent}%)`;
+		                return `${context.label}: ${value}개 (${percent}%)`;
 		              }
+		            }
+		          },
+		          datalabels: {
+		            color: '#fff',
+		            formatter: (value, ctx) => {
+		              const percent = total > 0 ? ((value / total) * 100).toFixed(1) : 0;
+		              return `${percent}%`;
+		            },
+		            font: {
+		              weight: 'bold',
+		              size: 14
 		            }
 		          }
 		        }
-		      }
+		      },
+		      plugins: [ChartDataLabels]
 		    });
 		  })
-		  .catch(err => console.error("거래 성사율 API 호출 실패:", err));*/
+		  .catch(err => console.error("카테고리별 상품 수 API 실패:", err));
 		
-	
+		
+		// 거래 성사율 파이 차트
+		fetch('/admin/api/dashboard/trade-stats')
+		  .then(res => res.json())
+		  .then(data => {
+			console.log("거래 성사율 데이터:", data); // 여기 추가
+		    const ctx = document.getElementById('tradePieChart').getContext('2d');
+		    
+			new Chart(ctx, {
+			  type: 'pie',
+			  data: {
+			    labels: ['거래 성사', '거래 미성사'],
+			    datasets: [{
+			      label: '거래 성사율',
+			      data: [data['성사'], data['미성사']],
+			      backgroundColor: ['#4CAF50', '#F44336'],
+			      borderColor: '#fff',
+			      borderWidth: 2,
+			      hoverOffset: 20, // 마우스 올릴 때 살짝 튀어나오는 효과
+			    }]
+			  },
+			  options: {
+			    responsive: true,
+			    plugins: {
+			      legend: {
+			        position: 'bottom',
+			        labels: {
+			          font: { size: 14 },
+			          padding: 20,
+			        }
+			      },
+			      tooltip: {
+			        callbacks: {
+			          label: function(context) {
+			            const total = data['성사'] + data['미성사'];
+			            const value = context.parsed;
+			            const percent = total > 0 ? ((value / total) * 100).toFixed(1) : 0;
+			            return `${context.label}: ${value}건 (${percent}%)`;
+			          }
+			        }
+			      },
+			      datalabels: {
+			        color: '#fff',
+			        formatter: (value, ctx) => {
+			          const total = ctx.chart.data.datasets[0].data.reduce((a,b) => a + b, 0);
+			          const percent = total > 0 ? (value / total * 100).toFixed(1) : 0;
+			          return `${percent}%`;
+			        },
+			        font: {
+			          weight: 'bold',
+			          size: 16,
+			        }
+			      }
+			    }
+			  },
+			  plugins: [ChartDataLabels] // datalabels 플러그인 필요
+			});
+			
+			
+			/*new Chart(ctx, {
+		      type: 'pie',
+		      data: {
+		        labels: ['거래 성사', '거래 미성사'],
+		        datasets: [{
+		          label: '거래 성사율',
+		          data: [data['성사'], data['미성사']],
+		          backgroundColor: ['#4CAF50', '#F44336'],
+		        }]
+		      }
+		    });*/
+			const total = data['성사'] + data['미성사'];
+			  const rate = total > 0 ? ((data['성사'] / total) * 100).toFixed(1) : 0;
+			  document.getElementById('tradeSummary').textContent = 
+			    `전체 거래 ${total}건 중 ${data['성사']}건 성사 (성사율: ${rate}%)`;
+			
+			
+		  })
+		  .catch(err => console.error("거래 성사율 API 호출 실패:", err));
 	
 });

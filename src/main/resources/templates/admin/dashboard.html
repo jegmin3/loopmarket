@@ -47,23 +47,30 @@
 		  </div>
 		</div>
 
-		<!-- 4. 인기 상품 순위 -->
-		<div class="card mb-4 p-3">
+
+		<!-- 4. 거래 성사율 (파이 차트) -->
+		<div class="card mb-4 p-4">
+		  <h5 class="text-center">거래 성사율</h5>
+		  <canvas id="tradePieChart" style="max-height: 400px;"></canvas>
+		  <div id="tradeSummary"></div>
+		</div>
+		
+		<!-- 5. 인기 상품 순위 -->
+		<!--<div class="card mb-4 p-3">
 			<h5>인기 상품 순위</h5>
 			<ul id="topProducts" class="list-group">
-				<!-- AJAX로 삽입 -->
+				 AJAX로 삽입 
 			</ul>
-		</div>
-
-		<!-- 5. 거래 성사율 (파이 차트) -->
-		<!--<canvas id="tradePieChart" style="width: 100%; max-width: 400px; height: auto;"></canvas>
-		    <h5 class="text-center">거래 성사율</h5>
-		    <canvas id="tradePieChart"></canvas>
 		</div>-->
 	</div>
-
+	
+	
 	<!-- Chart.js 라이브러리 추가 -->
 	<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+	
+	<!-- datalabels 플러그인 -->
+	<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels"></script>
+
 
 	<!-- 대시보드 JS 로직 -->
 	<script src="/js/admin_dashboard.js"></script>
