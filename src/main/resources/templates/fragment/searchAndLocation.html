@@ -1,40 +1,54 @@
 <div th:fragment="searchAndLocation">
-  <div class="container my-5 text-center">
-
-    <!-- 위치 기반 검색 제목 -->
-    <h2 class="mb-3" th:if="${showSearchTitle}">📍
+  <div class="search-section container">
+    <!-- 외부 스타일 연결 (index.css) -->
+    <link rel="stylesheet" th:href="@{/css/index.css}">
+    <!-- 위치 + 검색어 문장 -->
+    <!-- 조건부로 보여줄 제목 -->
+    <h2 class="search-title mb-5 text-center" th:if="${showSearchTitle}">
+      <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" fill="currentColor"
+           class="bi bi-geo-alt-fill me-1" viewBox="0 0 16 16" style="vertical-align: middle;">
+        <path d="M8 16s6-5.686 6-10A6 6 0 0 0 2 6c0 4.314 6 10 6 10m0-7a3 3 0 1 1 0-6 3 3 0 0 1 0 6"/>
+      </svg>
       <span id="location-title">상봉동</span>에서
-      <span th:text="${param.search ?: '아이폰'}"></span> 찾고 계신가요?
+      <span id="rotating-keyword">아이폰</span> 찾고 계신가요?
     </h2>
 
-    <!-- 위치 + 검색창 한 줄로 정렬 -->
+
+
+
+
+
+
+    <!-- 위치 버튼 + 검색창 한 줄 정렬 -->
     <div class="d-flex justify-content-center align-items-center gap-2 flex-wrap mt-4">
+      <!-- 위도/경도 파라미터 유지용 -->
       <input type="hidden" id="latitude" th:value="${param.lat}" />
       <input type="hidden" id="longitude" th:value="${param.lng}" />
 
-      <!-- 위치 변경 버튼 (모달 열기) -->
+      <!-- 위치 변경 버튼 -->
       <button id="location-btn"
-              class="btn btn-dark rounded-pill px-4 py-2"
+              class="location-btn rounded-pill px-4 py-2"
               type="button"
               data-bs-toggle="modal" data-bs-target="#locationModal">
         <span id="current-location">위치 찾는 중...</span>
       </button>
 
-      <!-- 검색 입력창과 검색 버튼 -->
-      <form th:action="@{/products}" method="get" class="d-flex gap-2 align-items-center">
-        <input type="text"
-               class="form-control"
-               name="search"
+      <!-- 검색 입력창 -->
+      <form class="d-flex align-items-center search-wrapper" method="get" th:action="@{/products}">
+        <input type="text" name="search" class="search-input"
                placeholder="검색어를 입력해주세요"
                th:value="${param.search}" />
-        <button class="btn btn-dark" type="submit">🔍</button>
+        <button type="submit" class="search-btn">
+          <!-- 검색 아이콘 (→ 모양) -->
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="white" viewBox="0 0 16 16">
+            <path fill-rule="evenodd" d="M1 8a.5.5 0 0 1 .5-.5h11.793l-3.147-3.146a.5.5 0 0 1 .708-.708l4 4a.5.5 0 0 1 0 .708l-4 4a.5.5 0 0 1-.708-.708L13.293 8.5H1.5A.5.5 0 0 1 1 8"/>
+          </svg>
+        </button>
       </form>
+    </div>
+  </div>
 
-    </div> <!-- ✅ 여기에 정렬 div 닫힘 -->
-
-  </div> <!-- ✅ container 닫힘 위치도 명확 -->
-
-  <!-- 위치 변경용 모달창 -->
+  <!-- 위치 선택 모달 -->
   <div class="modal fade" id="locationModal" tabindex="-1" aria-labelledby="locationModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
       <div class="modal-content">
@@ -42,7 +56,9 @@
           <h5 class="modal-title" id="locationModalLabel">지역 변경</h5>
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="닫기"></button>
         </div>
+
         <div class="modal-body" style="height: 500px; display: flex; flex-direction: column; overflow-y: hidden;">
+          <!-- 동네 검색창 -->
           <div class="input-group mb-3">
             <input type="text" id="locationSearchInput"
                    class="form-control"
@@ -51,9 +67,13 @@
                    onkeyup="handleLocationKey(event)">
             <button class="btn btn-outline-secondary" type="button" onclick="searchOrFilterLocation()">🔍</button>
           </div>
+
+          <!-- 현재 위치 버튼 -->
           <div class="text-center mb-3">
             <button class="btn btn-outline-danger" onclick="getLocation()">📍 현재 내 위치 사용하기</button>
           </div>
+
+          <!-- 추천 + 검색 결과 리스트 -->
           <div style="flex: 1; overflow-y: auto;">
             <div id="recommendSection" class="mb-3">
               <div class="fw-bold text-primary">추천</div>
@@ -66,6 +86,8 @@
                 </li>
               </ul>
             </div>
+
+            <!-- 동네 검색 결과 영역 (검색 시에만 보여짐) -->
             <ul id="searchResultList" class="list-group d-none"
                 style="min-height: 250px; max-height: 300px; overflow-y: auto;"></ul>
           </div>
@@ -73,4 +95,85 @@
       </div>
     </div>
   </div>
+
+  <!-- 검색어 자동 순환 스크립트 -->
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      console.log("rotateKeyword 동작함");
+      const rotatingWords = ["아이폰", "아이패드", "에어팟", "노트북", "갤럭시", "닌텐도","본체","헤드셋","마우스","카메라"];
+      let currentIndex = 0;
+
+      function rotateKeyword() {
+        const keywordEl = document.getElementById("rotating-keyword");
+        if (!keywordEl) return;
+
+        // 텍스트 바꾸고 animation 클래스 재적용
+        keywordEl.classList.remove("animated-keyword"); // 초기화
+        void keywordEl.offsetWidth; // DOM 리렌더링 트릭
+        keywordEl.textContent = rotatingWords[currentIndex];
+        keywordEl.classList.add("animated-keyword");
+
+        currentIndex = (currentIndex + 1) % rotatingWords.length;
+      }
+
+      rotateKeyword(); // 최초 실행
+      setInterval(rotateKeyword, 2000); // 반복 실행
+    });
+
+  </script>
+
 </div>
+
+<!-- 외부 CSS (product.css에 검색창, 버튼 등 포함됨) -->
+<link rel="stylesheet" th:href="@{/css/product.css}" />
+<link rel="stylesheet" th:href="@{/css/index.css}" />
+<!-- 메인 콘텐츠 Fragment -->
+<div th:fragment="content">
+
+  <!-- 외부 스타일 연결 (index.css) -->
+  <link rel="stylesheet" th:href="@{/css/index.css}">
+
+  <div class="container my-5">
+
+    <!-- 1. 검색창 및 위치 정보 영역 (fragment로 분리) -->
+    <div th:replace="fragment/searchAndLocation :: searchAndLocation"
+         th:with="showSearchTitle=${true}">
+    </div>
+
+    <!-- 2. 카테고리 카드 리스트 영역 -->
+    <!-- 한 줄 카테고리 아이콘 메뉴 -->
+    <div class="container my-5">
+      <div class="d-flex flex-wrap justify-content-center gap-3 category-row">
+
+        <!-- 반복 렌더링: mainCategories 리스트를 순회하며 아이콘 카드 생성 -->
+        <div th:each="category : ${mainCategories}" class="category-icon-card text-center">
+          <a href="#" class="text-decoration-none text-dark category-link"
+             th:attr="data-value=${category.ctgCode}">
+            <div class="icon" th:text="'📱'"></div>
+            <div class="label" th:text="${category.ctgName}">카테고리명</div>
+          </a>
+        </div>
+
+
+      </div>
+    </div>
+
+
+  </div>
+
+  <!-- 카카오 지도 SDK + render.js 스크립트 -->
+  <script type="text/javascript"
+          src="//dapi.kakao.com/v2/maps/sdk.js?appkey=d4ca8876da8e183543e1cfbbd669097d&libraries=services"></script>
+  <script th:src="@{/js/render.js}"></script>
+
+</div>
+
+<!-- 로그인 모달 영역 (필요 시 동적으로 내용 삽입됨) -->
+<div class="modal fade" id="loginModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content" id="loginModalContent">
+      <!-- 로그인 폼 fragment가 동적으로 삽입될 자리 -->
+    </div>
+  </div>
+</div>
+

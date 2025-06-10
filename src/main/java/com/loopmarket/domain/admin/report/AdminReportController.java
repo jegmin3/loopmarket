@@ -72,6 +72,8 @@ public class AdminReportController extends BaseController {
         Page<ReportDTO> reportDTOPage = new PageImpl<>(reportDTOList, reports.getPageable(), reports.getTotalElements());
 
         model.addAttribute("reports", reportDTOPage);
+        model.addAttribute("currentPage", page);
+        model.addAttribute("totalPages", reportDTOPage.getTotalPages());
 
         return renderAdminReportPage(request, model, "admin/report_admin");
     }

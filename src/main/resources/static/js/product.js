@@ -1,12 +1,19 @@
 // 이미지 슬라이드 좌우 버튼 클릭 시 이미지 이동 함수
-function slideImage(button, direction,event) {
-  event.preventDefault();     // <a> 태그 기본 동작 막기
-  event.stopPropagation();    // 클릭 이벤트 상위로 전달 막기
+function slideImage(button, direction, event) {
+  event.preventDefault();
+  event.stopPropagation();
 
-  const wrapper = button.closest(".position-relative").parentElement; // wrapper 바꿈
+  // 상세 페이지든 리스트든 상관없이 작동하도록 wrapper 찾기 개선
+  let wrapper = button.closest(".position-relative");
+
+  // 리스트 페이지 카드에서는 .position-relative → 부모가 wrapper이고,
+  // 상세 페이지에서는 그 자체가 wrapper일 수 있음
+  if (wrapper.parentElement.querySelector(".slider-track")) {
+    wrapper = wrapper.parentElement;
+  }
+
   const track = wrapper.querySelector(".slider-track");
   if (!track) return;
-
 
   const total = parseInt(track.dataset.count);
   if (!track.dataset.index) track.dataset.index = "0";
@@ -16,23 +23,13 @@ function slideImage(button, direction,event) {
   track.dataset.index = newIndex;
   track.style.transform = `translateX(-${(100 / total) * newIndex}%)`;
 
-  // dot 강조 업데이트
+  // dot 업데이트: .dot이 존재하는 경우에만
   const dots = wrapper.querySelectorAll(".dot");
   dots.forEach((dot, idx) => {
     dot.style.opacity = idx === newIndex ? "1" : "0.4";
   });
 }
-
-// 페이지 처음 로드 시 dot 초기화
-document.addEventListener("DOMContentLoaded", () => {
-  document.querySelectorAll(".slider-track").forEach(track => {
-    const dots = track.closest(".col-md-6").querySelectorAll(".dot");
-    if (dots.length > 0) dots[0].style.opacity = "1";
-    track.dataset.index = "0";
-  });
-});
-
-window.slideImage = slideImage; // 전역에 등록
+window.slideImage = slideImage;
 
 document.addEventListener("DOMContentLoaded", () => {
   document.querySelectorAll(".slider-track").forEach(track => {
