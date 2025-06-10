@@ -1,84 +1,95 @@
 <div th:fragment="content" class="d-flex flex-column align-items-center w-100 px-3 px-md-0" style="max-width: 768px; margin: 0 auto;">
+<style>
+	.chat-room-item {
+	  transition: background-color 0.2s ease;
+	}
+	.chat-room-item:hover {
+	  background-color: #f8f9fa;
+	}
+
+	.chat-room-item img {
+	  border: 2px solid #dee2e6;
+	  transition: transform 0.2s ease;
+	}
+	.chat-room-item:hover img {
+	  transform: scale(1.05);
+	}
+</style>
     <h4 class="mb-4">📨 나의 채팅방</h4>
 
-    <!-- 채팅방 없을 경우 메시지 -->
-    <div th:if="${chatSummaries != null and #lists.isEmpty(chatSummaries)}">
-        <p class="text-muted">참여 중인 채팅방이 없습니다.</p>
+    <!-- 채팅방 없을 경우 -->
+    <div th:if="${chatSummaries != null and #lists.isEmpty(chatSummaries)}" class="text-center text-muted mt-5">
+        <i class="bi bi-chat-dots fs-2 d-block mb-2"></i>
+        <p>참여 중인 채팅방이 없습니다.</p>
     </div>
 
     <!-- 채팅방 목록 -->
     <div class="list-group w-100" th:if="${chatSummaries != null and !#lists.isEmpty(chatSummaries)}">
         <a th:each="summary : ${chatSummaries}"
            th:href="@{/chat/room/{id}(id=${summary.room.roomId})}"
-           class="list-group-item list-group-item-action d-flex justify-content-between align-items-center py-3 fs-6">
-			
-		   <!-- 프로필 이미지 -->
-		   <div class="me-3 flex-shrink-0">
-		       <img th:src="${summary.profileImagePath}"
-		            alt=""
-		            class="rounded-circle border"
-		            style="width: 60px; height: 60px; object-fit: cover;" />
-		   </div>
-			
-		   <!-- 닉네임 + 메시지 -->
-			<div class="flex-grow-1">
-                <!-- 닉네임 -->
-			    <div class="fw-bold mb-1" th:text="${summary.opponentNickname}">상대방</div>
-                <!-- 마지막 메시지 -->
-                <div class="text-muted small" 
-					 th:id="'chat-msg-' + ${summary.room.roomId}" 
-					 th:text="${summary.lastMessage}">(메시지 없음)</div>
-            </div>
-			
-   			<!-- 채팅방 목록 우측에 채팅온 개수(뱃지) -->
-		   <div class="text-end ms-3" style="min-width: 70px;">
-		       <!-- badge 추가 -->
-		       <span class="badge rounded-pill bg-danger"
-		             th:id="'chat-badge-' + ${summary.room.roomId}"
-		             style="font-size: 0.8rem; display: none;">
-		           <!-- JS에서 숫자 삽입 -->
-		       </span><br/>
-    			<!-- 마지막 메시지 시간 -->
-		       <small class="text-muted" 
-			   		  th:if="${summary.lastTime != null}" 
-					  th:id="'chat-time-' + ${summary.room.roomId}"
-		              th:text="${#temporals.format(summary.lastTime, 'MM/dd HH:mm')}">00:00</small>
-		   </div>
+           class="list-group-item list-group-item-action py-3 d-flex align-items-center chat-room-item">
+
+           <!-- 프로필 이미지 -->
+           <img th:src="${summary.profileImagePath}"
+                alt="프로필"
+                class="rounded-circle border shadow-sm me-3 flex-shrink-0"
+                style="width: 56px; height: 56px; object-fit: cover;" />
+
+           <!-- 내용 -->
+           <div class="flex-grow-1">
+               <div class="d-flex justify-content-between align-items-center">
+                   <!-- 닉네임 -->
+                   <strong class="text-dark" th:text="${summary.opponentNickname}">상대방</strong>
+               </div>
+               <!--  마지막 메시지 내용 -->
+               <div class="text-muted small text-truncate mt-1"
+                    th:id="'chat-msg-' + ${summary.room.roomId}"
+                    style="max-width: 100%;"
+                    th:text="${summary.lastMessage}">(메시지 없음)</div>
+           </div>
+		   <!-- 마지막 시간 -->
+		   <small class="text-muted"
+		          th:if="${summary.lastTime != null}"
+		          th:id="'chat-time-' + ${summary.room.roomId}"
+		          th:text="${#temporals.format(summary.lastTime, 'MM/dd HH:mm')}">00:00</small>
+           <!-- 뱃지 -->
+           <span class="badge rounded-pill bg-danger ms-3"
+                 th:id="'chat-badge-' + ${summary.room.roomId}"
+                 style="font-size: 0.75rem; display: none;">
+               <!-- JS에서 채워짐 -->
+           </span>
         </a>
-    </div> <!--채팅방 목록 끝-->
-	
-	<script>
-	$(document).ready(function () {
-		function updateUnreadBadgesAndMessages() {
-		    $.get("/chat/api/unread-summary", function (data) {
-		        data.forEach(item => {
-		            const badge = $("#chat-badge-" + item.roomId);
-		            const msgBox = $("#chat-msg-" + item.roomId);
-		            const timeBox = $("#chat-time-" + item.roomId);
+    </div>
 
-		            // 뱃지 표시
-		            if (item.unreadCount > 0) {
-		                badge.text(item.unreadCount > 9 ? "10+" : item.unreadCount).show();
-		            } else {
-		                badge.hide();
-		            }
+    <!-- JS: 안 바꿔도 됨 -->
+    <script>
+    $(document).ready(function () {
+        function updateUnreadBadgesAndMessages() {
+            $.get("/chat/api/unread-summary", function (data) {
+                data.forEach(item => {
+                    const badge = $("#chat-badge-" + item.roomId);
+                    const msgBox = $("#chat-msg-" + item.roomId);
+                    const timeBox = $("#chat-time-" + item.roomId);
 
-		            // 메시지 내용, 시간 업데이트
-		            if (msgBox.length > 0) {
-		                msgBox.text(item.lastMessage || "(메시지 없음)");
-		            }
-		            if (timeBox.length > 0 && item.lastTime) {
-		                const hhmm = item.lastTime.substring(11, 16); // "2025-06-04T17:21" → "17:21"
-		                timeBox.text(hhmm);
-		            }
-		        });
-		    });
-		}
-	    // chatList 진입시 최초 실행
-	    updateUnreadBadgesAndMessages();
-	    // 주기적으로 갱신
-	    setInterval(updateUnreadBadgesAndMessages, 4000);
-	});
-	</script>
+                    if (item.unreadCount > 0) {
+                        badge.text(item.unreadCount > 9 ? "10+" : item.unreadCount).show();
+                    } else {
+                        badge.hide();
+                    }
 
+                    if (msgBox.length > 0) {
+                        msgBox.text(item.lastMessage || "(메시지 없음)");
+                    }
+                    if (timeBox.length > 0 && item.lastTime) {
+						const date = item.lastTime.substring(5, 10);
+						const time = item.lastTime.substring(11, 16);
+						timeBox.text(date.replace("-", "/") + " " + time); // "06/11 14:23" <- ㅇㅣ런식으로 출력중
+                    }
+                });
+            });
+        }
+        updateUnreadBadgesAndMessages();
+        setInterval(updateUnreadBadgesAndMessages, 4000);
+    });
+    </script>
 </div>
