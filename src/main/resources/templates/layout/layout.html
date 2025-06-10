@@ -32,24 +32,8 @@
 
 </div>
 
-<!-- 알림 모달창 -->
-<div class="modal fade" id="notifModal" tabindex="-1" aria-labelledby="notifModalLabel" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-scrollable modal-md"> <!-- 중간 크기 -->
-    <div class="modal-content rounded-3 shadow">
-      <div class="modal-header bg-primary text-white">
-        <h5 class="modal-title" id="notifModalLabel">알림</h5>
-        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="닫기"></button>
-      </div>
-	  <button class="btn btn-sm btn-outline-secondary ms-auto me-3 mt-2 mark-all-read">전체 읽음</button>
-      <div class="modal-body p-0">
-        <div id="notifList" class="notif-scroll-box">
-          <p class="text-muted text-center m-4">알림이 없습니다.</p>
-        <!-- JS가 동적으로 덮어씀 -->
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
+<!-- 알림 모달창 조각뷰 -->
+<div th:replace="fragment/notifModal :: notifModal"></div>
 
 <!-- 클라이언트 측에서 SweetAlert2를 띄울 수 있는 전역 함수 정의 -->
 <script src="/js/common/swal.js"></script>
@@ -81,4 +65,3 @@
 
 </body>
 </html>
-
