@@ -111,6 +111,19 @@ public class ProductService {
 		}
 		return products;
 	}
+	
+	// 판매 중(ONSALE) + 예약중(RESERVED) 상태 상품 조회 - QR 생성, 판매중 탭 용 - jw
+	public List<ProductEntity> getVisibleOngoingProducts(Long sellerId) {
+		List<String> statuses = List.of("ONSALE", "RESERVED");
+		List<ProductEntity> products = productRepository.findByUserIdAndStatusInAndIsHiddenFalse(sellerId, statuses);
+
+		for (ProductEntity product : products) {
+			Long productId = product.getProductId();
+			product.setThumbnailPath(imageService.getThumbnailPath(productId));
+			product.setImagePaths(imageService.getAllImagePaths(productId));
+		}
+		return products;
+	}
 
 	// 대표 이미지 경로를 받아오는 메서드 추가했습니다 - jw
 	public String getThumbnailPath(Long productId) {
