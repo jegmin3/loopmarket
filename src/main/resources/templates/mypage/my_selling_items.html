@@ -28,7 +28,7 @@
 		              <span th:text="${product.title}">상품명</span>
 		            </a>
 		          </td>
-		          <td th:text="'₩' + ${product.price}">가격</td>
+		          <td th:text="${#numbers.formatInteger(product.price, 3, 'COMMA')} + '원'">가격</td>
 		          <td th:text="${#temporals.format(product.createdAt, 'yyyy-MM-dd')}">등록일</td>
 
 		          <!-- 상태: 왼쪽 테두리 제거 -->
