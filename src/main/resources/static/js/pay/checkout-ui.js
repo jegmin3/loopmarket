@@ -28,12 +28,12 @@ document.addEventListener('DOMContentLoaded', () => {
           : productPrice;
 
         // 잔액 표시
-        payBalanceText.textContent = `₩${balance.toLocaleString()}`;
+		payBalanceText.textContent = `${balance.toLocaleString('ko-KR')}원`;
 		
 		// 총 결제 금액 표시
 		const totalPriceText = document.getElementById('totalPriceText');
 		if (totalPriceText) {
-		  totalPriceText.textContent = `₩${totalPrice.toLocaleString()}`;
+			totalPriceText.textContent = `${totalPrice.toLocaleString('ko-KR')}원`;
 		}
 		
         // 잔액 부족 시 처리

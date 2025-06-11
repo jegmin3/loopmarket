@@ -22,7 +22,7 @@
             </div>
           </td>
           <td th:text="${item.title}">상품명</td>
-          <td th:text="'₩' + ${item.price}">가격</td>
+          <td th:text="${#numbers.formatInteger(product.price, 3, 'COMMA')} + '원'">가격</td>
           <td th:text="${item.createdAt != null} ? ${#temporals.format(item.createdAt, 'yyyy-MM-dd')} : 'N/A'">결제일</td>
         </tr>
         <tr th:if="${#lists.isEmpty(purchasedProducts)}">

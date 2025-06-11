@@ -23,7 +23,7 @@
             </div>
           </td>
           <td th:text="${product.title}">상품명</td>
-          <td th:text="'₩' + ${product.price}">가격</td>
+          <td th:text="${#numbers.formatInteger(product.price, 3, 'COMMA')} + '원'">가격</td>
           <td><span class="text-success">판매 완료</span></td>
           <td th:text="${#temporals.format(product.updateAt, 'yyyy-MM-dd')}">판매일</td>
         </tr>

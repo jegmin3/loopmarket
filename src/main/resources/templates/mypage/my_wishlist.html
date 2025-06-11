@@ -39,8 +39,8 @@
             </a>
           </td>
           <td>
-            <span th:if="${item.status != 'ONSALE'}" class="text-decoration-line-through" th:text="'₩' + ${item.price}">가격</span>
-            <span th:if="${item.status == 'ONSALE'}" th:text="'₩' + ${item.price}">가격</span>
+            <span th:if="${item.status != 'ONSALE'}" class="text-decoration-line-through" th:text="${#numbers.formatInteger(item.price, 3, 'COMMA')} + '원'">가격</span>
+            <span th:if="${item.status == 'ONSALE'}" th:text="${#numbers.formatInteger(item.price, 3, 'COMMA')} + '원'">가격</span>
           </td>
           <td>
             <button class="btn btn-link p-0 border-0 btn-remove-wishlist"
