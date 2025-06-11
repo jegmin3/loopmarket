@@ -1,16 +1,22 @@
 <div th:fragment="content">
+  <link rel="stylesheet" th:href="@{/css/product.css}">
+  <link rel="stylesheet" th:href="@{/css/productDetail.css}">
+  <div class="container my-5 position-relative">
+    <!-- ⬇ 여기에 신고하기 링크 삽입 -->
+    <a th:if="${session.loginUser != null and session.loginUser.userId != product.userId}"
+       th:href="@{/report/create(productId=${product.productId}, reportedUserId=${product.userId})}"
+       class="report-link">신고하기</a>
 
-  <div class="container my-5">
 
     <div class="row justify-content-center">
       <div class="col-md-10">
         <div class="row g-0">
 			<!-- 왼쪽: 이미지 슬라이더 + 판매자 정보 -->
-			<div class="col-md-5 pe-md-3"> 
+			<div class="col-md-5 pe-md-3">
 			  <div class="d-flex flex-column align-items-stretch gap-3">
 
 			    <!-- 이미지 슬라이더 -->
-			    <div class="position-relative px-2" style="height: 320px; overflow: hidden;"> 
+			    <div class="position-relative px-2" style="height: 320px; overflow: hidden;">
 			      <div class="slider-track d-flex"
 			           th:if="${product.imagePaths != null}"
 			           th:style="${#lists.size(product.imagePaths) == 1} ?
@@ -27,10 +33,10 @@
 			      </div>
 
 			      <!-- 슬라이드 버튼 -->
-			      <button th:if="${product.imagePaths.size() > 1}"
+			      <button th:if="${product.imagePaths != null and product.imagePaths.size() > 1}"
 			              class="slider-prev btn position-absolute top-50 start-0 translate-middle-y"
 			              onclick="slideImage(this, -1, event)">❮</button>
-			      <button th:if="${product.imagePaths.size() > 1}"
+			      <button th:if="${product.imagePaths != null and product.imagePaths.size() > 1}"
 			              class="slider-next btn position-absolute top-50 end-0 translate-middle-y"
 			              onclick="slideImage(this, 1, event)">❯</button>
 			    </div>
@@ -43,6 +49,16 @@
 			            th:attr="data-index=${i}"
 			            style="width: 6px; height: 6px; opacity: 0.4;"></span>
 			    </div>
+          <!-- 거래 희망 방식 영역 -->
+          <div class="mt-2 ps-4">
+            <div class="border rounded-pill px-3 py-2 d-inline-flex align-items-center gap-2 shadow-sm"
+                 style="background-color: #f8f9fa;">
+              <strong class="text-dark mb-0">거래 방식</strong>
+              <span th:if="${product.isDirect ?: false}" class="badge rounded-pill bg-primary-subtle text-primary fw-normal">직거래</span>
+              <span th:if="${product.isDelivery ?: false}" class="badge rounded-pill bg-success-subtle text-success fw-normal">택배</span>
+              <span th:if="${product.isNonface ?: false}" class="badge rounded-pill bg-secondary-subtle text-secondary fw-normal">비대면</span>
+            </div>
+          </div>
 
 			    <!-- 판매자 정보 -->
 			    <a th:href="@{/sellers/{id}(id=${product.userId})}"
@@ -57,41 +73,85 @@
 			        <div th:text="${dongName + ' · ' + product.relativeTime}"></div>
 			        <div>
 			          <span th:text="'조회수 ' + ${product.viewCount} + '회'"></span>
+<!--
 			          <span class="ms-2" th:text="'찜 ' + ${wishCount} + '명'"></span>
+-->
 			        </div>
+
 			      </div>
+
 			    </a>
 
 			  </div>
+
+
+
 			</div>
 
           <!-- 오른쪽: 상품 정보 -->
           <div class="col-md-6 ms-5">
 			<div class="d-flex justify-content-between align-items-center">
-			  <h4 class="fw-bold mb-1" th:text="${product.title}">상품 제목</h4>
+        <h4 class="fw-bold mb-1">
+          <span th:if="${product.status == 'RESERVED'}" class="text-success me-1">예약</span>
+          <span th:text="${product.title}">상품 제목</span>
+        </h4>
 
-			  <div th:if="${session.loginUser != null and session.loginUser.userId == product.userId}"
+
+        <div th:if="${session.loginUser != null and session.loginUser.userId == product.userId}"
 			       th:replace="fragment/edit-button :: editButton(${product.productId}, ${product.userId})">
 			  </div>
 			</div>
-            <h3 class="text-danger fw-bold mb-3"
-                th:text="${#numbers.formatInteger(product.price, 3, 'COMMA')} + '원'">가격</h3>
+            <div class="price-like-wrapper mb-3">
+              <h3 class="text-danger fw-bold mb-0">
+                <!-- 나눔일 경우 -->
+                <span th:if="${product.saleType == 'DONATION'}">나눔</span>
+
+                <!-- 판매일 경우 -->
+                <span th:if="${product.saleType != 'DONATION'}">
+    <span th:if="${product.price != null}" th:text="${#numbers.formatInteger(product.price, 3, 'COMMA')} + '원'">120,000원</span>
+    <span th:if="${product.price == null}">나눔</span>
+  </span>
+              </h3>
+
+
+
+              <!-- 찜 -->
+              <div class="like-info">
+                <i class="bi bi-heart-fill"></i>
+                <span th:text="${wishCount} + '명'">3명</span>
+              </div>
+
+              <!-- 조회수 -->
+              <div class="like-info">
+                <i class="bi bi-eye"></i>
+                <span th:text="${product.viewCount} + '회'">24회</span>
+              </div>
+            </div>
+
 
             <ul class="list-unstyled small">
               <li class="mb-2"><strong>상세 설명</strong><br>
                 <span th:text="${product.description}" style="white-space: pre-line;">상품 설명</span>
               </li>
 
-              <li><strong>상품 상태:</strong> <span th:text="${conditionText}">사용감 있어요</span></li>
-              <li><strong>거래 방식:</strong>
-                <span th:if="${product.saleType == 'SALE'}">판매</span>
-                <span th:if="${product.saleType == 'DONATION'}">나눔</span>
+              <!-- 상품 상태 (게이지바) -->
+              <div class="product-condition-bar my-3">
+                <div class="d-flex justify-content-between align-items-center mb-1">
+                  <span class="fw-semibold text-dark" th:text="${conditionText}">거의 새 거예요</span>
+                </div>
+                <div class="progress rounded-pill" style="height: 12px;">
+                  <div class="progress-bar bg-warning"
+                       role="progressbar"
+                       th:style="'width: ' + ${product.conditionScore} + '%'">
+                  </div>
+                </div>
+              </div>
+
+
+              <li th:if="${product.saleType == 'DONATION'}">
+                <strong>거래 방식:</strong> 나눔
               </li>
-              <li><strong>희망 방식:</strong>
-                <span th:if="${product.isDirect ?: false}">직거래 </span>
-                <span th:if="${product.isDelivery ?: false}">택배 </span>
-                <span th:if="${product.isNonface ?: false}">비대면</span>
-              </li>
+
               <li><strong>거래 위치:</strong><span th:text="${product.locationText}">부산진구 전포동</span>
               </li>
             </ul>
@@ -100,13 +160,7 @@
             <div id="map" style="width: 100%; height: 180px;" class="rounded my-3"></div>
 
             <!-- 버튼 영역 -->
-            <div class="d-flex flex-column gap-2 mt-4">
-
-              <!-- 예약 상태 안내 -->
-              <div th:if="${product.status == 'RESERVED'}"
-                   class="alert alert-warning text-center fw-semibold w-100 mb-0">
-                해당 상품은 <strong>예약중</strong>입니다.
-              </div>
+            <div class="product-detail-buttons d-flex flex-column gap-2 mt-4">
 
               <div class="d-flex gap-2 justify-content-between mt-3">
                 <!-- 찜하기 -->
@@ -132,19 +186,9 @@
                 택배로 구매하기
               </a>
 
-              <!-- 신고하기 (로그인 사용자 & 본인 상품이 아닐 경우만) -->
-              <div th:if="${session.loginUser != null and session.loginUser.userId != product.userId}">
-                <form th:action="@{/report/create}" method="get">
-                  <input type="hidden" name="productId" th:value="${product.productId}" />
-                  <input type="hidden" name="reportedUserId" th:value="${product.userId}" />
-                  <button type="submit" class="btn btn-outline-warning w-100">
-                    <i class="bi bi-flag"></i> 신고하기
-                  </button>
-                </form>
-              </div>
             </div>
           </div>
-		  
+
 		  <h5 class="fw-semibold mt-5">이 판매자가 판매하는 다른 물품</h5>
 
 		    <!-- 다른 상품이 없을 경우 -->
@@ -154,57 +198,100 @@
 
 		    <!-- 다른 상품이 있을 경우에만 카드 보여줌 -->
 		    <div class="row row-cols-1 row-cols-md-4 g-4 mt-2" th:if="${!#lists.isEmpty(otherProducts)}">
-		      <div class="col" th:each="p : ${otherProducts}">
-		        <a th:href="@{'/products/' + ${p.productId}}" class="text-decoration-none text-dark">
-		          <div class="card h-100 shadow-sm position-relative">
-		            <div class="position-absolute top-0 start-0 z-20" style="padding: 4px;">
-		              <div th:replace="fragment/status_badge :: statusBadge(${p.status})"></div>
-		            </div>
-		            <img th:src="@{${p.thumbnailPath}}"
-		                 class="card-img-top"
-		                 style="width: 100%; height: 200px; object-fit: cover;" />
-		            <div class="card-body">
-		              <h6 class="card-title fw-bold text-truncate" th:text="${p.title}">상품명</h6>
-		              <p class="card-text small text-muted">
-		                <span th:text="${#numbers.formatInteger(p.price, 3, 'COMMA')} + '원'">가격</span> |
-		                <span th:text="${p.relativeTime}">시간</span>
-		              </p>
-		            </div>
-		          </div>
-		        </a>
-		      </div>
-		    </div>
+          <div class="col" th:each="p : ${otherProducts}">
+            <a th:href="@{'/products/' + ${p.productId}}" class="text-decoration-none text-dark">
+              <div class="card h-100 shadow-sm"
+                   th:classappend="' ' +
+       (${p.isDelivery == true} ? 'border-delivery ' : '') +
+       (${p.status == 'RESERVED'} ? 'reserved-card' : '')">
+
+
+
+
+
+              <div class="card-img-wrapper position-relative">
+                  <img th:src="@{${p.thumbnailPath}}" class="card-img-top"
+                       style="width: 100%; height: 200px; object-fit: cover;" />
+
+                  <!-- 이미지 위에만 표시 -->
+                  <div th:if="${p.status?.toUpperCase() == 'SOLD'}" class="sold-blur"></div>
+                  <div th:if="${p.status?.toUpperCase() == 'SOLD'}" class="sold-text">판매완료</div>
+
+                  <div th:if="${p.status?.toUpperCase() == 'RESERVED'}" class="reserved-overlay">
+                    <span class="reserved-text">예약중</span>
+                  </div>
+                </div>
+
+                <div class="position-absolute top-0 start-0 z-20" style="padding: 4px;">
+                  <div th:replace="fragment/status_badge :: statusBadge(${p.status})"></div>
+                </div>
+
+                <div class="card-body">
+                  <h6 class="card-title fw-bold text-truncate" th:text="${p.title}">상품명</h6>
+                  <p class="card-text small text-muted">
+                    <span th:text="${#numbers.formatInteger(p.price, 3, 'COMMA')} + '원'">가격</span> |
+                    <span th:text="${p.relativeTime}">시간</span>
+                  </p>
+                </div>
+
+              </div>
+            </a>
+          </div>
+
+        </div>
 
 		    <h5 class="fw-semibold mt-5">이 상품과 비슷한 상품</h5>
 		    <div th:if="${#lists.isEmpty(similarProducts)}" class="text-muted mt-2 mb-5">
 		      이 상품과 비슷한 상품이 아직 없어요.
 		    </div>
 		    <div class="row row-cols-1 row-cols-md-4 g-4 mt-2" th:if="${!#lists.isEmpty(similarProducts)}">
-		      <div class="col" th:each="s : ${similarProducts}">
-		        <a th:href="@{'/products/' + ${s.productId}}" class="text-decoration-none text-dark">
-		          <div class="card h-100 shadow-sm position-relative">
-		            <div class="position-absolute top-0 start-0 z-20" style="padding: 4px;">
-		              <div th:replace="fragment/status_badge :: statusBadge(${s.status})"></div>
-		            </div>
-		            <img th:src="@{${s.thumbnailPath}}" class="card-img-top"
-		                 style="width: 100%; height: 200px; object-fit: cover;" />
-		            <div class="card-body">
-		              <h6 class="card-title fw-bold text-truncate" th:text="${s.title}">상품명</h6>
-		              <p class="card-text small text-muted">
-		                <span th:text="${#numbers.formatInteger(s.price, 3, 'COMMA')} + '원'">가격</span> |
-		                <span th:text="${s.relativeTime}">시간</span>
-		              </p>
-		            </div>
-		          </div>
-		        </a>
-		      </div>
-		    </div>
+          <div class="col" th:each="s : ${similarProducts}">
+            <a th:href="@{'/products/' + ${s.productId}}" class="text-decoration-none text-dark">
+              <div class="card h-100 shadow-sm"
+                   th:classappend="' ' +
+       (${s.isDelivery == true} ? 'border-delivery ' : '') +
+       (${s.status == 'RESERVED'} ? 'reserved-card' : '')">
+
+
+
+
+              <!-- 이미지 부분만 감싸기 -->
+                <div class="card-img-wrapper position-relative">
+                  <img th:src="@{${s.thumbnailPath}}" class="card-img-top"
+                       style="width: 100%; height: 200px; object-fit: cover;" />
+
+                  <!-- 이미지 위에만 오버레이 표시 -->
+                  <div th:if="${s.status?.toUpperCase() == 'SOLD'}" class="sold-blur"></div>
+                  <div th:if="${s.status?.toUpperCase() == 'SOLD'}" class="sold-text">판매완료</div>
+
+                  <div th:if="${s.status?.toUpperCase() == 'RESERVED'}" class="reserved-overlay">
+                    <span class="reserved-text">예약중</span>
+                  </div>
+                </div>
+
+                <!-- 상태 뱃지 -->
+                <div class="position-absolute top-0 start-0 z-20" style="padding: 4px;">
+                  <div th:replace="fragment/status_badge :: statusBadge(${s.status})"></div>
+                </div>
+
+                <div class="card-body">
+                  <h6 class="card-title fw-bold text-truncate" th:text="${s.title}">상품명</h6>
+                  <p class="card-text small text-muted">
+                    <span th:text="${#numbers.formatInteger(s.price, 3, 'COMMA')} + '원'">가격</span> |
+                    <span th:text="${s.relativeTime}">시간</span>
+                  </p>
+                </div>
+
+              </div>
+            </a>
+          </div>
+        </div>
 
         </div>
       </div>
     </div>
   </div>
-  
+
   <!-- 지도 & 슬라이더 & 찜 JS -->
   <script src="//dapi.kakao.com/v2/maps/sdk.js?appkey=d4ca8876da8e183543e1cfbbd669097d&libraries=services"></script>
   <script th:inline="javascript">

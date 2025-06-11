@@ -73,14 +73,6 @@ public class ProductEntity {
   public void setIsBest(boolean isBest) {
     this.isBest = isBest;
   }
-  @Transient
-  public boolean isDeliveryOnly() {
-    return Boolean.TRUE.equals(isDelivery)
-      && !Boolean.TRUE.equals(isDirect)
-      && !Boolean.TRUE.equals(isNonface);
-  }
-
-
 
   @Transient private String thumbnailPath;      // 대표 이미지 경로 (DB 저장 안됨)
   @Transient private List<String> imagePaths;   // 이미지 경로 리스트 (DB 저장 안됨)
@@ -92,6 +84,7 @@ public class ProductEntity {
   @Transient private LocalDateTime sellerJoinDate;
   @Transient private Integer sellerTotalSellCount;
   @Transient private Integer sellerTotalBuyCount;
+
   @Transient
   public String getDeliveryOnlyText() {
     if (Boolean.TRUE.equals(isDelivery) && !Boolean.TRUE.equals(isDirect) && !Boolean.TRUE.equals(isNonface)) {
@@ -99,6 +92,13 @@ public class ProductEntity {
     }
     return null;
   }
+  @Transient
+  public boolean getDeliveryOnly() {
+    return Boolean.TRUE.equals(isDelivery)
+      && !Boolean.TRUE.equals(isDirect)
+      && !Boolean.TRUE.equals(isNonface);
+  }
+
 
 
 }

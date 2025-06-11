@@ -36,7 +36,7 @@ public class ImageService {
       }
     }
   }
-  
+
   public String uploadProfileImage(Long userId, MultipartFile file) {
 	    try {
 	        String savedPath = s3Service.upload(file);
@@ -56,7 +56,7 @@ public class ImageService {
 
   public List<String> getAllImagePaths(Long productId) {
 	  List<ImageEntity> images = imageRepository.findByTargetTableAndTargetId("products", productId);
-	  
+
 	  // 이미지가 없을 경우 기본 이미지 경로 하나 넣어줌
 	  if (images == null || images.isEmpty()) {
 	    return List.of("/img/no-image.png");
@@ -74,7 +74,7 @@ public class ImageService {
     }
     return thumbnail.getImagePath();
   }
-  
+
   public String getProfilePath(Integer userId) {
 	    ImageEntity image = imageRepository.findFirstByTargetTableAndTargetId("users", userId.longValue());
 

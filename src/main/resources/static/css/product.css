@@ -31,6 +31,7 @@
   color: #222;
 }
 
+
 .card-text.fw-bold {
   color: #111;
   font-size: 15px;
@@ -43,8 +44,13 @@
 
 /* 슬라이더 점 */
 .dot {
-  transition: opacity 0.3s;
+  width: 6px;
+  height: 6px;
+  background-color: #ccc;
+  opacity: 0.6;
+  transition: opacity 0.2s ease;
 }
+
 
 /* 이전/다음 슬라이드 버튼 */
 .slider-prev,
@@ -58,8 +64,9 @@
   transition: opacity 0.3s ease, color 0.3s ease;
 }
 
-.card:hover .slider-prev,
-.card:hover .slider-next {
+/* ✅ 수정: position-relative(슬라이더 wrapper) 안에서도 보이게 */
+.position-relative:hover .slider-prev,
+.position-relative:hover .slider-next {
   opacity: 1;
   pointer-events: auto;
   color: rgba(0, 0, 0, 0.85);
@@ -412,25 +419,19 @@
   align-items: center;
   pointer-events: none;
 }
-
-/* ✅ 예약중: 흐리게 (그레이+밝기 낮춤) */
-.reserved-overlay {
-  filter: grayscale(0.3) brightness(0.95);
-  background-color: rgba(0, 0, 0, 0.3);
-
+/* 카드 내 이미지 wrapper */
+.card-img-wrapper {
+  position: relative;
+  width: 100%;
+  height: 200px;
+  overflow: hidden;
 }
 
-.reserved-text {
-  color: #fff;
-  font-size: 25px;
-  font-weight: 500;
-  padding: 6px 12px;
-  border-radius: 6px;
-}
-
-/* ✅ 판매완료: 블러 처리 */
+/* 판매완료: 이미지 위에만 블러 + 텍스트 */
 .sold-blur {
   position: absolute;
+  top: 0;
+  left: 0;
   width: 100%;
   height: 100%;
   backdrop-filter: blur(3px);
@@ -438,12 +439,42 @@
   z-index: 1;
 }
 
-.sold-text {
-  position: relative;
+
+/* 예약중: 이미지 위에 흐림 + 텍스트 */
+.reserved-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  filter: grayscale(0.3) brightness(0.95);
+  background-color: rgba(0, 0, 0, 0.3);
   z-index: 2;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  pointer-events: none;
+}
+
+/*예약중 메세지*/
+.reserved-text {
   color: #fff;
-  font-size: 25px;
+  font-size: 20px;
   font-weight: 500;
-  padding: 6px 12px;
+  background-color: transparent;
   border-radius: 6px;
+  padding: 6px 12px;
+}
+
+/*판매완료 메세지*/
+.sold-text {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: #fff;
+  font-size: 20px;
+  font-weight: 500;
+  z-index: 2;
+  pointer-events: none;
 }
