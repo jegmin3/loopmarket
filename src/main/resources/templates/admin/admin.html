@@ -55,13 +55,18 @@
 
 			  // ✅ URL에 따라 JS 로드
 			  if (url === '/admin/dashboard') {
-			    $.getScript('/js/admin_dashboard.js')
-			      .done(function () {
-			        console.log('✅ admin_dashboard.js 로딩 완료');
-			      })
-			      .fail(function () {
-			        console.error('❌ admin_dashboard.js 로드 실패');
-			      });
+			    $('#admin-content').html(data); // 이걸 먼저 DOM에 붙이고
+
+			    // 약간의 delay 후 JS 실행 → DOM 렌더 완료 후 실행 보장
+			    setTimeout(function () {
+			      $.getScript('/js/admin_dashboard.js')
+			        .done(function () {
+			          console.log('✅ admin_dashboard.js 로딩 완료');
+			        })
+			        .fail(function () {
+			          console.error('❌ admin_dashboard.js 로드 실패');
+			        });
+			    }, 100); // 100~200ms 정도면 충분
 			  } else if (url === '/admin/products') {
 			    $.getScript('/js/admin_products.js')
 			      .done(function () {
