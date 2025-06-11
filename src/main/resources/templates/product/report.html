@@ -1,33 +1,47 @@
 <div th:fragment="content">
-  <div class="container mt-5 mb-5 px-2 px-md-5">
-    <h3 class="text-center mb-4">사용자 신고하기</h3>
-    <form th:action="@{/report/submit}" method="post">
-      <input type="hidden" name="productId" th:value="${productId}" />
-      <input type="hidden" name="reportedUserId" th:value="${reportedUserId}" />
+  <div class="container py-5">
+    <div class="row justify-content-center">
+      <div class="col-12 col-md-10 col-lg-6">
+        <div class="card shadow-sm p-5 rounded-4 border-0">
+          <h3 class="text-center fw-bold mb-4">🚨 사용자 신고</h3>
 
-      <div class="mb-3">
-        <label for="reason" class="form-label">신고 사유</label>
-        <select name="reason" id="reason" class="form-select" required>
-          <option value="">-- 선택 --</option>
-          <option value="욕설/비방">욕설/비방</option>
-          <option value="사기 의심">사기 의심</option>
-          <option value="부적절한 내용">부적절한 내용</option>
-          <option value="기타">기타</option>
-        </select>
+          <form th:action="@{/report/submit}" method="post">
+            <input type="hidden" name="productId" th:value="${productId}" />
+            <input type="hidden" name="reportedUserId" th:value="${reportedUserId}" />
+
+            <!-- 신고 사유 -->
+            <div class="mb-4">
+              <label for="reason" class="form-label fs-6 mb-2">신고 사유</label>
+              <select name="reason" id="reason" class="form-select fs-6 py-2" required>
+                <option value="">-- 선택 --</option>
+                <option value="욕설/비방">욕설/비방</option>
+                <option value="사기 의심">사기 의심</option>
+                <option value="부적절한 내용">부적절한 내용</option>
+                <option value="기타">기타</option>
+              </select>
+            </div>
+
+            <!-- 상세 내용 -->
+            <div class="mb-4">
+              <label for="detail" class="form-label fs-6 mb-2">상세 내용</label>
+              <textarea name="detail"
+                        id="detail"
+                        class="form-control fs-6 p-3"
+                        style="min-height: 280px; resize: vertical;"
+                        placeholder="예: 구매 후 연락이 되지 않아요. 또는 허위 상품 같아요 등..."
+                        maxlength="1000"
+                        required></textarea>
+            </div>
+
+            <!-- 제출 버튼 -->
+            <button type="submit"
+                    class="btn w-100 py-2 fs-6 fw-semibold"
+                    style="background-color: #facc15; color: #111827; border: none; border-radius: 0.75rem;">
+              신고 제출하기
+            </button>
+          </form>
+        </div>
       </div>
-
-	  <div class="mb-3">
-	    <label for="detail" class="form-label">상세 내용</label>
-	    <textarea name="detail"
-	              id="detail"
-	              class="form-control fs-5 p-3"
-	              style="min-height: 300px; resize: vertical;"
-	              placeholder="예: 구매 후 연락이 되지 않아요. 또는 허위 상품 같아요 등..."
-	              maxlength="1000"
-	              required></textarea>
-	  </div>
-
-      <button type="submit" class="btn btn-warning w-100">신고 제출</button>
-    </form>
+    </div>
   </div>
 </div>

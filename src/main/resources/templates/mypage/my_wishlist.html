@@ -20,11 +20,11 @@
                class="d-inline-block ratio ratio-1x1"
                style="max-width: 80px;">
               <img th:src="@{${item.thumbnailPath}}" alt="상품 이미지"
-                   class="img-fluid object-fit-cover" />
+                   class="img-fluid object-fit-cover rounded" />
             </a>
             <div th:if="${item.status != 'ONSALE'}" class="ratio ratio-1x1" style="max-width: 80px;">
               <img th:src="@{${item.thumbnailPath}}" alt="상품 이미지"
-                   class="img-fluid object-fit-cover" />
+                   class="img-fluid object-fit-cover rounded" />
             </div>
           </td>
           <td>
@@ -76,8 +76,8 @@
                th:text="${item.title}"></a>
           </h6>
           <p class="mb-1 text-muted">
-            <span th:if="${item.status != 'ONSALE'}" class="text-decoration-line-through" th:text="'₩' + ${item.price}"></span>
-            <span th:if="${item.status == 'ONSALE'}" th:text="'₩' + ${item.price}"></span>
+            <span th:if="${item.status != 'ONSALE'}" class="text-decoration-line-through" th:text="${#numbers.formatInteger(item.price, 3, 'COMMA')} + '원'"></span>
+            <span th:if="${item.status == 'ONSALE'}" th:text="${#numbers.formatInteger(item.price, 3, 'COMMA')} + '원'"></span>
           </p>
           <div th:if="${item.status != 'ONSALE'}">
             <span class="badge bg-secondary">판매 완료</span>

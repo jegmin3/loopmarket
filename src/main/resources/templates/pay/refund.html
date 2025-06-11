@@ -19,19 +19,45 @@
 				<input id="amountInput" class="form-control form-control-lg text-center mb-3" type="text" value="0"
 					readonly />
 
-				<div class="d-flex justify-content-center gap-2 mb-3 pay-quick-buttons">
-					<button class="btn btn-dark rounded-pill px-4" data-amount="10000">1만원</button>
-					<button class="btn btn-dark rounded-pill px-4" data-amount="50000">5만원</button>
-					<button class="btn btn-dark rounded-pill px-4" data-amount="100000">10만원</button>
-				</div>
+					<div class="d-flex justify-content-center gap-2 mb-3 pay-quick-buttons">
+						<button class="btn rounded-pill px-4" data-amount="10000">1만원</button>
+						<button class="btn rounded-pill px-4" data-amount="50000">5만원</button>
+						<button class="btn rounded-pill px-4" data-amount="100000">10만원</button>
+					</div>
 
 				<div class="border rounded-4 p-3 shadow-sm mb-3">
 					<div class="row row-cols-3 g-2 text-center" id="keypad"></div>
 				</div>
 
-				<button class="btn btn-dark btn-lg w-100" id="refundBtn">환불하기</button>
+				<button class="btn btn-point btn-lg w-100" id="refundBtn">환불하기</button>
 			</div>
 		</div>
+		
+		<style>
+		  :root {
+		    --main-color: #1e40af;
+		  }
+
+		  /* 포인트 버튼 */
+		  .btn-point {
+		    background-color: var(--main-color);
+		    color: white;
+		    border: none;
+		  }
+		  
+		  /* hover 효과 제거 */
+		    .btn-point:hover {
+		      background-color: var(--main-color);
+		      color: white;
+		    }
+
+		  /* 빠른 금액 버튼 */
+		  .pay-quick-buttons .btn {
+		    background-color: var(--main-color);
+		    color: white;
+		    border: none;
+		  }
+		</style>
 	</div>
 
 	<!-- 환불 전용 JS -->

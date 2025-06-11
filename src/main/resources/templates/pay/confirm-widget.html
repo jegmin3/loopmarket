@@ -13,7 +13,7 @@
   <div class="modal fade" id="confirmModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered" style="max-width: 480px;">
       <div class="modal-content p-2 rounded-4 shadow">
-        <div class="modal-header border-0">
+        <div class="modal-header">
           <h5 class="modal-title fw-bold">구매 확정할 상품 선택</h5>
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
@@ -52,8 +52,8 @@
 
 						  <!-- 텍스트 영역 -->
 						  <div class="flex-grow-1 text-start">
-						    <div class="fw-bold" th:text="${item.title ?: '제목없음'}">상품명</div>
-						    <div class="text-muted small" th:text="'₩' + (${item.price} ?: 0)">가격</div>
+						    <div class="text-muted small" th:text="${item.title}">상품명</div>
+						    <div class="fw-bold" th:text="${#numbers.formatInteger(item.price, 3, 'COMMA')} + '원'">가격</div>
 						  </div>
 						</div>
                   </div>
@@ -75,7 +75,7 @@
 
         <!-- 3. 구매 확정 버튼 (상품 있을 때만 출력) -->
         <div class="modal-footer border-0" th:if="${confirmables != null and confirmables.size() > 0}">
-          <button id="confirmPayBtn" class="btn btn-dark w-100 rounded-pill">
+          <button id="confirmPayBtn" class="btn btn-dark w-100 rounded-pill" style="background-color: #198754; color: white; border: none;">
             구매 확정하기
           </button>
         </div>
