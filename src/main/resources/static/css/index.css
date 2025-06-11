@@ -257,3 +257,74 @@ body {
   animation: slideUp 0.4s ease-in-out forwards;
   opacity: 1;
 }
+
+/* ------------------------------
+	모바일 대응 & 반응형 스타일
+------------------------------ */
+@media (max-width: 576px) {
+
+  /* 상단 여백 줄이기 */
+  .search-section {
+    padding-top: 40px;  /* 기존 80px → 줄임 */
+    padding-bottom: 20px;
+  }
+
+  .search-title {
+    font-size: 1.5rem;
+    margin-bottom: 0.5rem !important;
+  }
+
+  /* 부전동 버튼 */
+  .location-btn {
+    font-size: 14px;
+    height: 40px;
+    padding: 0 16px;
+    margin-bottom: 12px;  /* 검색창과 간격 추가 */
+  }
+
+  /* 검색창 */
+  .search-wrapper {
+    flex-wrap: nowrap;
+    padding: 0 1rem;
+    justify-content: center;
+  }
+
+  .search-input {
+    max-width: 220px;
+    height: 44px;
+    font-size: 14px;
+    padding: 0 14px;
+  }
+
+  .search-btn {
+    width: 44px;
+    height: 44px;
+    font-size: 18px;
+  }
+
+  /* 카테고리 카드 */
+  .category-row {
+    gap: 0.5rem;
+    padding: 0 1rem;
+    justify-content: center;
+  }
+
+  .category-icon-card {
+    width: 22%;
+    min-width: 64px;
+    aspect-ratio: 1 / 1;
+    padding: 10px 4px;
+    border-radius: 0.75rem;
+  }
+
+  .category-icon-card .icon {
+    font-size: 18px;
+    margin-bottom: 4px;
+  }
+
+  .category-icon-card .label {
+    font-size: 0.75rem;
+    line-height: 1.2;
+    word-break: keep-all;
+  }
+}

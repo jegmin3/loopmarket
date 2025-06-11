@@ -17,13 +17,25 @@
       <div class="d-flex flex-wrap justify-content-center gap-3 category-row">
 
         <!-- 반복 렌더링: mainCategories 리스트를 순회하며 아이콘 카드 생성 -->
-        <div th:each="category : ${mainCategories}" class="category-icon-card text-center">
-          <a href="#" class="text-decoration-none text-dark category-link"
-             th:attr="data-value=${category.ctgCode}">
-            <div class="icon" th:text="'📱'"></div>
-            <div class="label" th:text="${category.ctgName}">카테고리명</div>
-          </a>
-        </div>
+		<div th:each="category, stat : ${mainCategories}" class="category-icon-card text-center">
+		  <a href="#" class="text-decoration-none text-dark category-link"
+		     th:attr="data-value=${category.ctgCode}">
+
+			 <div class="icon" th:switch="${stat.index}">
+			   <span th:case="0">🧸</span>
+			   <span th:case="1">📱</span>
+			   <span th:case="2">💻</span>
+			   <span th:case="3">📺</span>
+			   <span th:case="4">📷</span>
+			   <span th:case="5">🎧</span>
+			   <span th:case="6">🎮</span>
+			   <span th:case="7">💬</span>
+			   <span th:case="*">❓</span>
+			 </div>
+
+		    <div class="label" th:text="${category.ctgName}">카테고리명</div>
+		  </a>
+		</div>
 
 
       </div>
