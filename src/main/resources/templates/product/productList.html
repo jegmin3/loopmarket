@@ -183,8 +183,7 @@
     </div>
 
     <!-- 상품 슬라이드 기능 스크립트 로드 -->
-    <script th:src="@{/js/product.js}"></script>
-    <script th:src="@{/js/render.js}"></script>
+
     <script th:inline="javascript">
       const isLoggedIn = [[${session.loginUser != null}]];
 
@@ -197,6 +196,8 @@
         }
       }
     </script>
+    <script th:src="@{/js/product.js}"></script>
+    <script th:src="@{/js/render.js}"></script>
 
   </div>
   <link rel="stylesheet" th:href="@{/css/product.css}" />

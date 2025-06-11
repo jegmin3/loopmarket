@@ -190,58 +190,6 @@ document.addEventListener("DOMContentLoaded", () => {
   window.handleCategoryChange = handleCategoryChange;
 
 
-
-// 가격 필터 버튼 클릭 함수
-  function filterByPrice(min, max) {
-    const url = new URL(window.location.href);
-    url.searchParams.set("minPrice", min);
-    url.searchParams.set("maxPrice", max);
-    window.location.href = url.toString();
-  }
-
-// 직접 입력한 가격 적용
-  function applyPriceRange() {
-    const min = document.getElementById("minPrice").value || 0;
-    const max = document.getElementById("maxPrice").value || 0;
-
-    const url = new URL(window.location.href);
-    url.searchParams.set("minPrice", min);
-    url.searchParams.set("maxPrice", max);
-    window.location.href = url.toString();
-  }
-
-  // 페이지 로드 시 가격 필터 active 표시
-  const urlParams = new URLSearchParams(window.location.search);
-  const min = urlParams.get("minPrice");
-  const max = urlParams.get("maxPrice");
-
-  document.querySelectorAll("button[data-min][data-max]").forEach(btn => {
-    const btnMin = btn.getAttribute("data-min");
-    const btnMax = btn.getAttribute("data-max");
-
-    if (btnMin === min && btnMax === max) {
-      btn.classList.add("active");
-    }
-  });
-
-  //가격초기화
-  function resetPriceFilter() {
-    const url = new URL(window.location.href);
-    url.searchParams.delete("minPrice");
-    url.searchParams.delete("maxPrice");
-    window.location.href = url.toString();
-  }
-
-  window.resetPriceFilter = resetPriceFilter;
-
-
-
-// 버튼에서 호출할 수 있게 등록
-  window.filterByPrice = filterByPrice;
-  window.applyPriceRange = applyPriceRange;
-
-
-
   // 초기 점(dot) 표시: 첫 점만 진하게
   document.querySelectorAll(".card").forEach(card => {
     const dots = card.querySelectorAll(".dot");
@@ -525,6 +473,35 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 });
+
+function filterByPrice(min, max) {
+  const url = new URL(window.location.href);
+  url.searchParams.set("minPrice", min);
+  url.searchParams.set("maxPrice", max);
+  window.location.href = url.toString();
+}
+window.filterByPrice = filterByPrice;
+
+function applyPriceRange() {
+  const min = document.getElementById("minPrice").value || 0;
+  const max = document.getElementById("maxPrice").value || 0;
+
+  const url = new URL(window.location.href);
+  url.searchParams.set("minPrice", min);
+  url.searchParams.set("maxPrice", max);
+  window.location.href = url.toString();
+}
+window.applyPriceRange = applyPriceRange;
+
+function resetPriceFilter() {
+  const url = new URL(window.location.href);
+  url.searchParams.delete("minPrice");
+  url.searchParams.delete("maxPrice");
+  window.location.href = url.toString();
+}
+window.resetPriceFilter = resetPriceFilter;
+
+
 // URL에 lat, lng 없으면 localStorage 값으로 강제 세팅 (초기 진입 시용)
 document.addEventListener("DOMContentLoaded", () => {
   const url = new URL(window.location.href);
@@ -684,3 +661,4 @@ function getCoordsFromAddress(address, callback) {
   });
 }
 window.getCoordsFromAddress = getCoordsFromAddress;
+
