@@ -4,10 +4,10 @@
 <div th:fragment="qrWidget(myProducts)">
   <!-- 1. 버튼 -->
   <div class="text-center my-2">
-    <button class="btn btn-outline-primary px-4 py-2 rounded-pill fw-semibold"
-            data-bs-toggle="modal" data-bs-target="#qrModal">
-      결제 QR 생성
-    </button>
+	<button class="btn-qr px-4 py-2 rounded-pill fw-semibold"
+	        data-bs-toggle="modal" data-bs-target="#qrModal">
+	  결제 QR 생성
+	</button>
   </div>
 
   <!-- 2. 모달 -->
@@ -71,7 +71,7 @@
 
         <!-- 푸터: 상품이 있을 때만 버튼 표시 -->
         <div class="modal-footer" th:if="${myProducts != null and myProducts.size() > 0}">
-          <button id="generateQRBtn" class="btn btn-dark w-100 rounded-pill">
+          <button id="generateQRBtn" class="btn btn-dark w-100 rounded-pill" style="background-color: #1e40af; color: white; border: none;">
             QR 생성
           </button>
 
@@ -82,4 +82,17 @@
       </div>
     </div>
   </div>
+<style>
+  .btn-qr {
+    background-color: white;
+    color: #1e40af;
+    border: 1px solid #1e40af;
+    transition: background-color 0.2s ease;
+  }
+
+  .btn-qr:hover {
+    background-color: #1e40af;
+	color: white;
+  }
+</style>
 </div>

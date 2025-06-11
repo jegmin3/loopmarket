@@ -4,6 +4,8 @@
  */
 
 document.addEventListener("DOMContentLoaded", () => {
+	let currentAmount = 0;
+	
 	// 현재 잔액 조회
 	fetch("/api/pay/balance")
 		.then(res => res.json())
@@ -24,40 +26,46 @@ document.addEventListener("DOMContentLoaded", () => {
 		btn.addEventListener("click", () => {
 			selectedPg = btn.dataset.pg;
 
-			// 모든 버튼에서 강조 제거
+			// 모든 버튼에서 active 제거
 			document.querySelectorAll("#pgButtons button").forEach(b => {
-				b.classList.remove("btn-dark", "text-white");
-				b.classList.add("btn-outline-secondary");
+				b.classList.remove("active");
 			});
 
-			// 클릭된 버튼 강조
-			btn.classList.add("btn-dark");
-			btn.classList.add("btn-dark", "text-white");
+			// 클릭된 버튼에 active 부여
+			btn.classList.add("active");
 		});
 	});
 
+	// 최초 버튼에 초기 active 부여
+	document.querySelector(`#pgButtons button[data-pg="${selectedPg}"]`).classList.add("active");
+
 	// 숫자 입력 제어
 	function appendAmount(value) {
-		const input = document.getElementById("amountInput");
-
-		// 현재 값이 0인데 또 0 또는 00을 누르면 무시
-		if (input.value === "0" && (value === "0" || value === "00")) return;
-
-		if (input.value === "0") input.value = value;
-		else input.value += value;
+		if (value === "0" || value === "00") {
+			if (currentAmount === 0) return;
+			currentAmount = currentAmount * parseInt(value);
+		} else {
+			currentAmount = currentAmount * 10 + parseInt(value);
+		}
+		updateInput();
 	}
 
 	// 숫자 지우기(입력 취소)
 	function deleteLastDigit() {
+		currentAmount = Math.floor(currentAmount / 10);
+		updateInput();
+	}
+	
+	function updateInput() {
 		const input = document.getElementById("amountInput");
-		input.value = input.value.length > 1 ? input.value.slice(0, -1) : "0";
+		input.value = currentAmount.toLocaleString(); // 쉼표 형식 적용
 	}
 
 	// 빠른 금액 버튼
 	document.querySelectorAll(".pay-quick-buttons button").forEach(btn => {
 		btn.addEventListener("click", () => {
-			const input = document.getElementById("amountInput");
-			input.value = parseInt(input.value || "0") + parseInt(btn.dataset.amount);
+			currentAmount += parseInt(btn.dataset.amount);
+			updateInput();
 		});
 	});
 
@@ -84,7 +92,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 	// 충전 버튼 클릭 시 → 포트원 결제창 실행
 	document.getElementById("chargeBtn").addEventListener("click", () => {
-		const amount = parseInt(document.getElementById("amountInput").value || "0");
+		const amount = currentAmount;
 		const balance = parseInt(document.getElementById("balance").textContent.replace(/,/g, ""));
 		const MAX_AMOUNT = 1000000; // 최대 충전 금액 (100만원으로 설정)
 
