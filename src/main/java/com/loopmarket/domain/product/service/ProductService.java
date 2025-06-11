@@ -3,6 +3,7 @@ package com.loopmarket.domain.product.service;
 import com.loopmarket.domain.category.repository.CategoryRepository;
 import com.loopmarket.domain.image.service.ImageService;
 import com.loopmarket.domain.product.dto.CategoryProductStatsDTO;
+import com.loopmarket.domain.product.dto.ProductDTO;
 import com.loopmarket.domain.product.dto.WeeklyProductStatsDTO;
 import com.loopmarket.domain.product.entity.ProductEntity;
 import com.loopmarket.domain.product.repository.ProductRepository;
@@ -467,5 +468,29 @@ public class ProductService {
     else if (days < 2) return "1일 전";
     else return days + "일 전";
   }
+  public void registerProductWithDTO(ProductDTO dto, Long userId, List<MultipartFile> images, int mainImageIndex) {
+    ProductEntity entity = new ProductEntity();
+
+    entity.setUserId(userId);
+
+    entity.setTitle(dto.getTitle());
+    entity.setPrice(dto.getPrice());
+    entity.setCtgCode(dto.getCtgCode());
+    entity.setDescription(dto.getDescription());
+    entity.setSaleType(dto.getSaleType());
+    entity.setCondition(dto.getCondition());
+    entity.setConditionScore(dto.getConditionScore());
+    entity.setIsDirect(dto.getIsDirect());
+    entity.setIsDelivery(dto.getIsDelivery());
+    entity.setIsNonface(dto.getIsNonface());
+    entity.setLocationText(dto.getLocationText());
+    entity.setLatitude(dto.getLatitude());
+    entity.setLongitude(dto.getLongitude());
+    entity.setShippingFee(dto.getShippingFee());
+    entity.setIsHidden(false);
+
+    registerProductWithImages(entity, images, mainImageIndex);
+  }
+
 
 }

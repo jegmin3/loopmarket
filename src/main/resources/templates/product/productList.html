@@ -85,9 +85,13 @@
       <!-- 상품 리스트 반복 출력 -->
       <div class="col" th:each="product : ${productList}">
         <a th:href="@{'/products/' + ${product.productId}}" class="text-decoration-none text-dark">
-          <div class="card h-100 shadow-sm">
+          <div class="card h-100 shadow-sm"
+               th:classappend="${product.isDelivery == true ? ' border-delivery' : ''} + ' ' + ${product.status == 'RESERVED' ? 'reserved-card' : ''}">
 
-            <!-- 이미지 영역 -->
+
+
+
+          <!-- 이미지 영역 -->
             <div class="position-relative" style="height: 200px; overflow: hidden;">
 
               <!-- 슬라이더 이미지 먼저 -->
@@ -99,23 +103,36 @@
                      th:style="'width:' + (100 / ${#lists.size(product.imagePaths)}) + '%; height: 100%; object-fit: cover; flex-shrink: 0;'"/>
               </div>
 
-              <!-- 이미지 위에 회색 오버레이 (z-10) -->
-              <div th:if="${product.status == 'SOLD'}"
-                   class="position-absolute top-0 start-0 w-100 h-100"
-                   style="background-color: rgba(120, 120, 120, 0.4); z-index: 10;"></div>
+              <!-- 예약중 오버레이 (흐리게 + 텍스트) -->
+              <div th:if="${product.status == 'RESERVED'}" class="reserved-overlay">
+                <span class="reserved-text">예약중</span>
+              </div>
+
+              <!-- 판매완료 오버레이 (블러 + 텍스트) -->
+              <div th:if="${product.status == 'SOLD'}" class="sold-overlay">
+                <div class="sold-blur"></div>
+                <span class="sold-text">판매완료</span>
+              </div>
 
               <!-- 상태 뱃지 + BEST 뱃지 -->
               <div class="position-absolute top-0 start-0 z-20 d-flex flex-column" style="padding: 4px;">
-                <div th:replace="fragment/status_badge :: statusBadge(${product.status})"></div>
 
-                <!-- 인기 BEST 뱃지 -->
-                <div th:if="${product.isBest}" class="badge bg-danger text-white rounded-end px-2 py-1 small mt-1">
+                <!-- ✅ 상태 뱃지: SOLD, RESERVED가 아닐 때만 표시 -->
+                <div th:if="${product.status == 'AVAILABLE'}"
+                     th:replace="fragment/status_badge :: statusBadge(${product.status})"></div>
+
+                <!-- ✅ BEST 뱃지는 항상 표시 -->
+                <div th:if="${product.isBest}"
+                     class="badge bg-danger text-white rounded-end px-2 py-1 small mt-1">
                   BEST
                 </div>
+
               </div>
 
+              <div class="position-relative" style="height: 200px; overflow: hidden;">
 
-
+                <!-- 슬라이더 등 이미지 요소들 -->
+              </div>
 
 
               <button th:if="${product.imagePaths.size() > 1}"
@@ -139,12 +156,23 @@
             <div class="card-body">
               <h5 class="card-title" th:text="${product.title}">상품명</h5>
               <p class="card-text fw-bold" th:text="${#numbers.formatInteger(product.price, 3, 'COMMA') + '원'}">가격</p>
-              <p class="card-text text-muted small"
-                 th:text="${product.isDeliveryOnly} ? '택배전용 · ' + ${product.relativeTime} : ${product.dongName} + ' · ' + ${product.relativeTime}">
+
+              <!-- 거래 방식 또는 위치/시간 정보 -->
+              <p class="card-text text-muted small">
+                <!-- 택배 단독 체크된 경우 -->
+                <span th:if="${product.isDelivery == true and product.isDirect != true and product.isNonface != true}"
+                      th:text="'택배전용 · ' + ${product.relativeTime}"></span>
+
+                <!-- 그 외: 동네 있음 -->
+                <span th:if="${!(product.isDelivery == true and product.isDirect != true and product.isNonface != true)
+                  and product.dongName != null and !#strings.isEmpty(product.dongName)}"
+                      th:text="${product.dongName + ' · ' + product.relativeTime}"></span>
+
+                <!-- 그 외: 동네 없음 -->
+                <span th:if="${!(product.isDelivery == true and product.isDirect != true and product.isNonface != true)
+                  and (product.dongName == null or #strings.isEmpty(product.dongName))}"
+                      th:text="${product.relativeTime}"></span>
               </p>
-
-
-
             </div>
           </div>
         </a>
@@ -155,8 +183,7 @@
     </div>
 
     <!-- 상품 슬라이드 기능 스크립트 로드 -->
-    <script th:src="@{/js/product.js}"></script>
-    <script th:src="@{/js/render.js}"></script>
+
     <script th:inline="javascript">
       const isLoggedIn = [[${session.loginUser != null}]];
 
@@ -169,6 +196,8 @@
         }
       }
     </script>
+    <script th:src="@{/js/product.js}"></script>
+    <script th:src="@{/js/render.js}"></script>
 
   </div>
   <link rel="stylesheet" th:href="@{/css/product.css}" />
