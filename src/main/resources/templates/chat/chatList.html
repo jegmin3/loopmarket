@@ -47,17 +47,17 @@
                     style="max-width: 100%;"
                     th:text="${summary.lastMessage}">(메시지 없음)</div>
            </div>
+           <!-- 뱃지 -->
+           <span class="badge rounded-pill bg-danger ms-3 me-2"
+                 th:id="'chat-badge-' + ${summary.room.roomId}"
+                 style="font-size: 0.75rem; display: none;">
+               <!-- JS에서 채워짐 -->
+           </span>
 		   <!-- 마지막 시간 -->
 		   <small class="text-muted"
 		          th:if="${summary.lastTime != null}"
 		          th:id="'chat-time-' + ${summary.room.roomId}"
 		          th:text="${#temporals.format(summary.lastTime, 'MM/dd HH:mm')}">00:00</small>
-           <!-- 뱃지 -->
-           <span class="badge rounded-pill bg-danger ms-3"
-                 th:id="'chat-badge-' + ${summary.room.roomId}"
-                 style="font-size: 0.75rem; display: none;">
-               <!-- JS에서 채워짐 -->
-           </span>
         </a>
     </div>
 
