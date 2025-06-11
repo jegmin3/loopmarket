@@ -43,7 +43,7 @@ public class SellerController extends BaseController {
         }
 
         // 판매자가 판매 중인 상품 목록 조회
-        List<ProductEntity> sellingProducts = productService.getOngoingProducts(seller.getUserId().longValue());
+        List<ProductEntity> sellingProducts = productService.getVisibleOngoingProducts(seller.getUserId().longValue());
 
         // 썸네일 처리
         for (ProductEntity product : sellingProducts) {
