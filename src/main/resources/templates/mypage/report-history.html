@@ -1,69 +1,94 @@
 <div th:fragment="content">
   <div class="card p-3 shadow-sm rounded-3">
     <h5 class="mb-3">신고 내역</h5>
+
+    <!-- 비어 있을 때 안내 -->
     <div th:if="${#lists.isEmpty(reports)}">
       <p class="text-muted">신고한 내역이 없습니다.</p>
     </div>
-	<table class="table table-bordered" th:if="${!#lists.isEmpty(reports)}">
-	  <thead class="table-light">
-	    <tr>
-	      <th>상품명</th>
-	      <th>신고 사유</th>
-	      <th>상세 내용</th>
-	      <th>신고일</th>
-	      <th>처리 상태</th>
-	    </tr>
-	  </thead>
-	  <tbody>
-	      <tr th:each="report, iterStat : ${reports}">
-	        <td th:text="${report.productTitle}"></td>
-	        <td th:text="${report.reason}"></td>
-	        <td th:text="${report.detail}"></td>
-	        <td th:text="${#temporals.format(report.createdAt, 'yyyy-MM-dd HH:mm')}"></td>
-	        <td>
-				<button type="button" class="btn btn-primary btn-sm view-response-btn"
-				        th:attr="data-report-id=${iterStat.index}"
-				        th:attrappend=" data-response-message=${report.responseMessage}"
-				        data-bs-toggle="modal" data-bs-target="#responseModal">
-				  <span th:text="${report.processed} ? '답변 보기' : '대기중'"></span>
-				</button>
-	        </td>
-	      </tr>
-	    </tbody>
-	</table>
-	
-	
-	<!-- 모달 팝업 -->
-	<div class="modal fade" id="responseModal" tabindex="-1" aria-hidden="true">
-	  <div class="modal-dialog">
-	    <div class="modal-content">
-	      <div class="modal-header">
-	        <h5 class="modal-title">관리자 답변</h5>
-	        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-	      </div>
-	      <div class="modal-body" id="modalResponseContent">
-	        <!-- 답변 내용이 여기에 동적으로 채워짐 -->
-	      </div>
-	    </div>
-	  </div>
-	</div>
+
+    <!-- 데스크탑 테이블 -->
+    <div class="responsive-table d-none d-md-block" th:if="${!#lists.isEmpty(reports)}">
+      <table class="table table-bordered">
+        <thead class="table-light">
+          <tr>
+            <td>상품명</td>
+            <td>신고 사유</td>
+            <td>상세 내용</td>
+            <td>신고일</td>
+            <td>처리 상태</td>
+          </tr>
+        </thead>
+        <tbody>
+          <tr th:each="report, iterStat : ${reports}">
+            <td th:text="${report.productTitle}"></td>
+            <td th:text="${report.reason}"></td>
+            <td th:text="${report.detail}"></td>
+            <td th:text="${#temporals.format(report.createdAt, 'yyyy-MM-dd HH:mm')}"></td>
+            <td>
+              <button type="button" class="btn btn-primary btn-sm view-response-btn"
+                      th:attr="data-report-id=${iterStat.index}"
+                      th:attrappend=" data-response-message=${report.responseMessage}"
+                      data-bs-toggle="modal" data-bs-target="#responseModal">
+                <span th:text="${report.processed} ? '답변 보기' : '대기중'"></span>
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- 모바일 카드 뷰 -->
+    <div class="d-block d-md-none" th:if="${!#lists.isEmpty(reports)}">
+      <div th:each="report, iterStat : ${reports}" class="card mb-3 shadow-sm">
+        <div class="card-body">
+          <h6 class="mb-2" th:text="'상품명: ' + ${report.productTitle}">상품명</h6>
+          <p class="mb-1" th:text="'신고 사유: ' + ${report.reason}">신고 사유</p>
+          <p class="mb-1 text-muted" th:text="'내용: ' + ${report.detail}">상세 내용</p>
+          <p class="mb-2" th:text="'신고일: ' + ${#temporals.format(report.createdAt, 'yyyy-MM-dd HH:mm')}">신고일</p>
+          <button type="button"
+                  class="btn btn-sm w-100"
+                  th:classappend="${report.processed} ? 'btn-outline-primary' : 'btn-outline-secondary'"
+                  data-bs-toggle="modal"
+                  data-bs-target="#responseModal"
+                  th:attr="data-report-id=${iterStat.index}"
+                  th:attrappend=" data-response-message=${report.responseMessage}">
+            <span th:text="${report.processed} ? '답변 보기' : '대기중'"></span>
+          </button>
+        </div>
+      </div>
+    </div>
   </div>
-  
+
+  <!-- 답변 모달 -->
+  <div class="modal fade" id="responseModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">관리자 답변</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body" id="modalResponseContent">
+          <!-- 답변 내용이 여기에 동적으로 채워짐 -->
+        </div>
+      </div>
+    </div>
+  </div>
+
   <style>
     .responsive-table {
-      overflow-x: auto; /* 모바일에서 가로 스크롤 */
+      overflow-x: auto;
     }
 
     table.table {
       table-layout: fixed;
       width: 100%;
-      min-width: 600px; /* 너무 작아지지 않게 */
+      min-width: 600px;
     }
 
     table.table th,
     table.table td {
       word-wrap: break-word;
-      overflow-wrap: break-word;
       white-space: normal;
       max-width: 200px;
       vertical-align: middle;
@@ -73,24 +98,16 @@
       max-width: 300px;
     }
   </style>
-  
+
   <script>
-    $(document).ready(function() {
-		const modal = document.getElementById('responseModal');
-		    const modalBody = document.getElementById('modalResponseContent');
-		    document.querySelectorAll('.view-response-btn').forEach(btn => {
-		      btn.addEventListener('click', () => {
-		        const reportId = btn.getAttribute('data-report-id');
-		        // 서버에서 데이터를 미리 받아왔다면 JS 객체로 관리하거나 data-*에 넣어서 사용
-		        // 예: const responseMessage = reports[reportId].responseMessage;
-		        // 임시 예시:
-		        const responseMessage = btn.getAttribute('data-response-message');
-		        modalBody.textContent = responseMessage || '답변이 없습니다.';
-		      });
-		    });
-		  });
+    $(document).ready(function () {
+      const modalBody = document.getElementById('modalResponseContent');
+      document.querySelectorAll('.view-response-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const responseMessage = btn.getAttribute('data-response-message');
+          modalBody.textContent = responseMessage || '답변이 없습니다.';
+        });
+      });
+    });
   </script>
-  
-  
-  
 </div>
