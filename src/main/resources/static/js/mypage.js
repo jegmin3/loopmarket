@@ -71,20 +71,30 @@ $(document).ready(function () {
     });
   }
 
-  // 공통: 숨김 처리 버튼
+  // 공통: 숨김 처리 및 해제 버튼
   function bindHideToggleEvents() {
     $('.btn-toggle-hide').off('click').on('click', function () {
       const productId = $(this).data('id');
+      const isCurrentlyHidden = $(this).text().trim() === '숨김 해제';
+
       $.ajax({
         url: `/api/products/${productId}/hide`,
         type: 'PATCH',
         success: function () {
-          location.reload();
+          Swal.fire({
+            icon: 'success',
+            title: isCurrentlyHidden ? '숨김 해제 완료' : '숨김 처리 완료',
+            text: isCurrentlyHidden ? '상품이 공개되었습니다.' : '상품이 숨김 처리되었습니다.',
+            timer: 1000,
+            showConfirmButton: false
+          }).then(() => {
+            location.reload();
+          });
         },
         error: function () {
           Swal.fire({
             icon: 'error',
-            title: '숨김 처리 실패',
+            title: '처리 실패',
             text: '서버 오류가 발생했습니다.'
           });
         }
