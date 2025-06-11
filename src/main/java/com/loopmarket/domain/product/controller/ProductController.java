@@ -7,16 +7,19 @@ import com.loopmarket.domain.image.service.ImageService;
 import com.loopmarket.domain.location.service.LocationService;
 import com.loopmarket.domain.member.MemberEntity;
 import com.loopmarket.domain.member.MemberRepository;
+import com.loopmarket.domain.product.dto.ProductDTO;
 import com.loopmarket.domain.product.entity.ProductEntity;
 import com.loopmarket.domain.product.service.ProductService;
 import com.loopmarket.domain.wishlist.service.WishlistService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpSession;
+import javax.validation.Valid;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.Comparator;
@@ -123,25 +126,30 @@ public class ProductController {
 
   // 상품 등록 처리
   @PostMapping("/products")
-  public String register(
-    @ModelAttribute ProductEntity product,
-    @RequestParam("images") List<MultipartFile> images,
-    @RequestParam("mainImageIndex") int mainImageIndex,
-    @RequestParam(value = "latitude", required = false) Double latitude,
-    @RequestParam(value = "longitude", required = false) Double longitude,
-    HttpSession session) {
+  public String register(@Valid @ModelAttribute("product") ProductDTO productDTO,
+                         BindingResult bindingResult,
+                         @RequestParam("images") List<MultipartFile> images,
+                         @RequestParam("mainImageIndex") int mainImageIndex,
+                         HttpSession session,
+                         Model model) {
+
+    if (bindingResult.hasErrors()) {
+      model.addAttribute("product", productDTO);
+      model.addAttribute("mainCategories", categoryRepository.findMainCategories());
+      model.addAttribute("viewName", "product/productForm");
+      return "layout/layout";
+    }
 
     MemberEntity loginUser = (MemberEntity) session.getAttribute("loginUser");
     if (loginUser == null) return "redirect:/member/login";
 
-    product.setUserId(loginUser.getUserId().longValue());
-    product.setLatitude(latitude);
-    product.setLongitude(longitude);
-    product.setIsHidden(false);
+    Long userId = loginUser.getUserId().longValue();
+    productService.registerProductWithDTO(productDTO, userId, images, mainImageIndex);
 
-    productService.registerProductWithImages(product, images, mainImageIndex);
     return "redirect:/products";
   }
+
+
 
   // 상대 시간 계산
   public String formatRelativeTime(LocalDateTime createdAt) {

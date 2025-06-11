@@ -115,8 +115,8 @@
         <div class="mb-3">
           <label>희망 거래 방식</label><br>
           <input type="checkbox" name="isDirect" value="true" id="isDirect"> 직거래
-          <input type="checkbox" name="isDelivery" value="true" id="isDelivery"> 비대면
-          <input type="checkbox" name="isNonface" value="true" id="isNonface"> 택배
+          <input type="checkbox" name="isNonface" value="true" id="isNonface"> 비대면
+          <input type="checkbox" name="isDelivery" value="true" id="isDelivery"> 택배
         </div>
 
         <!-- 거래 희망 장소 입력 -->
@@ -137,7 +137,7 @@
         <!-- 택배비 입력 (택배 선택 시 노출) -->
         <div class="mb-3" id="shippingFeeGroup" style="display: none;">
           <label>택배비 (원)</label>
-          <input type="number" class="form-control" th:field="*{shippingFee}">
+          <input type="number" class="form-control" id="shippingFeeInput" th:field="*{shippingFee}">
         </div>
 
         <!-- 지도 미리보기 영역 -->
