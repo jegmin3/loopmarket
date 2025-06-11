@@ -1,16 +1,16 @@
-<!-- my_sales_history.html -->
 <div th:fragment="content">
   <h6 class="mb-3" th:text="'판매 상품 수 : ' + ${#lists.size(soldProducts)}">판매 상품 수</h6>
 
-  <div class="table-responsive shadow-sm">
+  <!-- 데스크탑 테이블 뷰 -->
+  <div class="table-responsive shadow-sm d-none d-md-block">
     <table class="table align-middle table-bordered text-center mb-0">
       <thead class="table-light">
         <tr>
-          <th style="width: 100px;">상품</th>
-          <th>상품명</th>
-          <th>가격</th>
-          <th>상태</th>
-          <th>판매일</th>
+          <td style="width: 100px;">상품</td>
+          <td>상품명</td>
+          <td>가격</th>
+          <td>상태</td>
+          <td>판매일</td>
         </tr>
       </thead>
       <tbody>
@@ -27,11 +27,35 @@
           <td><span class="text-success">판매 완료</span></td>
           <td th:text="${#temporals.format(product.updateAt, 'yyyy-MM-dd')}">판매일</td>
         </tr>
-        <!-- 판매 내역이 없을 경우 -->
         <tr th:if="${#lists.isEmpty(soldProducts)}">
           <td colspan="5" class="text-center text-muted py-4">판매한 상품이 없습니다.</td>
         </tr>
       </tbody>
     </table>
+  </div>
+
+  <!-- 모바일 카드 뷰 -->
+  <div class="d-block d-md-none">
+    <div th:each="product : ${soldProducts}" class="card mb-3 shadow-sm">
+      <div class="card-body d-flex">
+        <div class="me-3">
+          <img th:src="@{${product.thumbnailPath}}"
+               alt="상품 이미지"
+               class="rounded"
+               style="width: 80px; height: 80px; object-fit: cover;" />
+        </div>
+        <div class="flex-grow-1">
+          <h6 class="mb-1" th:text="${product.title}">상품명</h6>
+          <p class="mb-1 text-muted" th:text="'₩' + ${product.price}">가격</p>
+          <p class="mb-1 text-success">판매 완료</p>
+          <p class="mb-0 text-muted" th:text="'판매일: ' + ${#temporals.format(product.updateAt, 'yyyy-MM-dd')}">판매일</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- 데이터 없음 안내 -->
+    <div th:if="${#lists.isEmpty(soldProducts)}" class="text-center text-muted py-4">
+      판매한 상품이 없습니다.
+    </div>
   </div>
 </div>
