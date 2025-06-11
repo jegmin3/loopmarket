@@ -112,7 +112,7 @@ public class ProductService {
 		}
 		return products;
 	}
-	
+
 	// 판매 중(ONSALE) + 예약중(RESERVED) 상태 상품 조회 - QR 생성, 판매중 탭 용 - jw
 	public List<ProductEntity> getVisibleOngoingProducts(Long sellerId) {
 		List<String> statuses = List.of("ONSALE", "RESERVED");

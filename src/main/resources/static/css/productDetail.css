@@ -1,0 +1,313 @@
+:root {
+  --main-blue: #00C2FF;
+  --dark-blue: #007AFF;
+  --light-gray: #f8f9fa;
+  --card-border: #e4e4e7;
+  --shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+/* 🔹 상품 제목 */
+h4.fw-bold {
+  font-size: 22px;
+  margin-bottom: 8px;
+}
+
+/* 🔹 가격 + 찜 + 조회수 정렬 */
+.price-like-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  flex-wrap: wrap;
+}
+.price-like-wrapper h3 {
+  margin-bottom: 0;
+}
+.price-like-wrapper .like-info {
+  font-size: 15px;
+  color: #666;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.price-like-wrapper .bi-heart-fill {
+  color: #ff3366;
+}
+.price-like-wrapper .bi-eye {
+  color: #aaa;
+}
+
+/* 🔹 이미지 슬라이더 */
+.slider-track img {
+  border-radius: 14px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.07);
+  transition: transform 0.3s ease;
+}
+.slider-track img:hover {
+  transform: scale(1.02);
+}
+
+/* 🔹 슬라이더 버튼 */
+.slider-prev, .slider-next {
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 50%;
+  width: 34px;
+  height: 34px;
+  font-size: 18px;
+  color: var(--dark-blue);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  transition: background-color 0.2s ease;
+}
+.slider-prev:hover, .slider-next:hover {
+  background-color: #f0f4ff;
+}
+
+/* 🔹 dot 인디케이터 */
+.dot {
+  background-color: var(--dark-blue);
+  width: 6px;
+  height: 6px;
+  opacity: 0.4;
+}
+.dot.active {
+  opacity: 1;
+}
+
+/* 🔹 판매자 프로필 카드 */
+a.text-decoration-none.text-dark:hover {
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.06);
+}
+a.text-decoration-none.text-dark .text-muted {
+  font-size: 14px;
+}
+a.text-decoration-none.text-dark .fw-semibold {
+  color: #333;
+}
+
+/* 🔹 지도 */
+#map {
+  border-radius: 12px;
+  border: 1px solid #e1e1e1;
+  height: 180px;
+  margin-top: 8px;
+}
+
+/* 🔹 버튼 공통 */
+.btn-outline-primary,
+.btn-outline-success,
+.btn-outline-danger {
+  font-weight: 500;
+}
+
+/* 🔹 채팅하기 */
+.btn-outline-primary {
+  color: var(--dark-blue);
+  border: 1.5px solid var(--dark-blue);
+}
+.btn-outline-primary:hover {
+  background-color: var(--dark-blue);
+  color: white;
+}
+
+/* 🔹 택배 구매하기 */
+.btn-outline-success {
+  color: var(--main-blue);
+  border: 1.5px solid var(--main-blue);
+}
+.btn-outline-success:hover {
+  background-color: var(--main-blue);
+  color: white;
+}
+
+/* 🔹 찜하기 (원형 버튼) */
+.btn-outline-danger {
+  color: #ff3366;
+  border: 1.5px solid #ff3366;
+  width: 48px;
+  height: 48px;
+  padding: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-radius: 50%;
+}
+.btn-outline-danger:hover {
+  background-color: #ff3366;
+  color: white;
+}
+
+/* 🔹 신고하기 (텍스트 링크) */
+.report-link {
+  position: absolute;
+  top: 16px;
+  right: 24px;
+  font-size: 13px;
+  color: #999;
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+.report-link:hover {
+  color: #333;
+}
+
+/* 🔹 상품 카드 */
+.card.h-100 {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  border-radius: 16px;
+  border: 1px solid #eee;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.card.h-100:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.1);
+}
+
+/* 🔹 카드 텍스트 */
+.card-body {
+  flex-grow: 1;
+  padding: 14px 16px;
+}
+.card-title {
+  font-size: 15px;
+  font-weight: 600;
+  margin-bottom: 6px;
+  color: #222;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.card-text.small.text-muted {
+  font-size: 13px;
+  color: #777;
+  white-space: nowrap;
+}
+.card-text span:empty::before {
+  content: "가격 미정";
+  color: #aaa;
+}
+
+/* 🔹 카드 이미지 */
+.card-img-wrapper {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  overflow: hidden;
+  border-top-left-radius: 16px;
+  border-top-right-radius: 16px;
+}
+.card-img-wrapper img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+/* 🔹 상태 뱃지 (판매중/예약중 등) */
+.status-badge {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  z-index: 10;
+  background-color: #198754;
+  color: white;
+  font-size: 13px;
+  font-weight: 600;
+  padding: 3px 8px;
+  border-radius: 6px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+/* 🔹 상세설명 영역 */
+ul.list-unstyled.small {
+  margin-top: 16px;
+  border-top: 1px solid #eee;
+  padding-top: 12px;
+  font-size: 15px;
+  color: #444;
+}
+ul.list-unstyled.small li {
+  margin-bottom: 10px;
+  line-height: 1.7;
+  display: flex;
+  flex-wrap: wrap;
+}
+ul.list-unstyled.small li strong {
+  display: inline-block;
+  width: 100px;
+  color: #222;
+  font-weight: 600;
+}
+
+/* 🔹 버튼 영역 공통 */
+.product-detail-buttons .btn,
+.product-detail-buttons form > .btn,
+.product-detail-buttons a.btn {
+  border-radius: 10px;
+  padding: 12px 16px;
+  font-size: 15px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+/* 🔹 거래 방식 뱃지 (직거래, 택배, 비대면) */
+.seller-trade-box {
+  border: 1px solid #eee;
+  background: #fafafa;
+  padding: 16px;
+  border-radius: 12px;
+  margin-top: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.seller-trade-box .badge-trade {
+  background-color: #f0f4ff;
+  color: #007AFF;
+  font-weight: 500;
+  border: 1px solid #cce4ff;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 13px;
+}
+
+/* 🔹 기타 뱃지 색상 */
+.bg-primary-subtle {
+  background-color: #e7f1ff;
+  color: #007bff;
+}
+.bg-success-subtle {
+  background-color: #e6f4ea;
+  color: #28a745;
+}
+.bg-secondary-subtle {
+  background-color: #f0f0f0;
+  color: #6c757d;
+}
+.product-condition-box {
+  background-color: #fff8e1;
+  border: 1px solid #ffe082;
+  border-radius: 12px;
+  font-size: 14px;
+}
+
+.product-condition-box .bi-stars {
+  color: #ffca28;
+}
+.product-condition-bar .progress {
+  background-color: #f0f0f0;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.product-condition-bar .progress-bar {
+  background: linear-gradient(90deg, #ffe082, #ffca28);
+}
+
+.progress-bar {
+  transition: width 0.6s ease;
+  font-size: 0.7rem;
+}
