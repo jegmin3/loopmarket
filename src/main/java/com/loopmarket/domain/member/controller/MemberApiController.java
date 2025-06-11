@@ -1,5 +1,6 @@
 package com.loopmarket.domain.member.controller;
 
+import com.loopmarket.domain.image.service.ImageService;
 import com.loopmarket.domain.member.MemberEntity;
 import com.loopmarket.domain.member.MemberRepository;
 
@@ -7,6 +8,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpSession;
+
+import java.util.HashMap;
 import java.util.Map;
 
 /** 회원 관련 RESTful API를 제공하는 컨트롤러 */
@@ -16,6 +19,7 @@ import java.util.Map;
 public class MemberApiController {
 
     private final MemberRepository memberRepository;
+    private final ImageService imageService;
     
     /**
      * 서버에 토큰 저장 
@@ -41,5 +45,21 @@ public class MemberApiController {
             //System.out.println("로그인되지 않은 사용자의 FCM 토큰 수신: " + token);
         }
     } //saveFcmToekn끝
+    
+    /** 공통헤더에 사용자 드롭다운용 */
+    @GetMapping("/info")
+    public Map<String, Object> getUserInfo(HttpSession session) {
+        MemberEntity user = (MemberEntity) session.getAttribute("loginUser");
+        Map<String, Object> result = new HashMap<>();
+        if (user != null) {
+            result.put("nickname", user.getNickname());
+            result.put("profile", imageService.getProfilePath(user.getUserId()));
+            result.put("role", user.getRole());
+        } else {
+            result.put("error", "unauthorized");
+        }
+        return result;
+    }
+
     
 }

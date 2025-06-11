@@ -1,91 +1,96 @@
-<div th:fragment="content" class="d-flex flex-column align-items-center w-100 px-3 px-md-0 mx-auto" style="max-width: 768px;">
-	
-    <h4 class="mb-4">💬 <span th:text="${targetNickname}">상대방 닉네임</span> 님과의 채팅</h4>
+<div th:fragment="content" class="d-flex flex-column align-items-center w-100 px-3 px-md-0 mx-auto"
+	style="max-width: 768px;">
+	<style>
+		#chatArea::-webkit-scrollbar {
+			width: 6px;
+		}
+
+		#chatArea::-webkit-scrollbar-thumb {
+			background-color: rgba(0, 0, 0, 0.1);
+			border-radius: 4px;
+		}
+	</style>
+	<h4 class="mb-4 text-center">
+		💬 <span th:text="${targetNickname}" class="fw-bold">상대방 닉네임</span> 님과의 채팅
+	</h4>
 	<!-- 상품 미리보기 카드 -->
-	<div class="card mb-3 shadow-sm w-100">
-	  <div class="row g-0 align-items-center">
-	    <!-- 상품 이미지: 반응형 & 정사각형 유지 -->
-	    <div class="col-4 col-sm-3">
-	      <img th:src="${productImagePath}" alt="상품 이미지"
-	           class="img-fluid rounded-start"
-	           style="width: 100%; object-fit: cover; aspect-ratio: 1/1; " />
-	    </div>
-
-	    <!-- 상품 정보 -->
-	    <div class="col-8 col-sm-9">
-	      <div class="card-body p-3">
-	        <h6 class="card-title mb-2 text-truncate" th:text="${product.title}">상품 제목</h6>
-
-	        <p class="card-text text-muted mb-2" style="font-size: 0.9rem;">
-	          ₩<span th:text="${#numbers.formatInteger(product.price, 3, 'COMMA')}">0</span>
-	        </p>
-
-	        <p class="mb-2 small text-secondary">
-	          <span th:if="${product.isDirect}" class="badge bg-primary me-1">직거래</span>
-	          <span th:if="${product.isDelivery}" class="badge bg-success me-1">택배</span>
-	          <span th:if="${product.isNonface}" class="badge bg-secondary">비대면</span>
-	        </p>
-
-	        <a th:href="@{/products/{id}(id=${product.productId})}" class="btn btn-sm btn-outline-primary">
-	          상품 페이지로 이동
-	        </a>
-	      </div>
-	    </div>
-	  </div>
+	<div class="card mb-3 shadow-sm w-100 border-0">
+		<div class="row g-0 align-items-center">
+			<div class="col-4 col-sm-3">
+				<!-- 상품 이미지: 반응형 & 정사각형 유지 -->
+				<img th:src="${productImagePath}" alt="상품 이미지" class="img-fluid rounded-start"
+					style="width: 100%; object-fit: cover; aspect-ratio: 1/1;" />
+			</div>
+			<!-- 상품 정보 -->
+			<div class="col-8 col-sm-9">
+				<div class="card-body py-3 px-3">
+					<h6 class="card-title mb-2 text-truncate fw-semibold" th:text="${product.title}">상품 제목</h6>
+					<p class="text-muted mb-2" style="font-size: 0.95rem;">
+						₩<span th:text="${#numbers.formatInteger(product.price, 3, 'COMMA')}">0</span>
+					</p>
+					<p class="mb-2 small">
+						<span th:if="${product.isDirect}" class="badge bg-primary me-1">직거래</span>
+						<span th:if="${product.isDelivery}" class="badge bg-success me-1">택배</span>
+						<span th:if="${product.isNonface}" class="badge bg-secondary">비대면</span>
+					</p>
+					<a th:href="@{/products/{id}(id=${product.productId})}" class="btn btn-sm btn-outline-primary">
+						상품 페이지로 이동
+					</a>
+				</div>
+			</div>
+		</div>
 	</div>
 
-	<!-- 뒤로가기, 목록, 나가기 버튼 div -->
+	<!-- 목록, 나가기 버튼 div -->
 	<div class="btn-group d-flex mt-4 mb-3 w-100">
-	    <!-- 뒤로가기 버튼 -->
-<!--	    <button type="button" class="btn btn-secondary btn-sm" onclick="history.back();">-->
-<!--	        <i class="bi bi-arrow-left"></i> 뒤로가기-->
-<!--	    </button>-->
-	    <!-- 채팅방 목록 이동 버튼 -->
-	    <a th:href="@{/chat/list}" class="btn btn-primary btn-sm">
-	        <i class="bi bi-chat-dots"></i> 채팅 목록으로
-	    </a>
+		<!-- 채팅방 목록 이동 버튼 -->
+		<a th:href="@{/chat/list}" class="btn btn-primary btn-sm">
+			<i class="bi bi-chat-dots"></i> 채팅 목록으로
+		</a>
 		<!-- 채팅방 나가기 버튼 -->
 		<button id="leaveBtn" class="btn btn-danger btn-sm">채팅방 나가기</button>
 		<form id="leaveForm" th:action="@{/chat/leave}" method="post" style="display: none;">
-		    <input type="hidden" name="roomId" th:value="${roomId}" />
+			<input type="hidden" name="roomId" th:value="${roomId}" />
 		</form>
 	</div>
 
 	<!-- 메시지 출력 영역 -->
-	<div id="chatArea" class="border p-3 rounded overflow-auto w-100" style="height: 400px; background-color: #f9f9f9;">
-	    <div th:each="msg : ${messageList}" class="mb-3">
+	<div id="chatArea" class="border p-3 rounded w-100"
+		style="height: 400px; background-color: #f9f9f9; overflow-y: auto;">
+		<div th:each="msg : ${messageList}" class="mb-3">
 
-	        <!-- 내가 보낸 메시지 -->
-	        <div th:if="${msg.senderId == session.loginUser.userId}" class="text-end">
-	            <div class="d-inline-block rounded bg-primary text-white px-3 py-2" style="max-width: 80%;">
-	                <span th:text="${msg.content}" style="font-size: 1.05rem;"></span>
-	            </div>
-	            <div class="text-end text-secondary mt-1" style="font-size: 0.75rem;">
-	                <span th:text="${#temporals.format(msg.sentAt, 'HH:mm')}">00:00</span>
+			<!-- 내가 보낸 메시지 -->
+			<div th:if="${msg.senderId == session.loginUser.userId}" class="text-end">
+				<div class="d-inline-block px-3 py-2 text-white bg-primary rounded-3 shadow-sm" style="max-width: 80%;">
+					<span th:text="${msg.content}" style="font-size: 1.05rem;"></span>
+				</div>
+				<div class="text-end text-secondary mt-1" style="font-size: 0.75rem;">
+					<span th:text="${#temporals.format(msg.sentAt, 'HH:mm')}">00:00</span>
 					<!-- 마지막 메시지인 경우에만 읽음 여부 표시 -->
 					<span th:if="${msg.msgId == lastMyMsgId}" th:text="${msg.read ? '읽음' : '안읽음'}"></span>
-	            </div>
-	        </div>
+				</div>
+			</div>
 
-	        <!-- 상대방이 보낸 메시지 -->
-	        <div th:if="${msg.senderId != session.loginUser.userId}" class="text-start">
-	            <div class="d-inline-block rounded bg-light border px-3 py-2" style="max-width: 80%;">
-	                <span th:text="${msg.content}" style="font-size: 1.05rem;"></span>
-	            </div>
-	            <div class="text-start text-muted mt-1" style="font-size: 0.75rem;">
-	                <span th:text="${#temporals.format(msg.sentAt, 'HH:mm')}">00:00</span>
-	            </div>
-	        </div>
+			<!-- 상대방이 보낸 메시지 -->
+			<div th:if="${msg.senderId != session.loginUser.userId}" class="text-start">
+				<div class="d-inline-block px-3 py-2 bg-light border rounded-3 shadow-sm" style="max-width: 80%;">
+					<span th:text="${msg.content}" style="font-size: 1.05rem;"></span>
+				</div>
+				<div class="text-start text-muted mt-1" style="font-size: 0.75rem;">
+					<span th:text="${#temporals.format(msg.sentAt, 'HH:mm')}">00:00</span>
+				</div>
+			</div>
 
-	    </div>
+		</div>
 	</div>
 
-
-    <!-- 입력창 -->
-    <form id="chatForm" class="mt-3 d-flex w-100">
-        <input type="text" id="msgInput" class="form-control me-2" placeholder="메시지를 입력하세요">
-        <button type="submit" class="btn btn-outline-success px-4" style="white-space: nowrap;">전송</button>
-    </form>
+	<!-- 입력창 -->
+	<form id="chatForm" class="mt-3 d-flex w-100">
+		<input type="text" id="msgInput" class="form-control me-2 rounded-pill" placeholder="메시지를 입력하세요">
+		<button type="submit" class="btn btn-success rounded-pill px-4" style="white-space: nowrap;">
+			전송
+		</button>
+	</form>
 
 	<!-- chatRoom.js용 전역변수 설정 -->
 	<script th:inline="javascript">

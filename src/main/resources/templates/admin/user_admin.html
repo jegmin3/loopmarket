@@ -4,101 +4,152 @@
         <div class="text-center mb-4">
             <h2 class="userPage">유저 관리 페이지입니다.</h2>
         </div>
-
-        <table class="table table-bordered table-hover">
-            <thead class="thead-light">
-                <tr class="text-center">
-                    <th>ID</th>
-                    <th>이메일</th>
-                    <th>닉네임</th>
-                    <th>이름</th>
-                    <th>가입일</th>
-                    <th>상태</th>
-                    <th>상태 변경</th>
-					<th>권한 변경</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr th:each="member : ${members}" class="text-center align-middle">
-                    <td th:text="${member.userId}">1</td>
-                    <td th:text="${member.email}">test@example.com</td>
-                    <td th:text="${member.nickname}">닉네임</td>
-                    <td th:text="${member.name}">홍길동</td>
-                    <td th:text="${#temporals.format(member.createdAt, 'yyyy-MM-dd HH:mm')}">2025-05-26</td>
-                    <td th:text="${userStatusMap[member.userId]}">ACTIVE</td>
-					<!-- 계정 상태 변경-->
-                    <td>
-						<form th:action="@{/admin/user/changeStatus}" method="post" class="d-flex justify-content-center user-status-form">
-						    <input type="hidden" name="userId" th:value="${member.userId}" />
-						    <input type="hidden" name="page" th:value="${currentPage}" />
-
-						    <select name="newStatus" class="form-control form-control-sm w-auto mx-1">
-						        <option value="ACTIVE" th:selected="${userStatusMap[member.userId] == 'ACTIVE'}">ACTIVE</option>
-						        <option value="SUSPENDED" th:selected="${userStatusMap[member.userId] == 'SUSPENDED'}">SUSPENDED</option>
-						    </select>
-						    <button type="submit" class="btn btn-sm btn-primary change-status-btn">변경</button>
-						</form>
-                    </td>
-					<!-- 권한 변경 가능한지 여부를 한 td에서 판단 -->
-					<td>
-					  <div th:if="${currentUserRole != null}" th:switch="${currentUserRole.name()}">
-					    
-					    <!-- 현재 사용자가 ADMIN일 때 -->
-					    <div th:case="'ADMIN'">
-					      
-					      <!-- 본인 계정이면 변경 불가 메시지 -->
-					      <span th:if="${currentUserId == member.userId}" class="text-muted">본인 권한 변경 불가</span>
-					      
-					      <!-- 본인이 아니면 변경 폼 -->
-					      <form th:if="${currentUserId != member.userId}" th:action="@{/admin/user/changeRole}" method="post" class="d-flex justify-content-center user-role-form">
-					        <input type="hidden" name="userId" th:value="${member.userId}" />
-					        <input type="hidden" name="page" th:value="${currentPage}" />
-					        
-					        <select name="newRole" class="form-control form-control-sm w-auto mx-1">
-					          <option value="USER" th:selected="${member.role.name() == 'USER'}">USER</option>
-					          <option value="BUSINESS" th:selected="${member.role.name() == 'BUSINESS'}">BUSINESS</option>
-					          <option value="MANAGER" th:selected="${member.role.name() == 'MANAGER'}">MANAGER</option>
-					          <!-- ADMIN은 변경 불가 -->
-					          <!--<option value="ADMIN" th:selected="${member.role.name() == 'ADMIN'}">ADMIN</option>-->
-					        </select>
-					        <button type="submit" class="btn btn-sm btn-secondary change-role-btn">변경</button>
-					      </form>
-					    </div>
-					    
-					    <!-- ADMIN이 아니면 변경 불가 메시지 -->
-					    <div th:case="*">
-					      <span class="text-muted">권한 변경 불가</span>
-					    </div>
-					    
-					  </div>
-					</td>
-                </tr>
-            </tbody>
-        </table>
 		
-		<!-- 페이징 네비게이션 -->
+		<!-- 모바일 카드 뷰 -->
+		    <div class="d-block d-md-none">
+		        <div th:each="member : ${members}" class="card mb-3 shadow-sm">
+		            <div class="card-body">
+		                <h5 class="card-title" th:text="'닉네임: ' + ${member.nickname}">닉네임</h5>
+		                <p class="card-text">
+		                    <strong>ID:</strong> <span th:text="${member.userId}"></span><br/>
+		                    <strong>이메일:</strong> <span th:text="${member.email}"></span><br/>
+		                    <strong>이름:</strong> <span th:text="${member.name}"></span><br/>
+		                    <strong>가입일:</strong> <span th:text="${#temporals.format(member.createdAt, 'yyyy-MM-dd HH:mm')}"></span><br/>
+		                    <strong>상태:</strong> <span th:text="${userStatusMap[member.userId]}"></span>
+		                </p>
+
+		                <!-- 상태 변경 -->
+		                <form th:action="@{/admin/user/changeStatus}" method="post" class="mb-2">
+		                    <input type="hidden" name="userId" th:value="${member.userId}" />
+		                    <input type="hidden" name="page" th:value="${currentPage}" />
+		                    <div class="input-group">
+		                        <select name="newStatus" class="form-select">
+		                            <option value="ACTIVE" th:selected="${userStatusMap[member.userId] == 'ACTIVE'}">ACTIVE</option>
+		                            <option value="SUSPENDED" th:selected="${userStatusMap[member.userId] == 'SUSPENDED'}">SUSPENDED</option>
+		                        </select>
+		                        <button type="submit" class="btn btn-primary">변경</button>
+		                    </div>
+		                </form>
+
+		                <!-- 권한 변경 -->
+		                <div th:if="${currentUserRole != null}" th:switch="${currentUserRole.name()}">
+		                    <div th:case="'ADMIN'">
+		                        <span th:if="${currentUserId == member.userId}" class="text-muted">본인 권한 변경 불가</span>
+		                        <form th:if="${currentUserId != member.userId}" th:action="@{/admin/user/changeRole}" method="post">
+		                            <input type="hidden" name="userId" th:value="${member.userId}" />
+		                            <input type="hidden" name="page" th:value="${currentPage}" />
+		                            <div class="input-group mt-2">
+		                                <select name="newRole" class="form-select">
+		                                    <option value="USER" th:selected="${member.role.name() == 'USER'}">USER</option>
+		                                    <option value="BUSINESS" th:selected="${member.role.name() == 'BUSINESS'}">BUSINESS</option>
+		                                    <option value="MANAGER" th:selected="${member.role.name() == 'MANAGER'}">MANAGER</option>
+		                                </select>
+		                                <button type="submit" class="btn btn-secondary">변경</button>
+		                            </div>
+		                        </form>
+		                    </div>
+		                    <div th:case="*">
+		                        <span class="text-muted">권한 변경 불가</span>
+		                    </div>
+		                </div>
+		            </div>
+		        </div>
+		    </div>
+		
+		
+
+        <div class="table-responsive d-none d-md-block">
+            <table class="table table-bordered table-hover">
+                <thead class="thead-light">
+                    <tr class="text-center">
+                        <th>ID</th>
+                        <th>이메일</th>
+                        <th>닉네임</th>
+                        <th>이름</th>
+                        <th>가입일</th>
+                        <th>상태</th>
+                        <th>상태 변경</th>
+                        <th>권한 변경</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="member : ${members}" class="text-center align-middle">
+                        <td th:text="${member.userId}">1</td>
+                        <td th:text="${member.email}">test@example.com</td>
+                        <td th:text="${member.nickname}">닉네임</td>
+                        <td th:text="${member.name}">홍길동</td>
+                        <td th:text="${#temporals.format(member.createdAt, 'yyyy-MM-dd HH:mm')}">2025-05-26</td>
+                        <td th:text="${userStatusMap[member.userId]}">ACTIVE</td>
+                        <!-- 계정 상태 변경-->
+                        <td>
+                            <form th:action="@{/admin/user/changeStatus}" method="post" class="d-flex justify-content-center user-status-form">
+                                <input type="hidden" name="userId" th:value="${member.userId}" />
+                                <input type="hidden" name="page" th:value="${currentPage}" />
+
+                                <select name="newStatus" class="form-control form-control-sm w-auto mx-1">
+                                    <option value="ACTIVE" th:selected="${userStatusMap[member.userId] == 'ACTIVE'}">ACTIVE</option>
+                                    <option value="SUSPENDED" th:selected="${userStatusMap[member.userId] == 'SUSPENDED'}">SUSPENDED</option>
+                                </select>
+                                <button type="submit" class="btn btn-sm btn-primary change-status-btn">변경</button>
+                            </form>
+                        </td>
+                        <!-- 권한 변경 가능한지 여부를 한 td에서 판단 -->
+                        <td>
+                            <div th:if="${currentUserRole != null}" th:switch="${currentUserRole.name()}">
+                                <!-- 현재 사용자가 ADMIN일 때 -->
+                                <div th:case="'ADMIN'">
+                                    <!-- 본인 계정이면 변경 불가 메시지 -->
+                                    <span th:if="${currentUserId == member.userId}" class="text-muted">본인 권한 변경 불가</span>
+
+                                    <!-- 본인이 아니면 변경 폼 -->
+                                    <form th:if="${currentUserId != member.userId}" th:action="@{/admin/user/changeRole}" method="post" class="d-flex justify-content-center user-role-form">
+                                        <input type="hidden" name="userId" th:value="${member.userId}" />
+                                        <input type="hidden" name="page" th:value="${currentPage}" />
+
+                                        <select name="newRole" class="form-control form-control-sm w-auto mx-1">
+                                            <option value="USER" th:selected="${member.role.name() == 'USER'}">USER</option>
+                                            <option value="BUSINESS" th:selected="${member.role.name() == 'BUSINESS'}">BUSINESS</option>
+                                            <option value="MANAGER" th:selected="${member.role.name() == 'MANAGER'}">MANAGER</option>
+                                            <!-- ADMIN은 변경 불가 -->
+                                            <!--<option value="ADMIN" th:selected="${member.role.name() == 'ADMIN'}">ADMIN</option>-->
+                                        </select>
+                                        <button type="submit" class="btn btn-sm btn-secondary change-role-btn">변경</button>
+                                    </form>
+                                </div>
+
+                                <!-- ADMIN이 아니면 변경 불가 메시지 -->
+                                <div th:case="*">
+                                    <span class="text-muted">권한 변경 불가</span>
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- 페이징 네비게이션 -->
         <nav aria-label="Page navigation" class="mt-4">
             <ul class="pagination justify-content-center">
-				<!-- 이전 버튼 -->
-				<li class="page-item" th:classappend="${currentPage == 0} ? 'disabled'">
-				    <a class="page-link user-page-link" th:attr="data-page=${currentPage - 1}" href="#">이전</a>
-				</li>
-				
-				<!-- 숫자 페이지들 -->
+                <!-- 이전 버튼 -->
+                <li class="page-item" th:classappend="${currentPage == 0} ? 'disabled'">
+                    <a class="page-link user-page-link" th:attr="data-page=${currentPage - 1}" href="#">이전</a>
+                </li>
+
+                <!-- 숫자 페이지들 -->
                 <li class="page-item"
                     th:each="i : ${#numbers.sequence(0, totalPages - 1)}"
                     th:classappend="${i == currentPage} ? 'active'">
-                    <!--<a class="page-link" th:href="@{/admin/user(page=${i})}" th:text="${i + 1}">1</a>-->
-					<a th:href="@{/admin/user(page=${i})}" class="page-link user-page-link" th:attr="data-page=${i}" th:text="${i + 1}">1</a>
+                    <a th:href="@{/admin/user(page=${i})}" class="page-link user-page-link" th:attr="data-page=${i}" th:text="${i + 1}">1</a>
                 </li>
 
-				<!-- 다음 버튼 -->
-				<li class="page-item" th:classappend="${currentPage + 1 >= totalPages} ? 'disabled'">
-				    <a class="page-link user-page-link" th:attr="data-page=${currentPage + 1}" href="#">다음</a>
-				</li>
+                <!-- 다음 버튼 -->
+                <li class="page-item" th:classappend="${currentPage + 1 >= totalPages} ? 'disabled'">
+                    <a class="page-link user-page-link" th:attr="data-page=${currentPage + 1}" href="#">다음</a>
+                </li>
             </ul>
-		</nav>
-      
+        </nav>
+
     </div>
 	
 	<script>
@@ -247,43 +298,93 @@
 	</script>
 	
 	<style>
-	    /* 버튼 줄바꿈 방지 */
-	    .change-status-btn,
-	    .change-role-btn {
-	        white-space: nowrap;
-	        text-overflow: ellipsis;
-	        overflow: hidden;
-	    }
+		.card-title {
+		        font-size: 1.1rem;
+		        font-weight: bold;
+		    }
 
-	    /* 폼 안 요소들 한 줄 정렬 & 간격 유지 */
-	    .user-status-form,
-	    .user-role-form {
-	        display: flex;
-	        flex-wrap: nowrap; /* 줄바꿈 방지 */
-	        justify-content: center;
-	        align-items: center;
-	        gap: 4px;
-	    }
+		    .form-select {
+		        min-width: 120px;
+		    }
 
-	    /* 테이블 반응형 - 모바일에서 수평 스크롤 가능하게 */
-	    .table-responsive {
-	        overflow-x: auto;
-	        -webkit-overflow-scrolling: touch;
-	    }
+		    .input-group > select,
+		    .input-group > button {
+		        flex: 1 1 auto;
+		    }
+	        /* 버튼 줄바꿈 방지 */
+	        .change-status-btn,
+	        .change-role-btn {
+	            white-space: nowrap;
+	            text-overflow: ellipsis;
+	            overflow: hidden;
+	        }
 
-	    /* 테이블 셀 가운데 정렬 + 줄바꿈 최소화 */
-	    .table td,
-	    .table th {
-	        white-space: nowrap;
-	        vertical-align: middle;
-	        text-align: center;
-	    }
+	        /* 폼 안 요소들 한 줄 정렬 & 간격 유지 */
+	        .user-status-form,
+	        .user-role-form {
+	            display: flex;
+	            flex-wrap: nowrap; /* 줄바꿈 방지 */
+	            justify-content: center;
+	            align-items: center;
+	            gap: 4px;
+	        }
 
-	    /* select 요소도 너무 작지 않게 자동 너비로 */
-	    .form-control-sm {
-	        min-width: 80px;
-	    }
-	</style>
-	
-	
-</div>
+	        /* 테이블 반응형 - 모바일에서 수평 스크롤 가능하게 */
+	        .table-responsive {
+	            overflow-x: auto;
+	            -webkit-overflow-scrolling: touch;
+	        }
+
+	        /* 테이블 셀 가운데 정렬, 줄바꿈 가능하도록 조정 */
+	        .table td,
+	        .table th {
+	            white-space: normal; /* 줄바꿈 허용 */
+	            vertical-align: middle;
+	            text-align: center;
+	        }
+
+	        /* select 요소도 너무 작지 않게 자동 너비로 */
+	        .form-control-sm {
+	            min-width: 80px;
+	        }
+
+	        /* 모바일 대응 미디어 쿼리 */
+	        @media (max-width: 576px) {
+	            .container {
+	                padding-left: 0.5rem;
+	                padding-right: 0.5rem;
+	            }
+
+	            h2.userPage {
+	                font-size: 1.2rem;
+	                margin-bottom: 1rem;
+	                word-break: break-word;
+	            }
+
+	            .table {
+	                font-size: 0.8rem;
+	            }
+
+	            .user-status-form select,
+	            .user-role-form select {
+	                min-width: 60px;
+	                font-size: 0.75rem;
+	            }
+
+	            .change-status-btn,
+	            .change-role-btn {
+	                font-size: 0.75rem;
+	                padding: 0.25rem 0.5rem;
+	                min-width: 60px;
+	            }
+
+	            /* 페이징 버튼 크기 축소 */
+	            .pagination .page-link {
+	                padding: 0.25rem 0.5rem;
+	                font-size: 0.75rem;
+	            }
+	        }
+			
+	    </style>
+
+	</div>

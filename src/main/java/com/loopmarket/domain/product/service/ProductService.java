@@ -6,6 +6,7 @@ import com.loopmarket.domain.product.dto.CategoryProductStatsDTO;
 import com.loopmarket.domain.product.dto.WeeklyProductStatsDTO;
 import com.loopmarket.domain.product.entity.ProductEntity;
 import com.loopmarket.domain.product.repository.ProductRepository;
+import com.loopmarket.domain.wishlist.repository.WishlistRepository;
 import lombok.RequiredArgsConstructor;
 
 import org.springframework.data.domain.Page;
@@ -14,6 +15,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -26,8 +28,9 @@ public class ProductService {
 	private final ProductRepository productRepository; // 상품 데이터베이스 작업용 리포지토리
 	private final ImageService imageService; // 이미지 저장 및 조회 서비스
 	private final CategoryRepository categoryRepository; // 카테고리 정보 조회용 리포지토리
+  private final WishlistRepository wishlistRepository;
 
-	/**
+  /**
 	 * 상품 정보와 이미지들을 함께 저장하는 메서드
 	 *
 	 * @param product        저장할 상품 엔티티
@@ -54,25 +57,31 @@ public class ProductService {
 	 *
 	 * @return 대표 이미지와 이미지 리스트가 포함된 상품 리스트
 	 */
-	public List<ProductEntity> getAllProducts() {
-		List<ProductEntity> products = productRepository.findAll();
+  public List<ProductEntity> getAllProducts() {
+    List<ProductEntity> products = productRepository.findAll();
 
-		for (ProductEntity product : products) {
-			Long productId = product.getProductId();
+    for (ProductEntity product : products) {
+      Long productId = product.getProductId();
 
-			// 대표 이미지 경로 조회 후 상품 엔티티에 세팅
-			String thumbnailPath = imageService.getThumbnailPath(productId);
-			product.setThumbnailPath(thumbnailPath);
+      // 대표 이미지 경로 조회 후 상품 엔티티에 세팅
+      String thumbnailPath = imageService.getThumbnailPath(productId);
+      product.setThumbnailPath(thumbnailPath);
 
-			// 전체 이미지 경로 리스트 조회 후 상품 엔티티에 세팅 (null 방지)
-			List<String> imagePaths = imageService.getAllImagePaths(productId);
-			product.setImagePaths(imagePaths != null ? imagePaths : List.of());
-		}
+      // 전체 이미지 경로 리스트 조회 후 상품 엔티티에 세팅 (null 방지)
+      List<String> imagePaths = imageService.getAllImagePaths(productId);
+      product.setImagePaths(imagePaths != null ? imagePaths : List.of());
 
-		return products;
-	}
+      // 인기 상품 조건 세팅: 찜 5 이상 or 조회수 30 이상
+      long wishCount = wishlistRepository.countByProdId(productId);
+      Integer viewCount = product.getViewCount() != null ? product.getViewCount() : 0;
 
-	// 결제 페이지에 필요하여 추가했습니다 - jw
+      product.setIsBest(wishCount >= 5 || viewCount >= 30);
+    }
+    return products;
+  }
+
+
+  // 결제 페이지에 필요하여 추가했습니다 - jw
 	public ProductEntity getProductById(Long id) {
 		return productRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("상품이 존재하지 않습니다."));
 	}
@@ -94,6 +103,19 @@ public class ProductService {
 	public List<ProductEntity> getOngoingProducts(Long sellerId) {
 		List<String> statuses = List.of("ONSALE", "RESERVED");
 		List<ProductEntity> products = productRepository.findByUserIdAndStatusIn(sellerId, statuses);
+
+		for (ProductEntity product : products) {
+			Long productId = product.getProductId();
+			product.setThumbnailPath(imageService.getThumbnailPath(productId));
+			product.setImagePaths(imageService.getAllImagePaths(productId));
+		}
+		return products;
+	}
+	
+	// 판매 중(ONSALE) + 예약중(RESERVED) 상태 상품 조회 - QR 생성, 판매중 탭 용 - jw
+	public List<ProductEntity> getVisibleOngoingProducts(Long sellerId) {
+		List<String> statuses = List.of("ONSALE", "RESERVED");
+		List<ProductEntity> products = productRepository.findByUserIdAndStatusInAndIsHiddenFalse(sellerId, statuses);
 
 		for (ProductEntity product : products) {
 			Long productId = product.getProductId();
@@ -127,6 +149,17 @@ public class ProductService {
 
 		return soldProducts;
 	}
+
+  @Transactional
+  public void incrementViewCount(Long productId) {
+    ProductEntity product = productRepository.findById(productId)
+      .orElseThrow(() -> new RuntimeException("상품을 찾을 수 없습니다."));
+
+    int currentCount = product.getViewCount() != null ? product.getViewCount() : 0;
+    product.setViewCount(currentCount + 1);
+  }
+
+
 
   public List<ProductEntity> getNearbyProductsByCategory(Integer ctgCode, double lat, double lng, int min, int max) {
     List<ProductEntity> allProducts = productRepository.findByIsHiddenFalseAndStatusAndCtgCode("ONSALE", ctgCode);
@@ -390,6 +423,49 @@ public class ProductService {
       * Math.sin(dLng / 2) * Math.sin(dLng / 2);
     double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
     return earthRadius * c;
+  }
+
+  public List<ProductEntity> getOtherProductsBySeller(Long sellerId, Long excludeProductId) {
+    List<ProductEntity> products = productRepository
+      .findByUserIdAndProductIdNotOrderByCreatedAtDesc(sellerId, excludeProductId);
+
+    // 최대 8개까지만 보여줌
+    products = products.stream().limit(8).collect(Collectors.toList());
+
+    for (ProductEntity p : products) {
+      Long productId = p.getProductId();
+      p.setThumbnailPath(imageService.getThumbnailPath(productId));
+      if (p.getCreatedAt() != null) {
+        p.setRelativeTime(formatRelativeTimeInternal(p.getCreatedAt()));
+      }
+    }
+
+    return products;
+  }
+
+  public List<ProductEntity> getSimilarProducts(Long excludeId, Integer ctgCode) {
+    List<ProductEntity> list = productRepository.findByCtgCodeAndProductIdNotOrderByCreatedAtDesc(ctgCode, excludeId);
+
+    for (ProductEntity p : list) {
+      Long productId = p.getProductId();
+      p.setThumbnailPath(imageService.getThumbnailPath(productId));
+      p.setImagePaths(imageService.getAllImagePaths(productId));
+      p.setRelativeTime(formatRelativeTimeInternal(p.getCreatedAt()));
+    }
+
+    // 최대 8개까지
+    return list.stream().limit(8).collect(Collectors.toList());
+  }
+
+
+  private String formatRelativeTimeInternal(LocalDateTime createdAt) {
+    Duration duration = Duration.between(createdAt, LocalDateTime.now());
+    long hours = duration.toHours();
+    long days = duration.toDays();
+    if (hours < 1) return "방금 전";
+    else if (hours < 24) return hours + "시간 전";
+    else if (days < 2) return "1일 전";
+    else return days + "일 전";
   }
 
 }

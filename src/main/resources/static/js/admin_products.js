@@ -10,6 +10,75 @@ $(document).ready(function () {
     SOLD: "판매완료",
     RESERVED: "예약중"
   };
+  
+  function renderProductCards(products) {
+    const container = $('#product-card-list');
+    container.empty();
+
+    if (products.length === 0) {
+      container.html('<p>상품이 없습니다.</p>');
+      return;
+    }
+
+    products.forEach(product => {
+      const categoryName = getCategoryName(product.ctgCode);
+      const statusName = getStatusName(product.status, product.ishidden);
+      const thumbnail = product.thumbnailUrl || '/img.pay/kakao.png';
+      const isHidden = product.ishidden;
+      const buttonLabel = isHidden ? '🔓 공개하기' : '🔒 숨기기';
+      const buttonClass = isHidden ? 'btn btn-sm btn-success' : 'btn btn-sm btn-dark';
+      const safeTitle = product.title.replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+
+      const cardHtml = `
+        <div class="product-card" style="
+          display: flex;
+          flex-wrap: wrap;
+          align-items: center;
+          gap: 12px;
+          border: 1px solid #ddd;
+          border-radius: 8px;
+          padding: 15px;
+          margin-bottom: 15px;
+          background-color: #fff;
+          box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+          width: 100%;
+        ">
+          <img src="${thumbnail}" alt="${safeTitle}" style="width:80px; height:auto; border-radius:6px; flex-shrink: 0;">
+          <div style="flex: 1; font-size: 0.95rem; min-width: 200px;">
+            <div><strong>${safeTitle}</strong></div>
+            <div>가격: ${(product.price ?? 0).toLocaleString()}원</div>
+            <div>카테고리: ${categoryName}</div>
+            <div>상태: ${statusName}</div>
+          </div>
+          <div style="
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            justify-content: flex-end;
+            flex: 1;
+            min-width: 140px;
+          ">
+            <button class="btn btn-sm btn-danger" style="flex: 1 1 70px;" onclick="deleteProduct('${product.productId}')">삭제</button>
+            <button class="${buttonClass}" style="flex: 1 1 90px;" onclick="toggleHide('${product.productId}', ${isHidden})">${buttonLabel}</button>
+          </div>
+        </div>
+      `;
+
+      container.append(cardHtml);
+    });
+  }
+  
+  function goToPage(pageNumber) {
+    loadProducts(pageNumber);
+
+    setTimeout(() => {
+      const content = document.getElementById('admin-content');
+      if (content) {
+        content.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+    }, 100);
+  }
+  
 
   function getCategoryName(ctgCode) {
     return categoryMap[ctgCode.toString()] || `코드 ${ctgCode}`;
@@ -89,6 +158,9 @@ $(document).ready(function () {
 		  tbody.append(row);
 		});
 		
+		// 모바일 카드 UI 렌더링 호출
+		renderProductCards(products);
+		
       }
 
       updatePaginationControls();
@@ -141,12 +213,11 @@ $(document).ready(function () {
 
   // 페이징 버튼 클릭 이벤트
   $('#prevPageBtn').click(() => {
-    if (currentPage > 0) loadProducts(currentPage - 1);
+    if (currentPage > 0) goToPage(currentPage - 1);
   });
 
   $('#nextPageBtn').click(() => {
-	console.log("➡️ 다음 페이지 버튼 클릭됨, currentPage:", currentPage);
-    if (currentPage < totalPages - 1) loadProducts(currentPage + 1);
+    if (currentPage < totalPages - 1) goToPage(currentPage + 1);
   });
 
   // refreshCategoryList();  // 카테고리 목록 UI 채우기
