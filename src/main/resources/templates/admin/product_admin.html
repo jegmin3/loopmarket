@@ -6,31 +6,47 @@
     </div>
 
 	<!-- 상품 목록 -->
-    <div id="product-list">
-      <table class="table table-bordered text-center">
-        <thead>
-          <tr>
-            <th>상품명</th>
-            <th>가격</th>
-            <th>카테고리</th>
-            <th>상태</th>
-            <th>관리</th>
-          </tr>
-        </thead>
-        <tbody id="product-tbody">
-          <!-- AJAX로 받아온 상품 행이 여기 추가됨 -->
-        </tbody>
-      </table>
+	<div id="product-list" class="table-responsive d-none d-md-block">
+	  <table class="table table-bordered text-center align-middle">
+	    <thead class="table-light">
+	      <tr>
+	        <th>상품명</th>
+	        <th>가격</th>
+	        <th>카테고리</th>
+	        <th>상태</th>
+	        <th>관리</th>
+	      </tr>
+	    </thead>
+	    <tbody id="product-tbody">
+	      <!-- AJAX로 받아온 상품 행이 여기 추가됨 -->
+	    </tbody>
+	  </table>
+	</div>
+
+	<!-- 모바일 전용 상품 카드 목록 -->
+	<div id="product-card-list" class="d-block d-md-none container"></div>	  
+	  
     </div>
 
     <!-- 페이징 버튼 영역 추가 -->
-    <div id="pagination" class="d-flex justify-content-center align-items-center mt-3">
-      <button id="prevPageBtn" class="btn btn-primary btn-sm me-2" disabled>이전</button>
-      <span id="pageInfo">1 / ?</span>
-      <button id="nextPageBtn" class="btn btn-primary btn-sm ms-2" disabled>다음</button>
+    <div id="pagination" class="d-flex flex-wrap justify-content-center align-items-center gap-2 mt-3">
+      <button id="prevPageBtn" class="btn btn-primary btn-sm" disabled>이전</button>
+      <span id="pageInfo" class="mx-2">1 / ?</span>
+      <button id="nextPageBtn" class="btn btn-primary btn-sm" disabled>다음</button>
     </div>
   </div>
 </div>
+
+<style>
+	@media (max-width: 767px) {
+	  #product-list { display: none !important; }
+	  #product-card-list { display: block !important; }
+	}
+	@media (min-width: 768px) {
+	  #product-list { display: table !important; }
+	  #product-card-list { display: none !important; }
+	}
+</style>
 
 
 
