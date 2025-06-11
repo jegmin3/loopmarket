@@ -135,13 +135,16 @@
               </div>
 
 
-              <button th:if="${product.imagePaths.size() > 1}"
+              <!-- ❮ -->
+              <button th:if="${product.imagePaths != null and product.imagePaths.size() > 1}"
                       class="slider-prev btn position-absolute top-50 start-0 translate-middle-y"
                       onclick="slideImage(this, -1, event)">❮</button>
 
-              <button th:if="${product.imagePaths.size() > 1}"
+              <!-- ❯ -->
+              <button th:if="${product.imagePaths != null and product.imagePaths.size() > 1}"
                       class="slider-next btn position-absolute top-50 end-0 translate-middle-y"
                       onclick="slideImage(this, 1, event)">❯</button>
+
 
               <div th:if="${product.imagePaths.size() > 1}"
                    class="position-absolute bottom-0 start-50 translate-middle-x d-flex gap-1 mb-1">

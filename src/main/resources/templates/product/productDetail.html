@@ -1,7 +1,12 @@
 <div th:fragment="content">
   <link rel="stylesheet" th:href="@{/css/product.css}">
+  <link rel="stylesheet" th:href="@{/css/productDetail.css}">
+  <div class="container my-5 position-relative">
+    <!-- ⬇ 여기에 신고하기 링크 삽입 -->
+    <a th:if="${session.loginUser != null and session.loginUser.userId != product.userId}"
+       th:href="@{/report/create(productId=${product.productId}, reportedUserId=${product.userId})}"
+       class="report-link">신고하기</a>
 
-  <div class="container my-5">
 
     <div class="row justify-content-center">
       <div class="col-md-10">
@@ -28,10 +33,10 @@
 			      </div>
 
 			      <!-- 슬라이드 버튼 -->
-			      <button th:if="${product.imagePaths.size() > 1}"
+			      <button th:if="${product.imagePaths != null and product.imagePaths.size() > 1}"
 			              class="slider-prev btn position-absolute top-50 start-0 translate-middle-y"
 			              onclick="slideImage(this, -1, event)">❮</button>
-			      <button th:if="${product.imagePaths.size() > 1}"
+			      <button th:if="${product.imagePaths != null and product.imagePaths.size() > 1}"
 			              class="slider-next btn position-absolute top-50 end-0 translate-middle-y"
 			              onclick="slideImage(this, 1, event)">❯</button>
 			    </div>
@@ -44,6 +49,16 @@
 			            th:attr="data-index=${i}"
 			            style="width: 6px; height: 6px; opacity: 0.4;"></span>
 			    </div>
+          <!-- 거래 희망 방식 영역 -->
+          <div class="mt-2 ps-4">
+            <div class="border rounded-pill px-3 py-2 d-inline-flex align-items-center gap-2 shadow-sm"
+                 style="background-color: #f8f9fa;">
+              <strong class="text-dark mb-0">거래 방식</strong>
+              <span th:if="${product.isDirect ?: false}" class="badge rounded-pill bg-primary-subtle text-primary fw-normal">직거래</span>
+              <span th:if="${product.isDelivery ?: false}" class="badge rounded-pill bg-success-subtle text-success fw-normal">택배</span>
+              <span th:if="${product.isNonface ?: false}" class="badge rounded-pill bg-secondary-subtle text-secondary fw-normal">비대면</span>
+            </div>
+          </div>
 
 			    <!-- 판매자 정보 -->
 			    <a th:href="@{/sellers/{id}(id=${product.userId})}"
@@ -58,25 +73,61 @@
 			        <div th:text="${dongName + ' · ' + product.relativeTime}"></div>
 			        <div>
 			          <span th:text="'조회수 ' + ${product.viewCount} + '회'"></span>
+<!--
 			          <span class="ms-2" th:text="'찜 ' + ${wishCount} + '명'"></span>
+-->
 			        </div>
+
 			      </div>
+
 			    </a>
 
 			  </div>
+
+
+
 			</div>
 
           <!-- 오른쪽: 상품 정보 -->
           <div class="col-md-6 ms-5">
 			<div class="d-flex justify-content-between align-items-center">
-			  <h4 class="fw-bold mb-1" th:text="${product.title}">상품 제목</h4>
+        <h4 class="fw-bold mb-1">
+          <span th:if="${product.status == 'RESERVED'}" class="text-success me-1">예약</span>
+          <span th:text="${product.title}">상품 제목</span>
+        </h4>
 
-			  <div th:if="${session.loginUser != null and session.loginUser.userId == product.userId}"
+
+        <div th:if="${session.loginUser != null and session.loginUser.userId == product.userId}"
 			       th:replace="fragment/edit-button :: editButton(${product.productId}, ${product.userId})">
 			  </div>
 			</div>
-            <h3 class="text-danger fw-bold mb-3"
-                th:text="${#numbers.formatInteger(product.price, 3, 'COMMA')} + '원'">가격</h3>
+            <div class="price-like-wrapper mb-3">
+              <h3 class="text-danger fw-bold mb-0">
+                <!-- 나눔일 경우 -->
+                <span th:if="${product.saleType == 'DONATION'}">나눔</span>
+
+                <!-- 판매일 경우 -->
+                <span th:if="${product.saleType != 'DONATION'}">
+    <span th:if="${product.price != null}" th:text="${#numbers.formatInteger(product.price, 3, 'COMMA')} + '원'">120,000원</span>
+    <span th:if="${product.price == null}">나눔</span>
+  </span>
+              </h3>
+
+
+
+              <!-- 찜 -->
+              <div class="like-info">
+                <i class="bi bi-heart-fill"></i>
+                <span th:text="${wishCount} + '명'">3명</span>
+              </div>
+
+              <!-- 조회수 -->
+              <div class="like-info">
+                <i class="bi bi-eye"></i>
+                <span th:text="${product.viewCount} + '회'">24회</span>
+              </div>
+            </div>
+
 
             <ul class="list-unstyled small">
               <li class="mb-2"><strong>상세 설명</strong><br>
@@ -84,15 +135,10 @@
               </li>
 
               <li><strong>상품 상태:</strong> <span th:text="${conditionText}">사용감 있어요</span></li>
-              <li><strong>거래 방식:</strong>
-                <span th:if="${product.saleType == 'SALE'}">판매</span>
-                <span th:if="${product.saleType == 'DONATION'}">나눔</span>
+              <li th:if="${product.saleType == 'DONATION'}">
+                <strong>거래 방식:</strong> 나눔
               </li>
-              <li><strong>희망 방식:</strong>
-                <span th:if="${product.isDirect ?: false}">직거래 </span>
-                <span th:if="${product.isDelivery ?: false}">택배 </span>
-                <span th:if="${product.isNonface ?: false}">비대면</span>
-              </li>
+
               <li><strong>거래 위치:</strong><span th:text="${product.locationText}">부산진구 전포동</span>
               </li>
             </ul>
@@ -101,13 +147,7 @@
             <div id="map" style="width: 100%; height: 180px;" class="rounded my-3"></div>
 
             <!-- 버튼 영역 -->
-            <div class="d-flex flex-column gap-2 mt-4">
-
-              <!-- 예약 상태 안내 -->
-              <div th:if="${product.status == 'RESERVED'}"
-                   class="alert alert-warning text-center fw-semibold w-100 mb-0">
-                해당 상품은 <strong>예약중</strong>입니다.
-              </div>
+            <div class="product-detail-buttons d-flex flex-column gap-2 mt-4">
 
               <div class="d-flex gap-2 justify-content-between mt-3">
                 <!-- 찜하기 -->
@@ -133,16 +173,6 @@
                 택배로 구매하기
               </a>
 
-              <!-- 신고하기 (로그인 사용자 & 본인 상품이 아닐 경우만) -->
-              <div th:if="${session.loginUser != null and session.loginUser.userId != product.userId}">
-                <form th:action="@{/report/create}" method="get">
-                  <input type="hidden" name="productId" th:value="${product.productId}" />
-                  <input type="hidden" name="reportedUserId" th:value="${product.userId}" />
-                  <button type="submit" class="btn btn-outline-warning w-100">
-                    <i class="bi bi-flag"></i> 신고하기
-                  </button>
-                </form>
-              </div>
             </div>
           </div>
 

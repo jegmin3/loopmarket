@@ -44,8 +44,13 @@
 
 /* 슬라이더 점 */
 .dot {
-  transition: opacity 0.3s;
+  width: 6px;
+  height: 6px;
+  background-color: #ccc;
+  opacity: 0.6;
+  transition: opacity 0.2s ease;
 }
+
 
 /* 이전/다음 슬라이드 버튼 */
 .slider-prev,
@@ -59,8 +64,9 @@
   transition: opacity 0.3s ease, color 0.3s ease;
 }
 
-.card:hover .slider-prev,
-.card:hover .slider-next {
+/* ✅ 수정: position-relative(슬라이더 wrapper) 안에서도 보이게 */
+.position-relative:hover .slider-prev,
+.position-relative:hover .slider-next {
   opacity: 1;
   pointer-events: auto;
   color: rgba(0, 0, 0, 0.85);
