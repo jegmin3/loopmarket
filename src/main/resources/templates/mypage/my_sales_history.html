@@ -46,7 +46,7 @@
         </div>
         <div class="flex-grow-1">
           <h6 class="mb-1" th:text="${product.title}">상품명</h6>
-          <p class="mb-1 text-muted" th:text="'₩' + ${product.price}">가격</p>
+          <p class="mb-1 text-muted" th:text="${#numbers.formatInteger(product.price, 3, 'COMMA')} + '원'">가격</p>
           <p class="mb-1 text-success">판매 완료</p>
           <p class="mb-0 text-muted" th:text="'판매일: ' + ${#temporals.format(product.updateAt, 'yyyy-MM-dd')}">판매일</p>
         </div>
