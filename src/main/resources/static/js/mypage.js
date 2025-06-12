@@ -39,6 +39,47 @@ $(document).ready(function () {
       }
     });
   }
+  
+  // 삭제 기능
+  function bindDeleteProductEvents() {
+    $('.btn-delete-product').off('click').on('click', function () {
+      const productId = $(this).data('id');
+      Swal.fire({
+        title: '정말 이 상품을 삭제하시겠습니까?',
+        text: '삭제된 상품은 복구할 수 없습니다.',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#aaa',
+        confirmButtonText: '삭제',
+        cancelButtonText: '취소'
+      }).then((result) => {
+        if (result.isConfirmed) {
+          $.ajax({
+            url: `/mypage/api/products/${productId}`,
+            type: 'DELETE',
+            headers: { 'X-Requested-With': 'XMLHttpRequest' },
+            success: function () {
+              Swal.fire({
+                icon: 'success',
+                title: '삭제 완료!',
+                text: '상품이 삭제되었습니다.',
+                timer: 1200,
+                showConfirmButton: false
+              }).then(() => location.reload()); // 또는 해당 row 제거
+            },
+            error: function () {
+              Swal.fire({
+                icon: 'error',
+                title: '삭제 실패',
+                text: '상품 삭제에 실패했습니다. 다시 시도해주세요.'
+              });
+            }
+          });
+        }
+      });
+    });
+  }
 
   // 공통: 상태 변경
   function bindStatusChangeEvents() {
@@ -151,6 +192,7 @@ $(document).ready(function () {
     if (pathname.includes('/mypage/selling-products')) {
       bindStatusChangeEvents();
       bindHideToggleEvents();
+	  bindDeleteProductEvents();
     } else if (pathname.includes('/mypage/wishlist')) {
       bindWishlistRemoveEvents();
     }
