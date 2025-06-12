@@ -41,9 +41,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
 	// 숫자 입력 제어
 	function appendAmount(value) {
-		if (value === "0" || value === "00") {
+		if (value === "0") {
 			if (currentAmount === 0) return;
-			currentAmount = currentAmount * parseInt(value);
+			currentAmount = currentAmount * 10;
+		} else if (value === "00") {
+			if (currentAmount === 0) return;
+			currentAmount = currentAmount * 100;
 		} else {
 			currentAmount = currentAmount * 10 + parseInt(value);
 		}
