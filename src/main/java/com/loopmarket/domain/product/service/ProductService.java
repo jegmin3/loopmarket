@@ -20,6 +20,7 @@ import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
@@ -491,6 +492,11 @@ public class ProductService {
 
     registerProductWithImages(entity, images, mainImageIndex);
   }
+  
+  
+  public Optional<ProductEntity> findProductById(Long productId) {
+	    return productRepository.findById(productId);
+	}
 
 
 }
