@@ -88,9 +88,8 @@
 	          </div>
 
 	          <!-- 카드 그리드 부분은 기존 유지 -->
-	          <!-- 그대로 두되 카드 row를 아래처럼만 바꿔줘 -->
 	          <div class="col-md-9" style="margin-left: 25px;">
-				<div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-4 justify-content-center">
+				<div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-4">
       <!-- 상품 리스트 반복 출력 -->
       <div class="col" th:each="product : ${productList}">
         <a th:href="@{'/products/' + ${product.productId}}" class="text-decoration-none text-dark">
