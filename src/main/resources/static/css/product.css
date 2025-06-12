@@ -211,7 +211,17 @@
   transition: all 0.2s ease-in-out;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
 }
-
+/* 채팅하기 버튼이 다른css에 덮어씌워져서 따로 지정 해줬습니당 */
+#chatBtn {
+	border-color: #247edb;
+	color:#247edb
+}
+#chatBtn:hover {
+	background-color: rgb(227, 241, 253);
+	border-color: #1a66c6;
+	box-shadow: 0 4px 12px rgba(43, 111, 255, 0.2);
+}
+/* ------채팅버튼 css 끝------- */
 .mt-4 .btn-primary:hover,
 .btn-primary:hover {
   background-color: #1a66c6;
