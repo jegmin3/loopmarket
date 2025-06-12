@@ -533,15 +533,14 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // 2. "전체 상품 보기" 버튼 클릭 시 → localStorage 초기화 + 전체 목록 이동
-  const allProductBtn = document.getElementById("allProductBtn");
-  if (allProductBtn) {
-    allProductBtn.addEventListener("click", (e) => {
+  document.querySelectorAll(".allProductBtn").forEach(btn => {
+    btn.addEventListener("click", (e) => {
       e.preventDefault();
       localStorage.removeItem("selectedLat");
       localStorage.removeItem("selectedLng");
       window.location.href = "/products";
     });
-  }
+  });
 
   // 3. 카테고리 버튼 클릭 시 → 내 위치 기준으로 해당 카테고리 상품 보기
   const categoryButtons = document.querySelectorAll(".category-btn");
