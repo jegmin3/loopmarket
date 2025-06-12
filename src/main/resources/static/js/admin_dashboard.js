@@ -2,6 +2,18 @@ $(document).ready(function () {
   Chart.register(ChartDataLabels);
   console.log("jQuery document ready 실행됨");
 
+  // "2025-20" → "5월 3주차" 변환
+  function formatWeekLabel(weekString) {
+    const [year, week] = weekString.split('-').map(Number);
+    const firstDayOfYear = new Date(year, 0, 1);
+    const dayOfWeek = firstDayOfYear.getDay(); // 0 = 일요일
+    const diff = (week - 1) * 7 - dayOfWeek + 1;
+    const weekStart = new Date(year, 0, 1 + diff);
+    const month = weekStart.getMonth() + 1;
+    const weekOfMonth = Math.floor((weekStart.getDate() - 1) / 7) + 1;
+    return `${month}월 ${weekOfMonth}주차`;
+  }
+  
   // 오늘 로그인 수 가져오기
   $('#loadingTodayLogin').show();
   fetch('/admin/api/dashboard/today-login-count')
@@ -51,7 +63,7 @@ $(document).ready(function () {
     .catch(err => console.error("주간 로그인 통계 API 호출 실패:", err))
     .finally(() => $('#loadingWeeklyLogin').hide());
 
-  // 가입자 수 통계
+  // 1달간 가입자 수 통계
   $('#loadingWeeklyJoin').show();
   fetch('/admin/statistics/weekly-join')
     .then(res => res.json())
@@ -62,7 +74,7 @@ $(document).ready(function () {
       const totalCount = data.totalCount;
       $('#totalJoinCount').text(totalCount + '명');
 
-      const labels = weeklyStats.map(s => s.week);
+      const labels = weeklyStats.map(s => formatWeekLabel(s.week));
       const counts = weeklyStats.map(s => s.count);
 
       const ctx = document.getElementById('userChart').getContext('2d');
@@ -96,7 +108,7 @@ $(document).ready(function () {
     .then(res => res.json())
     .then(data => {
       const productCtx = document.getElementById('productChart').getContext('2d');
-      const labels = data.weeklyStats.map(item => item.week);
+      const labels = data.weeklyStats.map(item => formatWeekLabel(item.week));
       const counts = data.weeklyStats.map(item => item.count);
 
       new Chart(productCtx, {
