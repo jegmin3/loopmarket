@@ -100,7 +100,16 @@
   color: #222;
 }
 
-.btn-group-vertical,
+.sidebar-inner {
+  max-width: 220px;
+  width: 100%;
+}
+
+.btn-group-vertical {
+	padding: 0;
+	border-style: none;
+}
+
 .mt-4.p-3.border.rounded {
   margin-bottom: 30px;
   padding: 16px;
@@ -405,15 +414,6 @@
   margin-top: 0 !important;
   padding-top: 0 !important;
 }
-
-/*택배 가능한 상품*/
-
-.border-delivery {
-  border: 1.5px solid #b08968 !important; /* 따뜻한 갈색 */
-  box-shadow: 0 2px 8px rgba(176, 137, 104, 0.25);
-  border-radius: 16px;
-}
-
 
 /* 공통 오버레이 */
 .reserved-overlay,
