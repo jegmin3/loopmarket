@@ -13,4 +13,7 @@ public interface LoginHistoryRepository extends JpaRepository<LoginHistory, Inte
 
     int countByLoginResultAndLoginTimeBetween(String loginResult, LocalDateTime start, LocalDateTime end);
     
+    @Query("SELECT COUNT(DISTINCT lh.userId) FROM LoginHistory lh WHERE lh.loginResult = 'SUCCESS' AND lh.loginTime BETWEEN :start AND :end")
+    int countDistinctSuccessLoginsByDate(@Param("start") LocalDateTime start, @Param("end") LocalDateTime end);
+    
 }

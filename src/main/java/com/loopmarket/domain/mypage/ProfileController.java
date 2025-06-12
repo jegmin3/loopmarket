@@ -75,7 +75,7 @@ public class ProfileController extends BaseController {
 
 		// productService.getProfileImagePath는 이미 /images/profiles/ 경로 붙여서 반환하도록 되어있다면,
 		// 그대로 쓰면 됩니다.
-		String profileImagePath = productService.getProfileImagePath(member.getProfileImgId());
+		String profileImagePath = imageService.getProfilePath(member.getUserId());
 
 		model.addAttribute("users", member);
 		model.addAttribute("profileImagePath", profileImagePath);

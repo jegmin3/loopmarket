@@ -1,11 +1,12 @@
 <div th:fragment="content">
   <div class="container my-5 d-flex justify-content-center">
+    <link rel="stylesheet" th:href="@{/css/productForm.css}">
     <div class="w-100" style="max-width: 700px;">
 
-      <h2 class="text-center mb-4">📦 상품 등록</h2>
+      <h2 class="text-center mb-4">원하는 상품을 등록하세요.</h2>
       <div class="d-flex justify-content-end align-items-center mb-3">
         <label class="form-label me-2 mb-0"></label>
-        <button type="button" class="btn btn-outline-primary btn-sm" id="aiGenerateBtn">AI로 작성하기</button>
+        <button type="button" class="btn btn-outline-primary btn-sm" id="aiGenerateBtn">AI로 작성해보기</button>
       </div>
 
       <!-- 상품 등록 폼: 이미지 포함 multipart/form-data 전송 -->
@@ -34,17 +35,25 @@
         <input type="hidden" id="mainImageIndex" name="mainImageIndex" value="0">
 
         <!-- 상품명 입력 -->
-        <div class="mb-3">
-          <label>상품명</label>
-          <input type="text" th:field="*{title}" class="form-control" required minlength="2" maxlength="40">
+        <div class="form-row">
+          <label class="form-label">상품명</label>
+          <div class="form-input">
+            <input type="text" class="form-control" th:field="*{title}" maxlength="40" placeholder="상품명을 입력해 주세요.">
+            <div class="text-end small text-muted mt-1"><span id="titleCount">0</span>/40</div>
+          </div>
         </div>
 
+
         <!-- 가격 입력 (표시용 + 서버 전송용 숨김 필드) -->
-        <div class="mb-3">
-          <label>가격 (원)</label>
-          <input type="text" id="priceDisplay" class="form-control">
-          <input type="hidden" th:field="*{price}" id="priceInput">
+        <div class="form-row">
+          <label class="form-label">가격(원)</label>
+          <div class="mb-3">
+            <input type="text" id="priceDisplay" class="form-control">
+            <input type="hidden" th:field="*{price}" id="priceInput">
+          </div>
         </div>
+
+
 
         <!-- 판매 유형 라디오 -->
         <div class="mb-3">
@@ -53,25 +62,30 @@
           <input type="radio" name="saleType" value="DONATION" id="donation"> 나눔
         </div>
 
-        <!-- 대분류 카테고리 선택 -->
-        <div class="mb-3">
-          <label>카테고리</label>
-          <select id="main-category" class="form-select">
-            <option value="">대분류 선택</option>
-            <option th:each="main : ${mainCategories}"
-                    th:value="${main.ctgCode}"
-                    th:text="${main.ctgName}">
-            </option>
-          </select>
+
+
+        <!-- 카테고리 선택 -->
+
+        <div class="category-picker d-flex border rounded">
+          <!-- 대분류 -->
+          <ul id="main-category-list" class="category-column list-group border-end">
+            <li th:each="main : ${mainCategories}"
+                th:data-code="${main.ctgCode}"
+                th:text="${main.ctgName}"
+                class="list-group-item list-group-item-action">
+            </li>
+          </ul>
+
+          <!-- 소분류 -->
+          <ul id="sub-category-list" class="category-column list-group flex-fill">
+            <li class="list-group-item text-muted text-center">소분류 선택</li>
+          </ul>
         </div>
 
-        <!-- 소분류 카테고리 선택 -->
-        <div class="mb-3">
-          <label>소분류 선택</label>
-          <select id="sub-category" name="ctgCode" class="form-select" required>
-            <option value="">소분류 선택</option>
-          </select>
-        </div>
+        <!-- 선택된 소분류 코드 전송용 -->
+        <input type="hidden" name="ctgCode" id="selectedSubCategory">
+
+
 
         <!-- 상품 상태 슬라이더 -->
         <div class="mb-3">
@@ -86,16 +100,23 @@
 
         <!-- 상품 설명 -->
         <div class="mb-3">
-          <label>상품 설명</label>
-          <textarea th:field="*{description}" class="form-control" minlength="10" rows="5"></textarea>
+          <label class="form-label fw-bold">설명</label>
+          <div class="description-wrapper">
+    <textarea th:field="*{description}" class="form-control description-textarea" rows="6" maxlength="2000"
+              placeholder="브랜드, 모델명, 구매 시기, 하자 유무 등 상품 설명을 최대한 자세히 적어주세요.&#10;전화번호, SNS 계정 등 개인정보 입력은 제한될 수 있어요."></textarea>
+            <div class="text-end mt-1 small text-muted">
+              <span id="descCount">0</span>/2000
+            </div>
+          </div>
         </div>
+
 
         <!-- 희망 거래 방식 체크박스 -->
         <div class="mb-3">
           <label>희망 거래 방식</label><br>
           <input type="checkbox" name="isDirect" value="true" id="isDirect"> 직거래
-          <input type="checkbox" name="isDelivery" value="true" id="isDelivery"> 비대면
-          <input type="checkbox" name="isNonface" value="true" id="isNonface"> 택배
+          <input type="checkbox" name="isNonface" value="true" id="isNonface"> 비대면
+          <input type="checkbox" name="isDelivery" value="true" id="isDelivery"> 택배
         </div>
 
         <!-- 거래 희망 장소 입력 -->
@@ -116,7 +137,7 @@
         <!-- 택배비 입력 (택배 선택 시 노출) -->
         <div class="mb-3" id="shippingFeeGroup" style="display: none;">
           <label>택배비 (원)</label>
-          <input type="number" class="form-control" th:field="*{shippingFee}">
+          <input type="number" class="form-control" id="shippingFeeInput" th:field="*{shippingFee}">
         </div>
 
         <!-- 지도 미리보기 영역 -->
@@ -124,7 +145,7 @@
 
         <!-- 상품 등록 버튼 -->
         <div class="text-center mt-4">
-          <button type="submit" class="btn btn-dark px-5">상품 등록</button>
+          <button type="submit" class="btn btn-dark px-5">상품등록</button>
         </div>
       </form>
 
@@ -182,6 +203,19 @@
           }
         });
       </script>
+
+
+
+      <script>
+        //글자 수 자동 카운팅 JS 추가
+        const descTextarea = document.querySelector('.description-textarea');
+        const descCount = document.getElementById('descCount');
+
+        descTextarea.addEventListener('input', () => {
+          descCount.textContent = descTextarea.value.length;
+        });
+      </script>
+
 
     </div>
   </div>

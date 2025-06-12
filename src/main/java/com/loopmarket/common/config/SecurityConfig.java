@@ -3,8 +3,11 @@ package com.loopmarket.common.config;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.firewall.HttpFirewall;
+import org.springframework.security.web.firewall.StrictHttpFirewall;
 
 @Configuration
 @EnableWebSecurity
@@ -22,5 +25,19 @@ public class SecurityConfig {
 	        .formLogin(form -> form.disable());
 	    return http.build();
 	}
+	
+	// 방화벽 허용 (이미지 불러오기 오류나서 열어뒀습니다 - kw)
+    @Bean
+    HttpFirewall relaxedFirewall() {
+        StrictHttpFirewall firewall = new StrictHttpFirewall();
+        // 이중 슬래시 허용
+        firewall.setAllowUrlEncodedDoubleSlash(true);
+        firewall.setAllowBackSlash(true); // 백슬래시 헝용
+        firewall.setAllowSemicolon(true); // 필요시
+        return firewall;
+    }
+    protected void configure(WebSecurity web) throws Exception {
+        web.httpFirewall(relaxedFirewall());
+    }
 
 }

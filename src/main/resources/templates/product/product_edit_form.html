@@ -1,210 +1,167 @@
-<!-- product_edit_form.html -->
 <div th:fragment="content">
   <div class="container my-5 d-flex justify-content-center">
+    <link rel="stylesheet" th:href="@{/css/productForm.css}">
     <div class="w-100" style="max-width: 700px;">
 
       <h2 class="text-center mb-4">📦 상품 수정</h2>
       <div class="d-flex justify-content-end align-items-center mb-3">
-        <label class="form-label me-2 mb-0"></label>
         <button type="button" class="btn btn-outline-primary btn-sm" id="aiGenerateBtn">AI로 작성하기</button>
       </div>
 
-      <!-- 상품 등록 폼: 이미지 포함 multipart/form-data 전송 -->
+      <!-- 등록폼과 동일한 폼 구조로 대체 -->
       <form th:action="@{'/products/' + ${product.productId}}" method="post" th:object="${product}" enctype="multipart/form-data">
-        <input type="hidden" name="_method" value="put" /> <!-- PUT 요청을 흉내냄 (Spring MVC에서 필요) -->
-        <!-- 상품 이미지 업로드 섹션 -->
+        <input type="hidden" name="_method" value="put" />
+
+        <!-- 상품 이미지 업로드 -->
         <div class="mb-3">
           <label class="form-label fw-bold">상품 이미지</label>
           <div class="d-flex align-items-start gap-2 flex-wrap">
-
-            <!-- 이미지 선택용 카메라 버튼 -->
             <label for="imageInput" class="d-flex flex-column align-items-center justify-content-center"
                    style="width: 80px; height: 80px; border: 1px solid #ccc; border-radius: 10px; cursor: pointer;">
               <span style="font-size: 24px;">📷</span>
-              <span id="imageCount" class="small text-muted">0/8</span> <!-- 업로드한 이미지 개수 표시 -->
+              <span id="imageCount" class="small text-muted">0/8</span>
             </label>
-
-            <!-- 실제 이미지 파일 input (숨김) -->
             <input type="file" id="imageInput" name="images" accept="image/*" multiple hidden>
-
-            <!-- 이미지 미리보기 표시 영역 -->
-            <div id="previewContainer" class="d-flex flex-wrap gap-2">
-              <div th:each="imgUrl, iterStat : ${product.imagePaths}" style="position: relative;">
-                <img th:src="@{${imgUrl}}" alt="상품 이미지" style="width: 80px; height: 80px; object-fit: cover; border-radius: 10px;">
-                <!-- 대표 이미지 표시 -->
-                <span th:if="${iterStat.index == 0}" style="position: absolute; top: 0; left: 0; background: #0008; color: white; font-size: 12px; padding: 2px 6px; border-radius: 0 0 5px 0;">
-			      대표
-			    </span>
-              </div>
-            </div>
+            <div id="previewContainer" class="d-flex flex-wrap gap-2"></div>
           </div>
         </div>
 
-        <!-- 대표 이미지 인덱스 (서버 전송용, 숨김 필드) -->
         <input type="hidden" id="mainImageIndex" name="mainImageIndex" value="0">
 
         <!-- 상품명 입력 -->
-        <div class="mb-3">
-          <label>상품명</label>
-          <input type="text" th:field="*{title}" class="form-control" required minlength="2" maxlength="40">
+        <div class="form-row">
+          <label class="form-label">상품명</label>
+          <div class="form-input">
+            <input type="text" class="form-control" th:field="*{title}" maxlength="40" placeholder="상품명을 입력해 주세요.">
+            <div class="text-end small text-muted mt-1"><span id="titleCount">0</span>/40</div>
+          </div>
         </div>
 
-        <!-- 가격 입력 (표시용 + 서버 전송용 숨김 필드) -->
-        <div class="mb-3">
-          <label>가격 (원)</label>
-          <input type="text" id="priceDisplay" class="form-control">
-          <input type="hidden" th:field="*{price}" id="priceInput">
+        <!-- 가격 입력 -->
+        <div class="form-row">
+          <label class="form-label">가격(원)</label>
+          <div class="mb-3">
+            <input type="text" id="priceDisplay" class="form-control">
+            <input type="hidden" th:field="*{price}" id="priceInput">
+          </div>
         </div>
 
-        <!-- 판매 유형 라디오 -->
+        <!-- 판매 유형 -->
         <div class="mb-3">
           <label>거래 방식</label><br>
-          <input type="radio" name="saleType" value="SALE" checked id="sale"> 판매
-          <input type="radio" name="saleType" value="DONATION" id="donation"> 나눔
+          <input type="radio" name="saleType" value="SALE" id="sale" th:checked="${product.saleType == 'SALE'}"> 판매
+          <input type="radio" name="saleType" value="DONATION" id="donation" th:checked="${product.saleType == 'DONATION'}"> 나눔
         </div>
 
-        <!-- 대분류 카테고리 선택 -->
-        <div class="mb-3">
-          <label>카테고리</label>
-          <select id="main-category" class="form-select" name="mainCategory">
-            <option value="">대분류 선택</option>
-            <option th:each="main : ${mainCategories}"
-                    th:value="${main.ctgCode}"
-                    th:text="${main.ctgName}"
-                    th:selected="${main.ctgCode == mainCategoryCode}">
-            </option>
-          </select>
-        </div>
+        <!-- 카테고리 선택 -->
+        <div class="category-picker d-flex border rounded">
+          <ul id="main-category-list" class="category-column list-group border-end">
+            <li th:each="main : ${mainCategories}"
+                th:data-code="${main.ctgCode}"
+                th:text="${main.ctgName}"
+                th:classappend="${main.ctgCode == mainCategoryCode} ? 'active'"
+                class="list-group-item list-group-item-action">
+            </li>
+          </ul>
 
-        <!-- 소분류 카테고리 선택 -->
-        <div class="mb-3">
-          <label>소분류 선택</label>
-          <select id="sub-category" name="ctgCode" class="form-select" required>
-            <option value="">소분류 선택</option>
-            <option th:each="sub : ${subCategories}"
-                    th:value="${sub.ctgCode}"
-                    th:text="${sub.ctgName}"
-                    th:selected="${sub.ctgCode == product.ctgCode}">
-            </option>
-          </select>
+          <ul id="sub-category-list" class="category-column list-group flex-fill">
+            <li class="list-group-item text-muted text-center">소분류 선택</li>
+          </ul>
         </div>
+        <input type="hidden" name="ctgCode" id="selectedSubCategory" th:value="${product.ctgCode}">
 
         <!-- 상품 상태 슬라이더 -->
         <div class="mb-3">
           <label for="conditionScore">상품 상태</label>
-          <input type="range" id="conditionScore" name="conditionScore" class="form-range" min="0" max="100"
-                 th:value="${product.conditionScore != null ? product.conditionScore : 50}">
+          <input type="range" id="conditionScore" name="conditionScore" class="form-range" min="0" max="100" th:value="${product.conditionScore ?: 50}">
           <div class="d-flex justify-content-between mt-2">
             <span id="conditionText" class="small">👣 사용감 있어요</span>
             <span id="conditionPercent" class="small text-muted">50%</span>
           </div>
-          <input type="hidden" id="conditionTextValue" name="condition" th:value="${product.condition} ?: 'USED'"> <!-- 상태 ENUM 값 -->
+          <input type="hidden" id="conditionTextValue" name="condition" th:value="${product.condition ?: 'USED'}">
         </div>
 
-        <!-- 상품 설명 -->
+        <!-- 설명 -->
         <div class="mb-3">
-          <label>상품 설명</label>
-          <textarea th:field="*{description}" class="form-control" minlength="10" rows="5"></textarea>
-        </div>
-
-        <!-- 희망 거래 방식 체크박스 -->
-        <div class="mb-3">
-          <label>희망 거래 방식</label><br>
-          <input type="checkbox" name="isDirect" value="true" id="isDirect"> 직거래
-          <input type="checkbox" name="isDelivery" value="true" id="isDelivery"> 비대면
-          <input type="checkbox" name="isNonface" value="true" id="isNonface"> 택배
-        </div>
-
-        <!-- 거래 희망 장소 입력 -->
-        <div class="mb-3" id="locationGroup" style="display: none;">
-          <label>거래 희망 장소</label>
-          <div class="d-flex gap-2">
-            <input type="text" class="form-control" placeholder="예: 역삼역" id="locationText" name="locationText" readonly>
-            <button type="button" class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#locationModal">
-              위치 찾기
-            </button>
+          <label class="form-label fw-bold">설명</label>
+          <div class="description-wrapper">
+            <textarea th:field="*{description}" class="form-control description-textarea" rows="6" maxlength="2000"></textarea>
+            <div class="text-end mt-1 small text-muted">
+              <span id="descCount">0</span>/2000
+            </div>
           </div>
         </div>
 
-        <!-- 숨겨진 위도/경도 필드 -->
-        <input type="hidden" id="latitude" name="latitude">
-        <input type="hidden" id="longitude" name="longitude">
-
-        <!-- 택배비 입력 (택배 선택 시 노출) -->
-        <div class="mb-3" id="shippingFeeGroup" style="display: none;">
-          <label>택배비 (원)</label>
-          <input type="number" class="form-control" th:field="*{shippingFee}">
+        <!-- 거래 방식 체크 -->
+        <div class="mb-3">
+          <label>희망 거래 방식</label><br>
+          <input type="checkbox" name="isDirect" value="true" id="isDirect" th:checked="${product.isDirect}"> 직거래
+          <input type="checkbox" name="isNonface" value="true" id="isNonface" th:checked="${product.isNonface}"> 비대면
+          <input type="checkbox" name="isDelivery" value="true" id="isDelivery" th:checked="${product.isDelivery}"> 택배
         </div>
 
-        <!-- 지도 미리보기 영역 -->
+        <!-- 거래 장소 -->
+        <div class="mb-3" id="locationGroup">
+          <label>거래 희망 장소</label>
+          <div class="d-flex gap-2">
+            <input type="text" class="form-control" id="locationText" name="locationText" placeholder="예: 강남역" th:value="${product.locationText}" readonly>
+            <button type="button" class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#locationModal">위치 찾기</button>
+          </div>
+        </div>
+
+        <input type="hidden" id="latitude" name="latitude" th:value="${product.latitude}">
+        <input type="hidden" id="longitude" name="longitude" th:value="${product.longitude}">
+
+        <div class="mb-3" id="shippingFeeGroup" style="display:none;">
+          <label>택배비 (원)</label>
+          <input type="number" class="form-control" th:field="*{shippingFee}" id="shippingFeeInput">
+        </div>
+
         <div id="mapPreview" class="my-4" style="width:100%; height:250px; display:none;"></div>
 
-        <!-- 상품 수정 버튼 -->
         <div class="text-center mt-4">
           <button type="submit" class="btn btn-dark px-5">상품 수정</button>
         </div>
       </form>
-
-      <!-- 위치 선택 모달 -->
-      <div class="modal fade" id="locationModal" tabindex="-1">
-        <div class="modal-dialog modal-dialog-centered modal-lg">
-          <div class="modal-content">
-            <div class="modal-header">
-              <h5 class="modal-title">거래할 위치를 선택해보세요!</h5>
-              <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-
-            <!-- 모달 본문: 지도와 주소 표시 -->
-            <div class="modal-body p-0" style="position: relative;">
-              <div id="map" style="width:100%; height:400px;"></div>
-              <div id="overlay-address" class="bg-white text-dark small text-center px-2 py-1 rounded shadow-sm"
-                   style="position: absolute; top: 10px; left: 50%; transform: translateX(-50%); z-index: 10;">
-                📍 지도 중앙을 움직여 위치를 선택해주세요
-              </div>
-
-              <!-- 상세 장소 입력 -->
-              <div class="p-3">
-                <label class="form-label small">선택한 장소 설명 (예: 명동역 2번 출구)</label>
-                <input type="text" id="customLocationDetail" class="form-control" placeholder="예: 강남역 1번 출구, 교보타워 앞">
-              </div>
-            </div>
-
-            <!-- 모달 푸터: 선택 주소 표시 및 완료 버튼 -->
-            <div class="modal-footer justify-content-between">
-              <div id="selected-address" class="text-start small"></div>
-              <button type="button" class="btn btn-dark" id="confirmLocation" data-bs-dismiss="modal">선택 완료</button>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- JS 파일들 로드 -->
-
-      <script th:src="@{/js/category.js}"></script>
-      <script th:src="@{/js/product.js}"></script>
-      <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
-      <script type="text/javascript"
-              src="//dapi.kakao.com/v2/maps/sdk.js?appkey=d4ca8876da8e183543e1cfbbd669097d&libraries=services"></script>
-
-      <script th:inline="javascript">
-        document.addEventListener("DOMContentLoaded", () => {
-          const priceValue = /*[[${product.price}]]*/ 0;
-          const priceDisplay = document.getElementById("priceDisplay");
-          const priceInput = document.getElementById("priceInput");
-
-          // 기존 가격 값 숫자형으로 변환 후 콤마 찍어 표시
-          priceDisplay.value = Number(priceValue).toLocaleString('ko-KR');
-          priceInput.value = priceValue;
-
-          priceDisplay.addEventListener("input", (e) => {
-            const rawValue = e.target.value.replace(/[^0-9]/g, "");
-            priceInput.value = rawValue;
-            e.target.value = rawValue ? Number(rawValue).toLocaleString('ko-KR') : '';
-          });
-        });
-      </script>
-
-
     </div>
   </div>
+  <!-- 지도 & 슬라이더 & 찜 JS -->
+  <script src="//dapi.kakao.com/v2/maps/sdk.js?appkey=d4ca8876da8e183543e1cfbbd669097d&libraries=services"></script>
+  <script th:inline="javascript">
+    var mapContainer = document.getElementById('map');
+    var mapOption = {
+      center: new kakao.maps.LatLng([[${product.latitude}]], [[${product.longitude}]]),
+      level: 3
+    };
+    var map = new kakao.maps.Map(mapContainer, mapOption);
+    var marker = new kakao.maps.Marker({ position: map.getCenter() });
+    marker.setMap(map);
+  </script>
+
+  <script th:src="@{/js/product.js}"></script>
+  <script th:src="@{/js/category.js}"></script>
+
+
+  <script th:inline="javascript">
+    document.addEventListener('DOMContentLoaded', function () {
+      const productId = [[${product.productId}]];
+      const icon = document.getElementById("heart-icon");
+      const button = icon.closest("button");
+
+      fetch(`/api/wishlist/is-wished?productId=${productId}`)
+        .then(res => res.ok ? res.json() : Promise.reject())
+        .then(isWished => {
+          if (isWished) {
+            icon.classList.replace("bi-heart", "bi-heart-fill");
+          }
+        });
+
+      button.addEventListener("click", () => {
+        fetch(`/api/wishlist/toggle?productId=${productId}`, { method: "POST" })
+          .then(res => res.ok ? icon.classList.toggle("bi-heart") || icon.classList.toggle("bi-heart-fill")
+            : alert("로그인이 필요합니다."))
+          .catch(() => alert("요청 실패"));
+      });
+    });
+  </script>
 </div>

@@ -3,6 +3,7 @@ package com.loopmarket.domain.product.service;
 import com.loopmarket.domain.category.repository.CategoryRepository;
 import com.loopmarket.domain.image.service.ImageService;
 import com.loopmarket.domain.product.dto.CategoryProductStatsDTO;
+import com.loopmarket.domain.product.dto.ProductDTO;
 import com.loopmarket.domain.product.dto.WeeklyProductStatsDTO;
 import com.loopmarket.domain.product.entity.ProductEntity;
 import com.loopmarket.domain.product.repository.ProductRepository;
@@ -103,6 +104,19 @@ public class ProductService {
 	public List<ProductEntity> getOngoingProducts(Long sellerId) {
 		List<String> statuses = List.of("ONSALE", "RESERVED");
 		List<ProductEntity> products = productRepository.findByUserIdAndStatusIn(sellerId, statuses);
+
+		for (ProductEntity product : products) {
+			Long productId = product.getProductId();
+			product.setThumbnailPath(imageService.getThumbnailPath(productId));
+			product.setImagePaths(imageService.getAllImagePaths(productId));
+		}
+		return products;
+	}
+
+	// 판매 중(ONSALE) + 예약중(RESERVED) 상태 상품 조회 - QR 생성, 판매중 탭 용 - jw
+	public List<ProductEntity> getVisibleOngoingProducts(Long sellerId) {
+		List<String> statuses = List.of("ONSALE", "RESERVED");
+		List<ProductEntity> products = productRepository.findByUserIdAndStatusInAndIsHiddenFalse(sellerId, statuses);
 
 		for (ProductEntity product : products) {
 			Long productId = product.getProductId();
@@ -454,5 +468,29 @@ public class ProductService {
     else if (days < 2) return "1일 전";
     else return days + "일 전";
   }
+  public void registerProductWithDTO(ProductDTO dto, Long userId, List<MultipartFile> images, int mainImageIndex) {
+    ProductEntity entity = new ProductEntity();
+
+    entity.setUserId(userId);
+
+    entity.setTitle(dto.getTitle());
+    entity.setPrice(dto.getPrice());
+    entity.setCtgCode(dto.getCtgCode());
+    entity.setDescription(dto.getDescription());
+    entity.setSaleType(dto.getSaleType());
+    entity.setCondition(dto.getCondition());
+    entity.setConditionScore(dto.getConditionScore());
+    entity.setIsDirect(dto.getIsDirect());
+    entity.setIsDelivery(dto.getIsDelivery());
+    entity.setIsNonface(dto.getIsNonface());
+    entity.setLocationText(dto.getLocationText());
+    entity.setLatitude(dto.getLatitude());
+    entity.setLongitude(dto.getLongitude());
+    entity.setShippingFee(dto.getShippingFee());
+    entity.setIsHidden(false);
+
+    registerProductWithImages(entity, images, mainImageIndex);
+  }
+
 
 }

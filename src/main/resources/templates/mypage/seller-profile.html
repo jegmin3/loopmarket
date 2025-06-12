@@ -38,9 +38,12 @@
 								onmouseover="this.style.transform='scale(1.02)'"
 								onmouseout="this.style.transform='scale(1)'">
 
-								<img th:src="@{${product.thumbnailPath}}" th:alt="'상품 ' + ${product.title}"
-									class="card-img-top"
-									style="object-fit: cover; height: 160px; border-radius: 0.5rem 0.5rem 0 0;" />
+								<img th:src="${product.thumbnailPath != null && product.thumbnailPath != ''} ?
+								               @{${product.thumbnailPath}} :
+								               @{/img/no-image.png}"
+								     th:alt="'상품 ' + ${product.title}"
+								     class="card-img-top"
+								     style="object-fit: cover; height: 160px; border-radius: 0.5rem 0.5rem 0 0;" />
 
 								<div class="card-body p-2">
 									<h6 class="card-title mb-1 text-truncate" style="max-width: 100%;"

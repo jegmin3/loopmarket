@@ -1,31 +1,49 @@
-// DOM이 모두 로드된 후 실행
 document.addEventListener("DOMContentLoaded", () => {
-  const mainSelect = document.getElementById("main-category");  // 대분류 select 박스
-  const subSelect = document.getElementById("sub-category");    // 소분류 select 박스
+  const mainList = document.getElementById("main-category-list");
+  const subList = document.getElementById("sub-category-list");
+  const hiddenInput = document.getElementById("selectedSubCategory");
 
-  if (!mainSelect || !subSelect) return; // 두 요소가 없으면 실행 중단 (안전장치)
+  if (!mainList || !subList || !hiddenInput) return;
 
-  // 대분류 선택값이 바뀔 때마다 실행
-  mainSelect.addEventListener("change", () => {
-    const mainCode = mainSelect.value;  // 선택된 대분류 코드
+  // 대분류 클릭 이벤트
+  mainList.addEventListener("click", e => {
+    if (!e.target || !e.target.dataset.code) return;
 
-    if (!mainCode) {
-      // 대분류 선택 안 하면 소분류 초기화
-      subSelect.innerHTML = '<option value="">소분류 선택</option>';
-      return;
-    }
+    // 기존 선택된 대분류 스타일 제거
+    [...mainList.children].forEach(li => li.classList.remove("active"));
+    e.target.classList.add("active");
 
-    // 서버에 선택한 대분류 코드로 소분류 목록 요청
+    const mainCode = e.target.dataset.code;
+
+    // 소분류 초기화
+    subList.innerHTML = `<li class="list-group-item text-muted text-center">로딩 중...</li>`;
+
+    // 대분류에 따라 소분류 리스트 요청
     fetch(`/api/categories/${mainCode}`)
-      .then(res => res.json()) // JSON 응답 파싱
+      .then(res => res.json())
       .then(data => {
-        // 소분류 select 박스 초기화
-        subSelect.innerHTML = '<option value="">소분류 선택</option>';
+        if (!data.length) {
+          subList.innerHTML = `<li class="list-group-item text-muted text-center">소분류 없음</li>`;
+          return;
+        }
 
-        // 받아온 소분류 목록을 option 태그로 추가
-        data.forEach(ctg => {
-          subSelect.innerHTML += `<option value="${ctg.ctgCode}">${ctg.ctgName}</option>`;
-        });
+        // 소분류 리스트 렌더링
+        subList.innerHTML = data.map(sub => `
+          <li class="list-group-item list-group-item-action" data-code="${sub.ctgCode}">
+            ${sub.ctgName}
+          </li>`).join('');
       });
+  });
+
+  // 소분류 클릭 이벤트
+  subList.addEventListener("click", e => {
+    if (!e.target || !e.target.dataset.code) return;
+
+    // 기존 선택된 소분류 스타일 제거
+    [...subList.children].forEach(li => li.classList.remove("active"));
+    e.target.classList.add("active");
+
+    // 최종 선택된 소분류 코드 저장
+    hiddenInput.value = e.target.dataset.code;
   });
 });

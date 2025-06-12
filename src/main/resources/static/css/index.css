@@ -1,0 +1,330 @@
+/* ------------------------------
+   💡 기본 설정 및 배경 스타일
+------------------------------ */
+body {
+  background-color: #ffffff; /* 전체 페이지 배경색 (흰색) */
+  font-family: 'Pretendard', sans-serif; /* 폰트 */
+  color: #212529; /* 기본 텍스트 컬러 */
+}
+/* 검색 문구 전용 스타일 (문구 강조용) */
+.search-title {
+  font-size: 2.5rem;         /* 기본보다 큼 (기본 h2는 1.5~1.75rem) */
+  font-weight: 610;
+  color: #212529;
+  margin-bottom: 1rem;
+}
+
+/* 상단 검색 문구 + 버튼 + 검색창 전체를 중앙 정렬하는 wrapper */
+.search-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding-top: 10px;  /* 위 여백 */
+  padding-bottom: 30px; /* 아래 여백 */
+  text-align: center;
+}
+
+
+/* ------------------------------
+   📌 한 줄 카테고리 아이콘 카드 (상단 아이콘 메뉴용)
+------------------------------ */
+.category-row {
+  padding: 0 12px; /* 좌우 여백 */
+}
+
+.category-icon-card {
+  background-color: #f7f7f7; /* 카드 배경 */
+  border-radius: 1rem;       /* 둥근 테두리 */
+  width: 142px;              /* ✅ 카드 정사각형 크기 조절 */
+  aspect-ratio: 1 / 1;       /* 정사각형 유지 */
+  padding: 16px 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05); /* 약한 그림자 */
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.category-icon-card:hover {
+  transform: translateY(-4px); /* 살짝 떠오르게 */
+  box-shadow: 0 6px 10px rgba(0, 0, 0, 0.08);
+}
+
+.category-icon-card .icon {
+  font-size: 24px; /* 아이콘 크기 */
+  margin-bottom: 6px;
+}
+
+.category-icon-card .label {
+  font-size: 1rem;
+  font-weight: 580;
+  color: #333;
+  word-break: keep-all; /* 단어 분리 방지 */
+}
+
+
+/* ------------------------------
+   🧱 큰 카테고리 카드 (중간 콘텐츠용)
+------------------------------ */
+.category-card {
+  background-color: #f7f7f7;
+  border-radius: 1rem;
+  aspect-ratio: 1 / 1;   /* 정사각형 비율 유지 */
+  max-width: 120px;      /* 한 줄에 여러 개 들어가도록 제한 */
+  width: 100%;           /* 부모 영역에 맞춰 자동 크기 조절 */
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  border: none;
+  margin: 0 auto; /* 가운데 정렬 */
+}
+
+.category-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+}
+
+.category-card .icon {
+  font-size: 22px;
+  margin-bottom: 8px;
+}
+
+.category-card h5 {
+  font-size: 0.9rem;
+  font-weight: 600;
+  margin: 0;
+  color: #333;
+  word-break: keep-all;
+  white-space: pre-line; /* 줄바꿈 유지 */
+}
+
+
+/* ------------------------------
+   📍 위치 버튼 (예: "우동")
+------------------------------ */
+.location-btn {
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 20px;
+  font-size: 16px;
+  line-height: 1;
+  vertical-align: middle;
+  outline: none;
+  border: 1.5px solid #ccc;
+}
+
+
+#current-location {
+  line-height: 1;
+  display: inline-block;
+}
+
+.location-btn:hover {
+  background-color: #e2e2e2;
+}
+
+
+/* ------------------------------
+   🔍 검색창 영역
+------------------------------ */
+.search-wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  margin-top: 30px;
+  flex-wrap: wrap;
+}
+
+.search-input {
+  width: 420px;
+  height: 48px;
+  border-radius: 999px;
+  padding: 0 20px;
+  border: 1.5px solid #ddd;
+  font-size: 16px;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.search-input:focus {
+  border-color: #2b6fff;
+  box-shadow: 0 0 0 3px rgba(43, 111, 255, 0.15);
+  outline: none;
+}
+
+.search-btn {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background-color: #2b6fff;
+  border: none;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: white;
+  font-size: 20px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  transition: background-color 0.2s;
+}
+
+.search-btn:hover {
+  background-color: #1a52d1;
+}
+
+
+/* 검색창 스타일 */
+.search-wrapper {
+  display: flex;
+  align-items: center; /* ✅ center로 중앙정렬 */
+  gap: 8px;
+  margin-top: 0; /* 필요 시 조정 */
+}
+
+.search-input {
+  width: 420px;
+  height: 48px;
+  border-radius: 999px;
+  padding: 0 20px;
+  border: 1.5px solid #ddd;
+  font-size: 16px;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.search-input:focus {
+  border-color: #2b6fff;
+  box-shadow: 0 0 0 3px rgba(43, 111, 255, 0.15);
+  outline: none;
+}
+
+.search-btn {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  vertical-align: middle; /* ✅ 추가 */
+}
+
+
+.search-btn svg {
+  vertical-align: middle;
+  display: inline-block;
+}
+
+.search-btn:hover {
+  background-color: #1a52d1;
+}
+
+#rotating-wrapper {
+  display: inline-block;
+  position: relative;     /* 이거 꼭 있어야 함 */
+  height: 1.5em;
+  overflow: hidden;
+  vertical-align: middle;
+}
+
+#rotating-keyword {
+  display: inline-block;
+  top: 0;
+  left: 0;
+  opacity: 0;
+  transform: translateY(100%);
+  transition: opacity 0.3s ease;
+}
+
+@keyframes slideUp {
+  0% {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+  100% {
+    transform: translateY(0%);
+    opacity: 1;
+  }
+}
+.animated-keyword {
+  animation: slideUp 0.4s ease-in-out forwards;
+  opacity: 1;
+}
+
+/* ------------------------------
+	모바일 대응 & 반응형 스타일
+------------------------------ */
+@media (max-width: 576px) {
+
+  /* 상단 여백 줄이기 */
+  .search-section {
+    padding-top: 40px;  /* 기존 80px → 줄임 */
+    padding-bottom: 20px;
+  }
+
+  .search-title {
+    font-size: 1.5rem;
+    margin-bottom: 0.5rem !important;
+  }
+
+  /* 부전동 버튼 */
+  .location-btn {
+    font-size: 14px;
+    height: 40px;
+    padding: 0 16px;
+    margin-bottom: 12px;  /* 검색창과 간격 추가 */
+  }
+
+  /* 검색창 */
+  .search-wrapper {
+    flex-wrap: nowrap;
+    padding: 0 1rem;
+    justify-content: center;
+  }
+
+  .search-input {
+    max-width: 220px;
+    height: 44px;
+    font-size: 14px;
+    padding: 0 14px;
+  }
+
+  .search-btn {
+    width: 44px;
+    height: 44px;
+    font-size: 18px;
+  }
+
+  /* 카테고리 카드 */
+  .category-row {
+    gap: 0.5rem;
+    padding: 0 1rem;
+    justify-content: center;
+  }
+
+  .category-icon-card {
+    width: 22%;
+    min-width: 64px;
+    aspect-ratio: 1 / 1;
+    padding: 10px 4px;
+    border-radius: 0.75rem;
+  }
+
+  .category-icon-card .icon {
+    font-size: 18px;
+    margin-bottom: 4px;
+  }
+
+  .category-icon-card .label {
+    font-size: 0.75rem;
+    line-height: 1.2;
+    word-break: keep-all;
+  }
+}
