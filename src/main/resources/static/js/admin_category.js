@@ -71,34 +71,46 @@ $(document).ready(function () {
 
 	    const $card = $(`
 	      <div class="card mb-3 shadow-sm">
-	        <div class="card-header d-flex justify-content-between align-items-center">
-	          <strong>${cat.ctgName}</strong>
+	        <div class="card-header d-flex justify-content-between align-items-center toggle-header" style="cursor: pointer;">
+	          <div class="d-flex align-items-center gap-2">
+	            <span class="toggle-icon">▶</span>
+	            <strong>${cat.ctgName}</strong>
+	          </div>
 	          ${
 	            canDelete
-	              ? `<button class="btn btn-sm btn-outline-danger fw-bold btn-delete-root">
-	                   🗑 대분류 삭제
-	                 </button>`
+	              ? `<button class="btn btn-sm btn-outline-danger fw-bold btn-delete-root">🗑 대분류 삭제</button>`
 	              : hasChildCategories
-	                  ? `<span class="badge bg-warning text-dark">하위 카테고리 존재</span>`
-	                  : `<span class="badge bg-secondary">사용중</span>`
+	                ? `<span class="badge bg-warning text-dark">하위 카테고리 존재</span>`
+	                : `<span class="badge bg-secondary">사용중</span>`
 	          }
 	        </div>
-	        <ul class="list-group list-group-flush ms-3">
-	        </ul>
+	        <ul class="list-group list-group-flush ms-4 category-children"></ul>
 	      </div>
 	    `);
 
 	    if (canDelete) {
-	      $card.find('.btn-delete-root').click(() => deleteCategory(cat.ctgCode));
+	      $card.find('.btn-delete-root').click((e) => {
+	        e.stopPropagation();
+	        deleteCategory(cat.ctgCode);
+	      });
 	    }
 
-	    const $subUl = $card.find('ul');
+	    const $subUl = $card.find('.category-children');
 	    renderSubCategories(cat.children, $subUl);
+	    $subUl.hide();
+
+	    // 아이콘 요소 참조
+	    const $icon = $card.find('.toggle-icon');
+
+	    $card.find('.toggle-header').click(() => {
+	      $subUl.slideToggle(200);
+	      const isVisible = $subUl.is(":visible");
+	      $icon.text(isVisible ? "▼" : "▶");  // 아이콘 바꾸기
+	    });
 
 	    $container.append($card);
 	  });
 	}
-	
 	
 	function renderSubCategories(children, $container) {
 	  children.forEach(cat => {
