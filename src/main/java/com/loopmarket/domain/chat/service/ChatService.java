@@ -15,6 +15,7 @@ import com.loopmarket.domain.product.entity.ProductEntity;
 import com.loopmarket.domain.product.service.ProductService;
 
 import java.time.LocalDateTime;
+import java.util.Comparator;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
@@ -167,8 +168,7 @@ public class ChatService {
             Integer opponentId = room.getUser1Id().equals(userId) ? room.getUser2Id() : room.getUser1Id();
             String nickname = getNicknameByUserId(opponentId);
             Long productId = room.getProductId();
-//            MemberEntity opponent = memberRepository.findById(opponentId)
-//                    .orElseThrow(() -> new IllegalArgumentException("상대방 정보를 찾을 수 없습니다."));
+
             // 프로필 이미지
             String profileImagePath = imageService.getProfilePath(opponentId);
             // 상품 이미지
@@ -200,7 +200,9 @@ public class ChatService {
                 pdTitle,
                 thumbnailPath
             );
-        }).collect(Collectors.toList());
+        })
+		.sorted(Comparator.comparing(ChatRoomSummaryDTO::getLastTime).reversed()) // 최근메시지 순의 방으로 정렬
+		.collect(Collectors.toList());
     }
     
     /** 채팅방별 안읽은 메시지 갱신용 */

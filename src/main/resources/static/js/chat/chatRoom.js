@@ -45,11 +45,11 @@ function connect(callback) {
 		// 해당 채팅방 구독
 		stompClient.subscribe(`/queue/room.${roomId}`, function(message) {
 			const msg = JSON.parse(message.body);
-			console.log("💬 수신된 메시지:", msg); //로깅
+			//console.log("💬 수신된 메시지:", msg); //로깅
 
 			// 내 메시지 중 마지막 메시지에 대해 읽음 표시만 갱신
 			if (msg.type === "READ") {
-				console.log("READ 확인 후 갱신됨");
+				//console.log("READ 확인 후 갱신됨");
 				const lastMyMsg = $("#chatArea .text-end[id^='msg-']").filter(function() {
 					return $(this).data("sender-id") == senderId;
 				}).last();
@@ -74,7 +74,7 @@ function connect(callback) {
 			const isMine = (msg.senderId === senderId);
 			// 수신한 상대방 메시지면 → 실시간 읽음 처리 트리거
 			if (!isMine && stompClient?.connected) {
-				console.log("읽음 처리 전송");
+				//console.log("읽음 처리 전송");
 				stompClient.send("/app/chat.read", {}, JSON.stringify({
 					roomId: roomId,
 					senderId: senderId
@@ -153,28 +153,27 @@ function uploadImage(file, callback) {
 		}
 	});
 }
-// 사진 첨부시 미리보기, 파일명 표시, 업로드상ㅌ 표시
-$("#imageInput").on("change", function () {
-	const file = this.files[0];
-	if (!file) {
-		$("#imagePreview").addClass("d-none");
-		return;
-	}
 
-	const reader = new FileReader();
-	reader.onload = function (e) {
-		$("#previewThumb").attr("src", e.target.result);
-		$("#previewName").text(file.name);
-		$("#imagePreview").removeClass("d-none");
-	};
-	reader.readAsDataURL(file);
-});
+// 사진 첨부시 미리보기, 파일명 표시, 업로드 상태 표시
+$(function () {
+  $("#imageInput").on("change", function () {
+    const file = this.files?.[0]; // 안전하게 null 체크
+    if (!file) return;
 
-// 삭제 버튼 누를 때
-$("#removeImage").on("click", function (e) {
-	e.preventDefault();
-	$("#imageInput").val(""); // 초기화
-	$("#imagePreview").addClass("d-none");
+    const reader = new FileReader();
+    reader.onload = function (e) {
+      $("#floatThumb").attr("src", e.target.result);
+      $("#floatName").text(file.name);
+      $("#floatingPreview").removeClass("d-none");
+    };
+    reader.readAsDataURL(file);
+  });
+
+  $("#removeFloat").on("click", function (e) {
+    e.preventDefault();
+    $("#imageInput").val(""); // input 초기화
+    $("#floatingPreview").addClass("d-none"); // 미리보기 숨김
+  });
 });
 
 // 메시지 출력 (메시지 수신 시 호출됨)
@@ -244,7 +243,6 @@ function showMessage(msg) {
 	chatArea.scrollTop(chatArea[0].scrollHeight); // 스크롤을 가장 아래로 내려줌(최신 메시지 보기 편하게)
 }
 
-
 /* 스크립트 처음 로드시 작업할 동작 */
 $(document).ready(function() {
 	//console.log("chatRoom.js 로딩됨");
@@ -255,7 +253,7 @@ $(document).ready(function() {
 	// 채팅방 입장 시 스크롤을 맨 아래로
 	const chatArea = $("#chatArea");
 	chatArea.scrollTop(chatArea[0].scrollHeight);
-
+	
 	// 채팅방 나가기 sweetAlert 처리
 	$("#leaveBtn").click(function() {
 		Swal.fire({
@@ -294,8 +292,9 @@ $(document).ready(function() {
 						imageUrl: imageUrl,
 						type: "CHAT"
 					}));
-					$("#msgInput").val("");
+					$("#msgInput").val(""); //텍스트 초기화
 					$("#imageInput").val(""); // 파일 초기화
+					$("#removeFloat").trigger("click"); // 첨부한 파일 닫기
 				} else {
 					showAlert("error", "전송 실패", "채팅 서버와 연결되지 않았습니다.");
 				}
