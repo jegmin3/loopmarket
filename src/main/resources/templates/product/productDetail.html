@@ -152,12 +152,15 @@
                 <strong>거래 방식:</strong> 나눔
               </li>
 
-              <li><strong>거래 위치:</strong><span th:text="${product.locationText}">부산진구 전포동</span>
-              </li>
-            </ul>
+			  <li th:if="${!product.deliveryOnly}">
+			    <strong>거래 위치:</strong>
+			    <span th:text="${product.locationText}">부산진구 전포동</span>
+			  </li>
+			  </ul>
 
-            <!-- 지도 -->
-            <div id="map" style="width: 100%; height: 180px;" class="rounded my-3"></div>
+			  <!-- 지도 -->
+			  <div id="map" th:if="${!product.deliveryOnly}"
+			       style="width: 100%; height: 180px;" class="rounded my-3"></div>
 
             <!-- 버튼 영역 -->
             <div class="product-detail-buttons d-flex flex-column gap-2 mt-4">
