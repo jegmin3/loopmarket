@@ -1,4 +1,0 @@
-# (Redis 미사용시 - fallback)
-spring:
-  session:
-    store-type: none
