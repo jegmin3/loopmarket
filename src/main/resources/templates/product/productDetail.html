@@ -226,13 +226,14 @@
                 </div>
 
                 <div class="position-absolute top-0 start-0 z-20" style="padding: 4px;">
-					<div th:replace="fragment/status_badge :: statusBadge(${p.status}, ${p.isDelivery}, ${p.isBest})"></div>
+					<div th:replace="fragment/status_badge :: statusBadge(${p.status}, ${p.isDelivery}, ${p.isBest}, ${p.price})"></div>
                 </div>
 
                 <div class="card-body">
                   <h6 class="card-title fw-bold text-truncate" th:text="${p.title}">상품명</h6>
                   <p class="card-text small text-muted">
-                    <span th:text="${#numbers.formatInteger(p.price, 3, 'COMMA')} + '원'">가격</span> |
+					  <span th:if="${p.saleType == 'DONATION'}">나눔</span>
+					  <span th:unless="${p.saleType == 'DONATION'}" th:text="${#numbers.formatInteger(p.price, 0, 'COMMA')} + '원'"></span> |
                     <span th:text="${p.relativeTime}">시간</span>
                   </p>
                 </div>
@@ -274,15 +275,17 @@
 
                 <!-- 상태 뱃지 -->
                 <div class="position-absolute top-0 start-0 z-20" style="padding: 4px;">
-					<div th:replace="fragment/status_badge :: statusBadge(${s.status}, ${s.isDelivery}, ${s.isBest})"></div>
+					<div th:replace="fragment/status_badge :: statusBadge(${s.status}, ${s.isDelivery}, ${s.isBest}, ${s.price})"></div>
                 </div>
 
                 <div class="card-body">
                   <h6 class="card-title fw-bold text-truncate" th:text="${s.title}">상품명</h6>
-                  <p class="card-text small text-muted">
-                    <span th:text="${#numbers.formatInteger(s.price, 3, 'COMMA')} + '원'">가격</span> |
-                    <span th:text="${s.relativeTime}">시간</span>
-                  </p>
+				  <p class="card-text small text-muted">
+				    <span th:if="${s.price == 0 or s.price == null}">나눔</span>
+				    <span th:unless="${s.price == 0 or s.price == null}"
+				          th:text="${#numbers.formatInteger(s.price, 0, 'COMMA')} + '원'">가격</span> |
+				    <span th:text="${s.relativeTime}">시간</span>
+				  </p>
                 </div>
 
               </div>
