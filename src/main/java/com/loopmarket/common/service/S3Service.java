@@ -11,6 +11,7 @@ import software.amazon.awssdk.services.s3.model.GetUrlRequest;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.UUID;
 
 @Service
@@ -41,14 +42,19 @@ public class S3Service {
 
   public String uploadFile(MultipartFile file, String folderName) throws IOException {
     String fileName = folderName + "/" + UUID.randomUUID() + "_" + file.getOriginalFilename();
+    
+    // multipart 처리기가 로컬 임시폴더(/Temp/)에 저장한 파일을
+    // 요청처리 후 자동으로 삭제하는 기능을 원활히 해주기 위해
+    // 명시적으로 InputStream을 직접 열고 닫았습니다
+    try (InputStream inputStream = file.getInputStream()) {
+        PutObjectRequest request = PutObjectRequest.builder()
+                .bucket(bucket)
+                .key(fileName)
+                .contentType(file.getContentType())
+                .build();
 
-    PutObjectRequest request = PutObjectRequest.builder()
-      .bucket(bucket)
-      .key(fileName)
-      .contentType(file.getContentType())
-      .build();
-
-    s3Client.putObject(request, RequestBody.fromInputStream(file.getInputStream(), file.getSize()));
+        s3Client.putObject(request, RequestBody.fromInputStream(inputStream, file.getSize()));
+    }
 
     return s3Client.utilities().getUrl(GetUrlRequest.builder()
       .bucket(bucket)

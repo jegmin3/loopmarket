@@ -9,7 +9,13 @@ $(document).ready(function () {
       method: "GET",
       success: function (data) {
         const count = data.count;
-        const list = data.notifications;
+        const list = data.notifications || [];
+		
+		// 만약 서버에서 오류 응답이 온 경우 대비
+		if (!Array.isArray(list)) {
+		  console.warn("알림 목록이 배열이 아님:", list);
+		  return;
+		}
 
         // 배지 갱신. 깜빡임 줄이기 위해 표시여부 비교함
 		if (count > 0) {

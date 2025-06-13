@@ -12,13 +12,11 @@ import com.loopmarket.domain.chat.repository.ChatRoomRepository;
 import com.loopmarket.domain.image.service.ImageService;
 import com.loopmarket.domain.member.MemberRepository;
 import com.loopmarket.domain.product.entity.ProductEntity;
-import com.loopmarket.domain.product.repository.ProductRepository;
 import com.loopmarket.domain.product.service.ProductService;
 
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.NoSuchElementException;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -28,7 +26,6 @@ public class ChatService {
     private final ChatRoomRepository chatRoomRepository;
     private final ChatMessageRepository chatMessageRepository;
     private final MemberRepository memberRepository;
-    //private final ImageRepository imageRepository;
     private final ImageService imageService;
     private final ProductService productService;
     
@@ -80,7 +77,7 @@ public class ChatService {
      * 채팅 메시지 저장
      */
     @Transactional
-    public ChatMessageEntity saveMessage(Long roomId, Integer senderId, String content) {
+    public ChatMessageEntity saveMessage(Long roomId, Integer senderId, String content, String imageUrl) {
         if (roomId == null) {
             throw new IllegalArgumentException("roomId는 null일 수 없습니다.");
         }
@@ -89,6 +86,7 @@ public class ChatService {
                 .roomId(roomId)
                 .senderId(senderId)
                 .content(content)
+                .imageUrl(imageUrl)
                 .isRead(false)
                 .build();
 

@@ -104,7 +104,7 @@
     <script>
     $(document).ready(function () {
         function updateUnreadBadgesAndMessages() {
-            $.get("/chat/api/unread-summary", function (data) {
+            $.get("/api/chat/unread-summary", function (data) {
                 data.forEach(item => {
                     const badge = $("#chat-badge-" + item.roomId);
                     const msgBox = $("#chat-msg-" + item.roomId);

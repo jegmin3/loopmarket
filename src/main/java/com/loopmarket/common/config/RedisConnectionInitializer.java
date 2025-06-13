@@ -8,9 +8,6 @@ import org.springframework.session.SessionRepository;
 import org.springframework.session.data.redis.RedisIndexedSessionRepository;
 import org.springframework.stereotype.Component; // Component 어노테이션 추가
 
-import com.loopmarket.common.service.RedisTestService;
-
-
 @Component // Spring 빈으로 등록하여 ApplicationRunner가 동작하도록 합니다.
 public class RedisConnectionInitializer implements ApplicationRunner {
 

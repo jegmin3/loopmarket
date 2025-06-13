@@ -1,15 +1,6 @@
 <div th:fragment="content" class="d-flex flex-column align-items-center w-100 px-3 px-md-0 mx-auto"
 	style="max-width: 768px;">
-	<style>
-		#chatArea::-webkit-scrollbar {
-			width: 6px;
-		}
-
-		#chatArea::-webkit-scrollbar-thumb {
-			background-color: rgba(0, 0, 0, 0.1);
-			border-radius: 4px;
-		}
-	</style>
+	<link rel="stylesheet" th:href="@{/css/chat.css}" />
 	<h4 class="mb-4 text-center">
 		💬 <span th:text="${targetNickname}" class="fw-bold">상대방 닉네임</span> 님과의 채팅
 	</h4>
@@ -60,22 +51,39 @@
 		<div th:each="msg : ${messageList}" class="mb-3">
 
 			<!-- 내가 보낸 메시지 -->
-			<div th:if="${msg.senderId == session.loginUser.userId}" class="text-end">
-				<div class="d-inline-block px-3 py-2 text-white bg-primary rounded-3 shadow-sm" style="max-width: 80%;">
-					<span th:text="${msg.content}" style="font-size: 1.05rem;"></span>
+			<div th:if="${msg.senderId == session.loginUser.userId}" class="text-end mb-3">
+				<!-- 이미지 wrapper -->
+				<div class="chat-img-wrapper">
+					<img th:if="${msg.imageUrl}" th:src="${msg.imageUrl}"
+						 class="chat-image img-thumbnail" />
 				</div>
+
+				<!-- 텍스트 -->
+				<div th:if="${msg.content}" class="chat-bubble text-white bg-primary shadow-sm">
+					<span th:text="${msg.content}"></span>
+				</div>
+
+				<!-- 시간 + 읽음 표시 -->
 				<div class="text-end text-secondary mt-1" style="font-size: 0.75rem;">
 					<span th:text="${#temporals.format(msg.sentAt, 'HH:mm')}">00:00</span>
-					<!-- 마지막 메시지인 경우에만 읽음 여부 표시 -->
 					<span th:if="${msg.msgId == lastMyMsgId}" th:text="${msg.read ? '읽음' : '안읽음'}"></span>
 				</div>
 			</div>
 
 			<!-- 상대방이 보낸 메시지 -->
-			<div th:if="${msg.senderId != session.loginUser.userId}" class="text-start">
-				<div class="d-inline-block px-3 py-2 bg-light border rounded-3 shadow-sm" style="max-width: 80%;">
-					<span th:text="${msg.content}" style="font-size: 1.05rem;"></span>
+			<div th:if="${msg.senderId != session.loginUser.userId}" class="text-start mb-3">
+				<!-- 이미지 wrapper -->
+				<div class="chat-img-wrapper">
+					<img th:if="${msg.imageUrl}" th:src="${msg.imageUrl}" 
+						 class="chat-image img-thumbnail" />
 				</div>
+
+				<!-- 텍스트 -->
+				<div th:if="${msg.content}" class="chat-bubble bg-light border shadow-sm">
+					<span th:text="${msg.content}"></span>
+				</div>
+
+				<!-- 시간 -->
 				<div class="text-start text-muted mt-1" style="font-size: 0.75rem;">
 					<span th:text="${#temporals.format(msg.sentAt, 'HH:mm')}">00:00</span>
 				</div>
@@ -83,10 +91,27 @@
 
 		</div>
 	</div>
-
-	<!-- 입력창 -->
-	<form id="chatForm" class="mt-3 d-flex w-100">
-		<input type="text" id="msgInput" class="form-control me-2 rounded-pill" placeholder="메시지를 입력하세요">
+	
+	<!-- 이미지 업로드, 텍스트 전송용 폼-->
+	<form id="chatForm" class="mt-3 d-flex w-100 align-items-center gap-2">
+		<!-- 파일 업로드 버튼(아이콘) -->
+		<label for="imageInput" class="btn btn-outline-secondary d-flex align-items-center justify-content-center p-2" style="height: 42px;">
+			<i class="bi bi-paperclip fs-5"></i>
+		</label>
+		<input type="file" id="imageInput" accept="images/*" style="display: none;" />
+		<!-- 이미지 미리보기 or 첨부 상태 -->
+		<div id="imagePreview" class="w-100 my-2 d-none">
+			<div class="d-flex align-items-center gap-2">
+				<img id="previewThumb" src="" alt="첨부 이미지" class="img-thumbnail" style="width: 60px; height: 60px; object-fit: cover;" />
+				<div class="text-muted small">
+					<span id="previewName">파일명</span>
+					<a href="#" id="removeImage" class="ms-2 text-danger text-decoration-none">×</a>
+				</div>
+			</div>
+		</div>
+		<!-- 텍스트 입력창 -->
+		<input type="text" id="msgInput" class="form-control rounded-pill" placeholder="메시지를 입력하세요" />
+		<!-- 전송 버튼 -->
 		<button type="submit" class="btn btn-success rounded-pill px-4" style="white-space: nowrap;">
 			전송
 		</button>
