@@ -3,6 +3,7 @@ package com.loopmarket.domain.product.service;
 import com.loopmarket.domain.category.repository.CategoryRepository;
 import com.loopmarket.domain.image.service.ImageService;
 import com.loopmarket.domain.product.dto.CategoryProductStatsDTO;
+import com.loopmarket.domain.product.dto.ProductDTO;
 import com.loopmarket.domain.product.dto.WeeklyProductStatsDTO;
 import com.loopmarket.domain.product.entity.ProductEntity;
 import com.loopmarket.domain.product.repository.ProductRepository;
@@ -19,6 +20,7 @@ import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
@@ -103,6 +105,19 @@ public class ProductService {
 	public List<ProductEntity> getOngoingProducts(Long sellerId) {
 		List<String> statuses = List.of("ONSALE", "RESERVED");
 		List<ProductEntity> products = productRepository.findByUserIdAndStatusIn(sellerId, statuses);
+
+		for (ProductEntity product : products) {
+			Long productId = product.getProductId();
+			product.setThumbnailPath(imageService.getThumbnailPath(productId));
+			product.setImagePaths(imageService.getAllImagePaths(productId));
+		}
+		return products;
+	}
+
+	// 판매 중(ONSALE) + 예약중(RESERVED) 상태 상품 조회 - QR 생성, 판매중 탭 용 - jw
+	public List<ProductEntity> getVisibleOngoingProducts(Long sellerId) {
+		List<String> statuses = List.of("ONSALE", "RESERVED");
+		List<ProductEntity> products = productRepository.findByUserIdAndStatusInAndIsHiddenFalse(sellerId, statuses);
 
 		for (ProductEntity product : products) {
 			Long productId = product.getProductId();
@@ -218,25 +233,26 @@ public class ProductService {
 //	}
 
 	// 전체 가격 필터
-	public List<ProductEntity> getProductsByPriceRange(Integer min, Integer max) {
-    List<ProductEntity> products = productRepository.findByIsHiddenFalseAndPriceBetweenOrderByCreatedAtDesc(min, max);
-	    for (ProductEntity product : products) {
-	        Long productId = product.getProductId();
-	        product.setThumbnailPath(imageService.getThumbnailPath(productId));
-	        product.setImagePaths(imageService.getAllImagePaths(productId));
-	    }
-	    return products;
-	}
+  public List<ProductEntity> getProductsByPriceRange(Integer min, Integer max, String saleType) {
+    List<ProductEntity> products;
 
-//	public List<ProductEntity> getProductsByPriceRange(Integer min, Integer max) {
-//		List<ProductEntity> products = productRepository.findByPriceBetween(min, max);
-//		for (ProductEntity product : products) {
-//			Long productId = product.getProductId();
-//			product.setThumbnailPath(imageService.getThumbnailPath(productId));
-//			product.setImagePaths(imageService.getAllImagePaths(productId));
-//		}
-//		return products;
-//	}
+    if ("DONATION".equalsIgnoreCase(saleType)) {
+      products = productRepository.findByIsHiddenFalseAndSaleTypeIgnoreCaseAndPriceBetweenOrderByCreatedAtDesc("DONATION", min, max);
+    } else {
+      products = productRepository.findByIsHiddenFalseAndPriceBetweenOrderByCreatedAtDesc(min, max);
+    }
+
+    for (ProductEntity product : products) {
+      Long productId = product.getProductId();
+      product.setThumbnailPath(imageService.getThumbnailPath(productId));
+      product.setImagePaths(imageService.getAllImagePaths(productId));
+    }
+
+    return products;
+  }
+
+
+
 
 	// 대분류 + 가격 필터
 	public List<ProductEntity> getProductsByMainCategoryAndPrice(Integer mainCategoryCode, Integer min, Integer max) {
@@ -316,6 +332,17 @@ public class ProductService {
 	// 카테고리별 상품 등록 통계
 	public List<CategoryProductStatsDTO> getCategoryProductStats() {
 	    List<Object[]> raw = productRepository.countProductsByCategory();
+	    return raw.stream()
+	            .map(row -> new CategoryProductStatsDTO(
+	                    ((Number) row[0]).intValue(),      // categoryCode
+	                    (String) row[1],                   // categoryName
+	                    ((Number) row[2]).intValue()))    // count
+	            .collect(Collectors.toList());
+	}
+	
+	// 카테고리별 상품 등록 통계
+	public List<CategoryProductStatsDTO> getTopCategoryProductStats() {
+	    List<Object[]> raw = productRepository.countProductsByTopCategory();
 	    return raw.stream()
 	            .map(row -> new CategoryProductStatsDTO(
 	                    ((Number) row[0]).intValue(),      // categoryCode
@@ -454,5 +481,34 @@ public class ProductService {
     else if (days < 2) return "1일 전";
     else return days + "일 전";
   }
+  public void registerProductWithDTO(ProductDTO dto, Long userId, List<MultipartFile> images, int mainImageIndex) {
+    ProductEntity entity = new ProductEntity();
+
+    entity.setUserId(userId);
+
+    entity.setTitle(dto.getTitle());
+    entity.setPrice(dto.getPrice());
+    entity.setCtgCode(dto.getCtgCode());
+    entity.setDescription(dto.getDescription());
+    entity.setSaleType(dto.getSaleType());
+    entity.setCondition(dto.getCondition());
+    entity.setConditionScore(dto.getConditionScore());
+    entity.setIsDirect(dto.getIsDirect());
+    entity.setIsDelivery(dto.getIsDelivery());
+    entity.setIsNonface(dto.getIsNonface());
+    entity.setLocationText(dto.getLocationText());
+    entity.setLatitude(dto.getLatitude());
+    entity.setLongitude(dto.getLongitude());
+    entity.setShippingFee(dto.getShippingFee());
+    entity.setIsHidden(false);
+
+    registerProductWithImages(entity, images, mainImageIndex);
+  }
+
+
+  public Optional<ProductEntity> findProductById(Long productId) {
+	    return productRepository.findById(productId);
+	}
+
 
 }

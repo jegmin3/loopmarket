@@ -1,0 +1,20 @@
+@font-face {
+  font-family: 'Pretendard';
+  font-style: normal;
+  font-weight: 400;
+  src: url('/fonts/Pretendard-Regular.woff2') format('woff2');
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Pretendard';
+  font-style: normal;
+  font-weight: 300;
+  src: url('/fonts/Pretendard-Light.woff2') format('woff2');
+  font-display: swap;
+}
+
+/* 모든 요소에 Pretendard 폰트 적용 */
+html, body, * {
+  font-family: 'Pretendard', sans-serif !important;
+}

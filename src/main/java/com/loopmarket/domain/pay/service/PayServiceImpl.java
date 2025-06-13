@@ -20,6 +20,8 @@ import com.loopmarket.domain.product.service.ProductService;
 import lombok.RequiredArgsConstructor;
 
 import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
@@ -263,14 +265,31 @@ public class PayServiceImpl implements PayService {
 	@Override
 	@Transactional(readOnly = true)
 	public List<ConfirmableItem> getMyPurchaseHistory(Long buyerId) {
-		List<Payment> payments = paymentRepository.findByBuyerIdAndStatusIn(buyerId,
-				List.of(PaymentStatus.HOLD, PaymentStatus.COMPLETED));
+	    List<Payment> payments = paymentRepository.findByBuyerIdAndStatusIn(
+	        buyerId, List.of(PaymentStatus.HOLD, PaymentStatus.COMPLETED)
+	    );
 
-		return payments.stream().map(payment -> {
-			ProductEntity product = productService.getProductById(payment.getProductId());
-			product.setThumbnailPath(imageService.getThumbnailPath(product.getProductId()));
-			return new ConfirmableItem(product.getProductId(), payment.getPaymentId(), product.getTitle(),
-					product.getPrice(), product.getThumbnailPath(), payment.getCreatedAt());
-		}).collect(Collectors.toList());
+	    return payments.stream()
+	    	    .map(payment -> {
+	    	        Optional<ProductEntity> optionalProduct = productService.findProductById(payment.getProductId());
+
+	    	        if (optionalProduct.isEmpty()) {
+	    	            // 삭제된 상품은 건너뛰기 또는 안내 메시지로 대체
+	    	            return null;
+	    	        }
+
+	    	        ProductEntity product = optionalProduct.get();
+	    	        product.setThumbnailPath(imageService.getThumbnailPath(product.getProductId()));
+	    	        return new ConfirmableItem(
+	    	            product.getProductId(),
+	    	            payment.getPaymentId(),
+	    	            product.getTitle(),
+	    	            product.getPrice(),
+	    	            product.getThumbnailPath(),
+	    	            payment.getCreatedAt()
+	    	        );
+	    	    })
+	    	    .filter(Objects::nonNull)
+	    	    .collect(Collectors.toList());
 	}
 }

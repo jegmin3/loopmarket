@@ -14,7 +14,7 @@ $(document).ready(function () {
         // 배지 갱신. 깜빡임 줄이기 위해 표시여부 비교함
 		if (count > 0) {
 		  if ($("#notifBadge").is(":hidden") || $("#notifBadge").text() !== String(count)) {
-		    $("#notifBadge").show().text(count > 9 ? '●' : count);
+		    $("#notifBadge").show().text(count > 9 ? '.' : count);
 		  }
 		} else {
 		  $("#notifBadge").hide();

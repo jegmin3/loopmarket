@@ -1,12 +1,19 @@
 // 이미지 슬라이드 좌우 버튼 클릭 시 이미지 이동 함수
-function slideImage(button, direction,event) {
-  event.preventDefault();     // <a> 태그 기본 동작 막기
-  event.stopPropagation();    // 클릭 이벤트 상위로 전달 막기
+function slideImage(button, direction, event) {
+  event.preventDefault();
+  event.stopPropagation();
 
-  const wrapper = button.closest(".position-relative").parentElement; // wrapper 바꿈
+  // 상세 페이지든 리스트든 상관없이 작동하도록 wrapper 찾기 개선
+  let wrapper = button.closest(".position-relative");
+
+  // 리스트 페이지 카드에서는 .position-relative → 부모가 wrapper이고,
+  // 상세 페이지에서는 그 자체가 wrapper일 수 있음
+  if (wrapper.parentElement.querySelector(".slider-track")) {
+    wrapper = wrapper.parentElement;
+  }
+
   const track = wrapper.querySelector(".slider-track");
   if (!track) return;
-
 
   const total = parseInt(track.dataset.count);
   if (!track.dataset.index) track.dataset.index = "0";
@@ -16,23 +23,13 @@ function slideImage(button, direction,event) {
   track.dataset.index = newIndex;
   track.style.transform = `translateX(-${(100 / total) * newIndex}%)`;
 
-  // dot 강조 업데이트
+  // dot 업데이트: .dot이 존재하는 경우에만
   const dots = wrapper.querySelectorAll(".dot");
   dots.forEach((dot, idx) => {
     dot.style.opacity = idx === newIndex ? "1" : "0.4";
   });
 }
-
-// 페이지 처음 로드 시 dot 초기화
-document.addEventListener("DOMContentLoaded", () => {
-  document.querySelectorAll(".slider-track").forEach(track => {
-    const dots = track.closest(".col-md-6").querySelectorAll(".dot");
-    if (dots.length > 0) dots[0].style.opacity = "1";
-    track.dataset.index = "0";
-  });
-});
-
-window.slideImage = slideImage; // 전역에 등록
+window.slideImage = slideImage;
 
 document.addEventListener("DOMContentLoaded", () => {
   document.querySelectorAll(".slider-track").forEach(track => {
@@ -51,6 +48,23 @@ document.addEventListener("DOMContentLoaded", () => {
   const donationRadio = document.getElementById("donation");    // 기부 라디오 버튼
 
   let lastPriceValue = ''; // 마지막 정상 가격값 저장용
+
+  // 나눔필터 체크
+  const donationBtn = document.getElementById("donationOnlyBtn");
+  if (donationBtn) {
+    donationBtn.addEventListener("click", () => {
+      const url = new URL(window.location.href);
+      const current = url.searchParams.get("saleType");
+
+      if (current === "DONATION") {
+        url.searchParams.delete("saleType"); // 체크 해제
+      } else {
+        url.searchParams.set("saleType", "DONATION"); // 체크
+      }
+
+      window.location.href = url.toString();
+    });
+  }
 
   const buttons = document.querySelectorAll(".btn-group-vertical .btn");
   buttons.forEach(btn => {
@@ -111,6 +125,14 @@ document.addEventListener("DOMContentLoaded", () => {
       alert("이미지를 먼저 업로드해주세요.");
       return;
     }
+    // 지원되는 형식인지 확인
+    const allowedTypes = ["image/png", "image/jpeg", "image/webp", "image/gif"];
+    for (const file of selectedFiles) {
+      if (!allowedTypes.includes(file.type)) {
+        alert(`😢 "${file.name}"은 지원되지 않는 이미지 형식입니다.\nPNG, JPG, WEBP, GIF 형식만 업로드해주세요.`);
+        return;
+      }
+    }
 
     const aiBtn = document.getElementById("aiGenerateBtn");
     aiBtn.disabled = true;
@@ -148,32 +170,45 @@ document.addEventListener("DOMContentLoaded", () => {
       document.querySelector("input[name='title']").value = result.title;
       document.querySelector("textarea[name='description']").value = result.description.replace(/\\n/g, "\n");
 
-
-      // 카테고리 자동 반영
       const ctgCode = result.ctgCode;
-      const categoryToMainMap = {
-        27: 5,
+
+// 숨겨진 input 설정
+      document.getElementById("selectedSubCategory").value = ctgCode;
+
+// 대분류 자동 선택
+      const mainCategoryCodeMap = {
+        8: 1, 9: 1, 10: 1, 11: 1,
         12: 2,
-        8: 1
+        18: 3, 19: 3, 20: 3, 21: 3,
+        22: 4, 23: 4, 24: 4, 25: 4, 26: 4,
+        27: 5, 28: 5, 29: 5, 30: 5, 31: 5,
+        32: 6, 33: 6, 34: 6, 35: 6, 36: 6,
+        37: 7, 38: 7, 39: 7, 40: 7, 41: 7, 62: 7
       };
 
-      const mainCode = categoryToMainMap[ctgCode];
-      const mainSelect = document.getElementById("main-category");
-      const subSelect = document.getElementById("sub-category");
+      const mainCode = mainCategoryCodeMap[ctgCode];
 
-      if (mainCode && mainSelect && subSelect) {
-        mainSelect.value = mainCode;
-        mainSelect.dispatchEvent(new Event("change"));
+// 대분류 클릭
+      document.querySelectorAll("#main-category-list li").forEach(li => {
+        li.classList.remove("active");
+        if (li.dataset.code == mainCode) {
+          li.classList.add("active");
+          li.click(); // 소분류 동적 로딩
+        }
+      });
 
-        setTimeout(() => {
-          const option = subSelect.querySelector(`option[value="${ctgCode}"]`);
-          if (option) {
-            subSelect.value = ctgCode;
-          } else {
-            console.warn("소분류 옵션이 아직 준비되지 않았습니다:", ctgCode);
+// 소분류는 로딩 완료 후 약간 기다렸다가 선택
+      setTimeout(() => {
+        const subItems = document.querySelectorAll("#sub-category-list li");
+        subItems.forEach(li => {
+          li.classList.remove("active");
+          if (li.dataset.code == ctgCode) {
+            li.classList.add("active");
+            document.getElementById("selectedSubCategory").value = ctgCode;
           }
-        }, 300);
-      }
+        });
+      }, 300); // 이 시간은 필요 시 늘릴 수도 있음
+
 
     } catch (err) {
       alert("⚠ 오류 발생: " + err.message);
@@ -191,58 +226,6 @@ document.addEventListener("DOMContentLoaded", () => {
     console.log("대분류 선택됨:", selectedMain);
   }
   window.handleCategoryChange = handleCategoryChange;
-
-
-
-// 가격 필터 버튼 클릭 함수
-  function filterByPrice(min, max) {
-    const url = new URL(window.location.href);
-    url.searchParams.set("minPrice", min);
-    url.searchParams.set("maxPrice", max);
-    window.location.href = url.toString();
-  }
-
-// 직접 입력한 가격 적용
-  function applyPriceRange() {
-    const min = document.getElementById("minPrice").value || 0;
-    const max = document.getElementById("maxPrice").value || 0;
-
-    const url = new URL(window.location.href);
-    url.searchParams.set("minPrice", min);
-    url.searchParams.set("maxPrice", max);
-    window.location.href = url.toString();
-  }
-
-  // 페이지 로드 시 가격 필터 active 표시
-  const urlParams = new URLSearchParams(window.location.search);
-  const min = urlParams.get("minPrice");
-  const max = urlParams.get("maxPrice");
-
-  document.querySelectorAll("button[data-min][data-max]").forEach(btn => {
-    const btnMin = btn.getAttribute("data-min");
-    const btnMax = btn.getAttribute("data-max");
-
-    if (btnMin === min && btnMax === max) {
-      btn.classList.add("active");
-    }
-  });
-
-  //가격초기화
-  function resetPriceFilter() {
-    const url = new URL(window.location.href);
-    url.searchParams.delete("minPrice");
-    url.searchParams.delete("maxPrice");
-    window.location.href = url.toString();
-  }
-
-  window.resetPriceFilter = resetPriceFilter;
-
-
-
-// 버튼에서 호출할 수 있게 등록
-  window.filterByPrice = filterByPrice;
-  window.applyPriceRange = applyPriceRange;
-
 
 
   // 초기 점(dot) 표시: 첫 점만 진하게
@@ -326,45 +309,6 @@ document.addEventListener("DOMContentLoaded", () => {
     conditionText.textContent = text;
     conditionHidden.value = status;
     conditionPercent.textContent = score + "%";
-
-    document.querySelector("form").addEventListener("submit", function (e) {
-      // 이미지 용량 검사
-      const maxFileSize = 5 * 1024 * 1024; // 5MB
-      for (let file of selectedFiles) {
-        if (file.size > maxFileSize) {
-          alert("⚠ 이미지 용량이 너무 커요 (최대 5MB). 다시 선택해주세요.");
-          e.preventDefault();
-          return;
-        }
-      }
-
-      // 상품 설명 검사
-      const description = document.querySelector("textarea[name='description']");
-      if (!description.value || description.value.trim().length < 10) {
-        alert("⚠ 상품 설명을 10자 이상 입력해주세요.");
-        e.preventDefault();
-        return;
-      }
-
-      // 거래 방식 체크
-      const isDirectChecked = document.getElementById("isDirect").checked;
-      const isDeliveryChecked = document.getElementById("isDelivery").checked;
-      const isNonfaceChecked = document.getElementById("isNonface").checked;
-      if (!isDirectChecked && !isDeliveryChecked && !isNonfaceChecked) {
-        alert("⚠ 거래 방식을 하나 이상 선택해주세요.");
-        e.preventDefault();
-        return;
-      }
-
-      // 위치 미지정 검사 (직거래 or 비대면일 때)
-      const locationText = document.getElementById("locationText").value;
-      if ((isDirectChecked || isDeliveryChecked) && (!locationText || locationText.trim() === "")) {
-        alert("⚠ 거래 희망 장소를 선택해주세요.");
-        e.preventDefault();
-        return;
-      }
-    });
-
   });
 
   // ---------------- 희망 거래 방식 (위치/택배비) ----------------
@@ -376,8 +320,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // 거래 방식에 따라 위치, 배송비 입력란 표시 토글
   function toggleFields() {
-    locationGroup.style.display = (isDirect.checked || isDelivery.checked) ? "block" : "none";
-    shippingFeeGroup.style.display = isNonface.checked ? "block" : "none";
+    locationGroup.style.display = (isDirect.checked || isNonface.checked) ? "block" : "none";
+    shippingFeeGroup.style.display = isDelivery.checked ? "block" : "none";
   }
 
   isDirect.addEventListener("change", toggleFields);
@@ -567,6 +511,35 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 });
+
+function filterByPrice(min, max) {
+  const url = new URL(window.location.href);
+  url.searchParams.set("minPrice", min);
+  url.searchParams.set("maxPrice", max);
+  window.location.href = url.toString();
+}
+window.filterByPrice = filterByPrice;
+
+function applyPriceRange() {
+  const min = document.getElementById("minPrice").value || 0;
+  const max = document.getElementById("maxPrice").value || 0;
+
+  const url = new URL(window.location.href);
+  url.searchParams.set("minPrice", min);
+  url.searchParams.set("maxPrice", max);
+  window.location.href = url.toString();
+}
+window.applyPriceRange = applyPriceRange;
+
+function resetPriceFilter() {
+  const url = new URL(window.location.href);
+  url.searchParams.delete("minPrice");
+  url.searchParams.delete("maxPrice");
+  window.location.href = url.toString();
+}
+window.resetPriceFilter = resetPriceFilter;
+
+
 // URL에 lat, lng 없으면 localStorage 값으로 강제 세팅 (초기 진입 시용)
 document.addEventListener("DOMContentLoaded", () => {
   const url = new URL(window.location.href);
@@ -598,15 +571,14 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // 2. "전체 상품 보기" 버튼 클릭 시 → localStorage 초기화 + 전체 목록 이동
-  const allProductBtn = document.getElementById("allProductBtn");
-  if (allProductBtn) {
-    allProductBtn.addEventListener("click", (e) => {
+  document.querySelectorAll(".allProductBtn").forEach(btn => {
+    btn.addEventListener("click", (e) => {
       e.preventDefault();
       localStorage.removeItem("selectedLat");
       localStorage.removeItem("selectedLng");
       window.location.href = "/products";
     });
-  }
+  });
 
   // 3. 카테고리 버튼 클릭 시 → 내 위치 기준으로 해당 카테고리 상품 보기
   const categoryButtons = document.querySelectorAll(".category-btn");
@@ -625,6 +597,91 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   });
 });
+document.querySelector("form").addEventListener("submit", function (e) {
+  let isValid = true;
+
+  const priceInput = document.getElementById("priceInput");
+  const priceDisplay = document.getElementById("priceDisplay");
+
+  if (!priceInput.value || isNaN(priceInput.value)) {
+    priceDisplay.classList.add("is-invalid");
+    showValidationMessage(priceDisplay, "가격을 입력하셔야 합니다.");
+    isValid = false;
+  } else {
+    priceDisplay.classList.remove("is-invalid");
+    removeValidationMessage(priceDisplay);
+  }
+
+  const selectedSubCategory = document.getElementById("selectedSubCategory");
+  const categoryPicker = document.querySelector(".category-picker");
+  if (!selectedSubCategory.value) {
+    categoryPicker.classList.add("border", "border-danger", "p-2", "rounded");
+    showValidationMessage(categoryPicker, "카테고리를 선택하셔야 합니다.");
+    isValid = false;
+  } else {
+    categoryPicker.classList.remove("border", "border-danger", "p-2", "rounded");
+    removeValidationMessage(categoryPicker);
+  }
+
+  const isDirectChecked = document.getElementById("isDirect").checked;
+  const isDeliveryChecked = document.getElementById("isDelivery").checked;
+  const isNonfaceChecked = document.getElementById("isNonface").checked;
+  const tradeGroup = document.querySelector(".mb-3 input[name='isDirect']").closest(".mb-3");
+
+  if (!isDirectChecked && !isDeliveryChecked && !isNonfaceChecked) {
+    tradeGroup.classList.add("border", "border-danger", "p-2", "rounded");
+    showValidationMessage(tradeGroup, "거래 방식을 하나 이상 선택하셔야 합니다.");
+    isValid = false;
+  } else {
+    tradeGroup.classList.remove("border", "border-danger", "p-2", "rounded");
+    removeValidationMessage(tradeGroup);
+  }
+
+  const shippingFeeInput = document.getElementById("shippingFeeInput");
+  if (isDeliveryChecked) {
+    if (!shippingFeeInput.value || parseInt(shippingFeeInput.value) <= 0) {
+      shippingFeeInput.classList.add("is-invalid");
+      showValidationMessage(shippingFeeInput, "배송비를 입력하셔야 합니다.");
+      isValid = false;
+    } else {
+      shippingFeeInput.classList.remove("is-invalid");
+      removeValidationMessage(shippingFeeInput);
+    }
+  }
+
+  const locationText = document.getElementById("locationText");
+  if ((isDirectChecked || isNonfaceChecked) && !locationText.value) {
+    locationText.classList.add("is-invalid");
+    showValidationMessage(locationText, "거래 희망 장소를 입력해 주세요.");
+    isValid = false;
+  } else {
+    locationText.classList.remove("is-invalid");
+    removeValidationMessage(locationText);
+  }
+
+  if (!isValid) {
+    e.preventDefault();
+  }
+});
+
+
+
+// 유효성 메세지 보여주기
+function showValidationMessage(targetEl, message) {
+  let msg = document.createElement("div");
+  msg.className = "text-danger small mt-1 validation-message";
+  msg.innerText = message;
+  // 중복 방지
+  if (!targetEl.parentElement.querySelector(".validation-message")) {
+    targetEl.parentElement.appendChild(msg);
+  }
+}
+
+// 유효성 메세지 제거
+function removeValidationMessage(targetEl) {
+  const existingMsg = targetEl.parentElement.querySelector(".validation-message");
+  if (existingMsg) existingMsg.remove();
+}
 
 
 //Kakao 지도 API로 주소 → 좌표 변환 함수 만들기
@@ -641,3 +698,4 @@ function getCoordsFromAddress(address, callback) {
   });
 }
 window.getCoordsFromAddress = getCoordsFromAddress;
+

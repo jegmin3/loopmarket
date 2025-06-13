@@ -23,6 +23,8 @@ public interface ProductRepository extends JpaRepository<ProductEntity, Long> {
     // 거래중 상태들만 가져오기 위한 메서드 추가
     List<ProductEntity> findByUserIdAndStatusIn(Long userId, List<String> statuses);
 
+    List<ProductEntity> findByUserIdAndStatusInAndIsHiddenFalse(Long userId, List<String> statuses);
+
     List<ProductEntity> findByCtgCode(Integer ctgCode);
     // 여러 소분류 코드에 해당하는 상품들 검색
     List<ProductEntity> findByCtgCodeIn(List<Integer> ctgCodes);
@@ -34,7 +36,7 @@ public interface ProductRepository extends JpaRepository<ProductEntity, Long> {
     List<ProductEntity> findByIsHiddenFalseAndStatusAndCtgCodeIn(String status, List<Integer> ctgCodes);
 
 
-  // 검색어가 제목이나 설명에 포함된 상품 조회
+    // 검색어가 제목이나 설명에 포함된 상품 조회
     List<ProductEntity> findByTitleContainingIgnoreCaseOrDescriptionContainingIgnoreCase(String title, String description);
 
     // 상품 등록 수 통계용-1
@@ -55,6 +57,15 @@ public interface ProductRepository extends JpaRepository<ProductEntity, Long> {
     // 카테고리별 상품 통계용
     @Query(value = "SELECT p.ctg_code, c.ctg_name, COUNT(*) FROM products p JOIN category c ON p.ctg_code = c.ctg_code GROUP BY p.ctg_code, c.ctg_name", nativeQuery = true)
     List<Object[]> countProductsByCategory();
+    
+    // 큰 카테고리별 상품 통계용
+    @Query(value = "SELECT c.ctg_code, c.ctg_name, COUNT(*) " +
+            "FROM products p " +
+            "JOIN category child ON p.ctg_code = child.ctg_code " +
+            "JOIN category c ON (child.up_ctg_code = c.ctg_code OR child.ctg_code = c.ctg_code) " +
+            "WHERE c.up_ctg_code IS NULL " +
+            "GROUP BY c.ctg_code, c.ctg_name", nativeQuery = true)
+    List<Object[]> countProductsByTopCategory();
 
     // 숨김(false)이고 상태 ONSALE인 상품만 조회
     List<ProductEntity> findByIsHiddenFalseAndStatus(String status);
@@ -77,4 +88,7 @@ public interface ProductRepository extends JpaRepository<ProductEntity, Long> {
   List<ProductEntity> findByUserIdAndProductIdNotOrderByCreatedAtDesc(Long userId, Long excludeProductId);
   List<ProductEntity> findByCtgCodeAndProductIdNotOrderByCreatedAtDesc(Integer ctgCode, Long productId);
 
+
+  List<ProductEntity> findByIsHiddenFalseAndSaleTypeIgnoreCaseAndPriceBetweenOrderByCreatedAtDesc(
+    String saleType, Integer minPrice, Integer maxPrice);
 }

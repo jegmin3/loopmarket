@@ -83,41 +83,41 @@ public class MyPageController extends BaseController {
 	}
 
 	// 현재 판매중인 상품
-	@GetMapping("/products")
+	@GetMapping("/selling-products")
 	public String mySellingItems(HttpServletRequest request, HttpSession session, Model model) {
-		MemberEntity member = (MemberEntity) session.getAttribute("loginUser");
-		if (member == null)
-			return "redirect:/member/login";
+	    MemberEntity member = (MemberEntity) session.getAttribute("loginUser");
+	    if (member == null)
+	        return "redirect:/member/login";
 
-		List<ProductEntity> myProducts = productService.getOngoingProducts(member.getUserId().longValue());
-		for (ProductEntity product : myProducts) {
-			product.setThumbnailPath(imageService.getThumbnailPath(product.getProductId()));
-			product.setImagePaths(imageService.getAllImagePaths(product.getProductId()));
-		}
-		model.addAttribute("products", myProducts);
-		return renderMypage(request, model, "mypage/my_selling_items");
+	    List<ProductEntity> myProducts = productService.getOngoingProducts(member.getUserId().longValue());
+	    for (ProductEntity product : myProducts) {
+	        product.setThumbnailPath(imageService.getThumbnailPath(product.getProductId()));
+	        product.setImagePaths(imageService.getAllImagePaths(product.getProductId()));
+	    }
+	    model.addAttribute("products", myProducts);
+	    return renderMypage(request, model, "mypage/my_selling_items");
 	}
 
 	// 판매완료상품 내역
-	@GetMapping("/sales")
+	@GetMapping("/sales-history")
 	public String mySalesHistory(HttpServletRequest request, HttpSession session, Model model) {
-		MemberEntity member = (MemberEntity) session.getAttribute("loginUser");
-		if (member == null)
-			return "redirect:/member/login";
+	    MemberEntity member = (MemberEntity) session.getAttribute("loginUser");
+	    if (member == null)
+	        return "redirect:/member/login";
 
-		model.addAttribute("soldProducts", productService.getSoldProductsWithThumbnail(member.getUserId().longValue()));
-		return renderMypage(request, model, "mypage/my_sales_history");
+	    model.addAttribute("soldProducts", productService.getSoldProductsWithThumbnail(member.getUserId().longValue()));
+	    return renderMypage(request, model, "mypage/my_sales_history");
 	}
 
 	// 구매 내역
-	@GetMapping("/purchase")
+	@GetMapping("/purchase-history")
 	public String myPurchaseHistory(HttpServletRequest request, HttpSession session, Model model) {
-		MemberEntity member = (MemberEntity) session.getAttribute("loginUser");
-		if (member == null)
-			return "redirect:/member/login";
+	    MemberEntity member = (MemberEntity) session.getAttribute("loginUser");
+	    if (member == null)
+	        return "redirect:/member/login";
 
-		model.addAttribute("purchasedProducts", payService.getMyPurchaseHistory(member.getUserId().longValue()));
-		return renderMypage(request, model, "mypage/mypage-purchase");
+	    model.addAttribute("purchasedProducts", payService.getMyPurchaseHistory(member.getUserId().longValue()));
+	    return renderMypage(request, model, "mypage/mypage-purchase");
 	}
 
 	// 비밀번호 변경

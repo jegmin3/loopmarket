@@ -1,80 +1,117 @@
 <header th:fragment="header">
-  <nav class="navbar navbar-expand-lg navbar-light bg-light shadow-sm" style="background-color: #e3f2fd;">
-    <div class="container-fluid d-flex justify-content-between align-items-center">
+	<nav class="navbar navbar-expand-lg navbar-light bg-light shadow-sm" style="background-color: #e3f2fd;">
+		<div class="container-fluid d-flex justify-content-between align-items-center">
 
-      <!-- 왼쪽 영역: 로고 + 메뉴 -->
-      <div class="d-flex align-items-center">
-        <!-- 로고 -->
-        <a class="navbar-brand d-flex align-items-center me-3" th:href="@{/}">
-          <img src="/img/logo.png" alt="LoopMarket 로고" height="40" class="me-2" />
-        </a>
+			<!-- 왼쪽 영역: 로고 + 메뉴 -->
+			<div class="d-flex align-items-center">
+				<!-- 로고 -->
+				<a class="navbar-brand d-flex align-items-center me-3" th:href="@{/}">
+					<img src="/img/logo.png" alt="LoopMarket 로고" height="40" class="me-2" />
+				</a>
 
-        <!-- 좌측 고정 메뉴: 상품 목록, 공지사항 -->
-        <ul class="navbar-nav flex-row">
-          <li class="nav-item me-3">
-            <a class="nav-link [[${#httpServletRequest.requestURI.startsWith('/products')} ? 'active' : '']]" th:href="@{/products}">상품 목록</a>
-          </li>
-          <li class="nav-item me-3">
-            <a class="nav-link" href="/notice">공지</a>
-          </li>         
-        </ul>
-      </div>
-	
-	  <!-- 모바일 오른쪽 정렬용 div -->
-	  <div class="d-flex justify-content-end ms-auto">
-		
-      <!-- 오른쪽 영역: 관리자버튼/알림 + 햄버거 버튼 -->
-      <div class="d-flex align-items-center">
-		<!-- 관리자 아이콘 -->
-		<ul class="navbar-nav flex-row align-items-center me-2"
-		    th:if="${session.userRole == 'ADMIN' or session.userRole == 'MANAGER'}">
-		  <li class="nav-item">
-		    <a class="nav-link position-relative text-primary" href="/admin" title="관리자 페이지">
-		      <i class="bi bi-gear-fill fs-5"></i>
-		    </a>
-		  </li>
-		</ul>
-		<!-- 알림 아이콘 -->
-		<ul class="navbar-nav flex-row align-items-center me-2">
-		  <li class="nav-item dropdown" id="notificationDropdown" th:if="${session.loginUser != null}">
-		    <a class="nav-link notif-wrapper position-relative" href="#" id="notifIcon" data-bs-toggle="modal" data-bs-target="#notifModal">
-		      <i class="bi bi-bell-fill fs-5"></i>
-		      <span class="position-absolute badge rounded-pill"
-		            id="notifBadge"
-		            style="background-color: #339af0; color: white; transform: translate(-65%, -60%); display:none;">
-		        0
-		      </span>
-		    </a>
-		  </li>
-		</ul>
+				<!-- 좌측 고정 메뉴: 상품 목록, 공지사항 -->
+				<ul class="navbar-nav flex-row">
+					<li class="nav-item me-3">
+						<a class="nav-link [[${#httpServletRequest.requestURI.startsWith('/products')} ? 'active' : '']]"
+							th:href="@{/products}"><b>상품목록</b></a>
+					</li>
+					<li class="nav-item me-3">
+						<a class="nav-link" href="/notice"><b>공지사항</b></a>
+					</li>
+				</ul>
+			</div> <!-- 왼쪽 영역 div 끝 -->
 
-        <!-- 햄버거 버튼 -->
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
-                aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-          <span class="navbar-toggler-icon"></span>
-        </button>
-      </div>
-    </div>
+			<!-- 로그인 하지 않은 경우: 로그인만 표시 -->
+			<div th:if="${session.loginUser == null}" class="d-flex align-items-center">
+			  <a class="nav-link d-flex align-items-center gap-1 text-dark"
+			     th:href="@{/member/login}" title="로그인"
+			     style="transition: 0.2s;">
+			    <i class="bi bi-box-arrow-in-right fs-5"></i>
+			    <span class="fw-semibold">로그인</span>
+			  </a>
+			</div>
 
-    <!-- 접히는 메뉴 내용 (오른쪽 메뉴들) -->
-    <div class="collapse navbar-collapse" id="navbarNav">
-      <ul class="navbar-nav flex-lg-row ms-auto me-3 text-end">
-        <li class="nav-item" th:if="${session.loginUser != null}">
-          <a class="nav-link [[${#httpServletRequest.requestURI.startsWith('/mypage')} ? 'active' : '']]" style="white-space: nowrap;" th:href="@{/mypage}">마이페이지</a>
-        </li>
-        <li class="nav-item" th:if="${session.loginUser != null}">
-          <a class="nav-link" style="white-space: nowrap;" th:href="@{/chat/list}">나의 채팅</a>
-        </li>
-        <li class="nav-item" th:if="${session.loginUser == null}">
-          <a class="nav-link" style="white-space: nowrap;" th:href="@{/member/login}">로그인</a>
-        </li>
-        <li class="nav-item" th:if="${session.loginUser != null}">
-          <a class="nav-link" style="white-space: nowrap;" th:href="@{/member/logout}">로그아웃</a>
-        </li>
-      </ul>
-    </div>
-	
-	</div> <!-- 모바일 오른쪽 정렬용 div -->
-	
-  </nav>
+			<!-- 로그인 한 경우만 표시 -->
+			<div th:if="${session.loginUser != null}" class="d-flex align-items-center">
+				<!-- 알림 아이콘 -->
+				<div class="position-relative me-3" id="notiWrapper">
+				<ul class="navbar-nav">
+					<li class="nav-item dropdown" id="notificationDropdown" th:if="${session.loginUser != null}">
+						<a class="nav-link position-relative" href="#" id="notifIcon" data-bs-toggle="modal"
+							data-bs-target="#notifModal">
+							<i class="bi bi-bell-fill fs-5 text-warning"></i>
+							<span class="position-absolute badge rounded-pill" id="notifBadge"
+								style="background-color: #339af0; color: white; transform: translate(-65%, -60%); display:none;">
+								0
+							</span>
+						</a>
+					</li>
+				</ul>
+				</div>
+				<!-- 회원 아이콘(누르면 모달) -->
+				<div class="position-relative me-2" id="userMenuWrapper">
+					<button type="button" class="btn nav-link p-0" id="userMenuBtn">
+						<i class="bi bi-person-circle fs-4 text-primary"></i>
+					</button>
+					<!-- 사용자 메뉴 Fragment 삽입 -->
+					<div th:replace="fragment/userMenu :: userMenu"></div>
+				</div>
+			</div> <!-- 로그인한 경우 표시 div 끝 -->
+			
+			<script>
+				$(document).ready(function () {
+					// 메뉴 토글 및 사용자 정보 비동기 로딩
+					$("#userMenuBtn").on("click", function (e) {
+						e.stopPropagation();
+
+						const $menu = $("#userMenuPopup");
+						if ($menu.is(":visible")) {
+							$menu.hide();
+							return;
+						}
+
+						// 사용자 정보 로딩
+						$.get("/api/member/info", function (res) {
+							if (res.error) {
+								showAlert("error", "불러오기 오류", "로그인이 필요합니다.");
+								return;
+							};
+
+							$("#userNickname").text(res.nickname);
+							$("#userProfileImg").attr("src", res.profile);
+						
+							// 역할 텍스트 출력
+							let roleText = "";
+							switch (res.role) {
+							  case "ADMIN":
+							  case "MANAGER":
+							    roleText = "(관리자)";
+							    break;
+							  case "BUSINESS":
+							    roleText = "(사업자)";
+							    break;
+							  case "USER":
+							  default:
+							    roleText = "(일반 회원)";
+							}
+							$("#userRoleText").text(roleText);
+							
+							$($menu).show();
+						});
+					});
+
+					// 외부 클릭 시 메뉴 닫기
+					$(document).on("click", function () {
+						$("#userMenuPopup").hide();
+					});
+					// 메뉴 내부 클릭 시 닫히지 않게
+					$("#userMenuPopup").on("click", function (e) {
+						e.stopPropagation();
+					});
+
+				});
+			</script>
+
+		</div> <!--전체 div 끝-->
+	</nav>
 </header>

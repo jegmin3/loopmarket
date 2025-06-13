@@ -1,9 +1,17 @@
 <!-- status_badge.html -->
-<div th:fragment="statusBadge(status)">
-  <span th:if="${status == 'ONSALE'}" class="badge bg-success">판매중</span>
-  <span th:if="${status == 'RESERVED'}" class="badge bg-warning text-dark">예약중</span>
-  <span th:if="${status == 'SOLD'}" class="badge bg-secondary">판매완료</span>
+<div th:fragment="badges(product)">
+<!--  &lt;!&ndash; 상품 상태 &ndash;&gt;
+  <span th:if="${product.status == 'ONSALE'}" class="badge bg-success me-1">판매중</span>-->
+
+  <!-- BEST -->
+  <span th:if="${product.isBest}" class="badge bg-danger text-white me-1">BEST</span>
+
+  <!-- 택배 가능 -->
+  <span th:if="${product.isDelivery}" class="badge text-white" style="background-color: #C19A6B;">택배 가능</span>
+
+
+
+
 </div>
-<div th:if="${p.isBest}" class="badge bg-danger text-white rounded-end px-2 py-1 small mt-1">
-  BEST
-</div>
+
+
