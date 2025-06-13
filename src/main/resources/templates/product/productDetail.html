@@ -93,6 +93,7 @@
 			<div class="d-flex justify-content-between align-items-center">
         <h4 class="fw-bold mb-1">
           <span th:if="${product.status == 'RESERVED'}" class="text-success me-1">예약</span>
+          <span th:if="${product.status == 'SOLD'}" class="badge bg-secondary me-2">판매완료</span>
           <span th:text="${product.title}">상품 제목</span>
         </h4>
 
@@ -225,9 +226,14 @@
                   </div>
                 </div>
 
-                <div class="position-absolute top-0 start-0 z-20" style="padding: 4px;">
-					<div th:replace="fragment/status_badge :: statusBadge(${p.status}, ${p.isDelivery}, ${p.isBest}, ${p.price})"></div>
-                </div>
+				<div class="position-absolute top-0 start-0 z-20" style="padding: 4px;">
+					<div th:replace="fragment/status_badge :: badges(
+					  status=${p.status},
+					  isDelivery=${p.isDelivery},
+					  isBest=${p.isBest},
+					  price=${p.price}
+					)"></div>
+				</div>
 
                 <div class="card-body">
                   <h6 class="card-title fw-bold text-truncate" th:text="${p.title}">상품명</h6>
@@ -273,10 +279,14 @@
                   </div>
                 </div>
 
-                <!-- 상태 뱃지 -->
-                <div class="position-absolute top-0 start-0 z-20" style="padding: 4px;">
-					<div th:replace="fragment/status_badge :: statusBadge(${s.status}, ${s.isDelivery}, ${s.isBest}, ${s.price})"></div>
-                </div>
+				<div class="position-absolute top-0 start-0 z-20" style="padding: 4px;">
+					<div th:replace="fragment/status_badge :: badges(
+					  status=${s.status},
+					  isDelivery=${s.isDelivery},
+					  isBest=${s.isBest},
+					  price=${s.price}
+					)"></div>
+				</div>
 
                 <div class="card-body">
                   <h6 class="card-title fw-bold text-truncate" th:text="${s.title}">상품명</h6>

@@ -51,8 +51,8 @@ public class StatisticsController {
     }
     
     @GetMapping("/category-product-stats")
-    public ResponseEntity<List<CategoryProductStatsDTO>> getCategoryProductStats() {
-        return ResponseEntity.ok(productService.getCategoryProductStats());
+    public ResponseEntity<List<CategoryProductStatsDTO>> getTopCategoryProductStats() {
+        return ResponseEntity.ok(productService.getTopCategoryProductStats());
     }
     
 }
