@@ -10,13 +10,15 @@ import com.loopmarket.domain.chat.entity.ChatRoomEntity;
 import com.loopmarket.domain.chat.repository.ChatMessageRepository;
 import com.loopmarket.domain.chat.repository.ChatRoomRepository;
 import com.loopmarket.domain.image.service.ImageService;
-import com.loopmarket.domain.member.MemberEntity;
 import com.loopmarket.domain.member.MemberRepository;
+import com.loopmarket.domain.product.entity.ProductEntity;
+import com.loopmarket.domain.product.repository.ProductRepository;
 import com.loopmarket.domain.product.service.ProductService;
 
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -26,15 +28,15 @@ public class ChatService {
     private final ChatRoomRepository chatRoomRepository;
     private final ChatMessageRepository chatMessageRepository;
     private final MemberRepository memberRepository;
-    private final ProductService productService;
     //private final ImageRepository imageRepository;
     private final ImageService imageService;
+    private final ProductService productService;
     
     /**
      * 두 유저 간의 채팅방을 찾거나, 없으면 새로 생성해서 반환
      */
     @Transactional
-    public ChatRoomEntity enterRoom(Integer myId, Integer targetId, Integer productId) {
+    public ChatRoomEntity enterRoom(Integer myId, Integer targetId, Long productId) {
         // 항상 user1 < user2로 정렬 (중복 방지)
         Integer user1 = Math.min(myId, targetId);
         Integer user2 = Math.max(myId, targetId);
@@ -51,7 +53,7 @@ public class ChatService {
     }
     
     /** 채팅방이 이미 있는지 확인만 하고, 없으면 생성하지 않음 */
-    public ChatRoomEntity findExistingRoom(Integer user1, Integer user2, Integer productId) {
+    public ChatRoomEntity findExistingRoom(Integer user1, Integer user2, Long productId) {
     	// 항상 user1 < user2로 정렬 (중복 방지)
         Integer u1 = Math.min(user1, user2);
         Integer u2 = Math.max(user1, user2);
@@ -142,7 +144,7 @@ public class ChatService {
         }
     }
     
-    /** 채팅방 목록에서 나간방 제외 필터링 */
+    /** 채팅방 목록에서 나간방 제외 필터링하고 보여줌 */
     public List<ChatRoomEntity> getActiveChatRooms(Integer userId) {
         List<ChatRoomEntity> allRooms = chatRoomRepository.findByUser1IdOrUser2Id(userId, userId);
 
@@ -166,12 +168,16 @@ public class ChatService {
         return rooms.stream().map(room -> {
             Integer opponentId = room.getUser1Id().equals(userId) ? room.getUser2Id() : room.getUser1Id();
             String nickname = getNicknameByUserId(opponentId);
-            
+            Long productId = room.getProductId();
 //            MemberEntity opponent = memberRepository.findById(opponentId)
 //                    .orElseThrow(() -> new IllegalArgumentException("상대방 정보를 찾을 수 없습니다."));
-            
             // 프로필 이미지
             String profileImagePath = imageService.getProfilePath(opponentId);
+            // 상품 이미지
+            String thumbnailPath = imageService.getThumbnailPath(productId);
+            
+    	    ProductEntity product = productService.findById(productId);
+    	    String pdTitle = product.getTitle();
 
             // 마지막 메시지 조회
             ChatMessageEntity lastMessage = chatMessageRepository.findTopByRoomIdOrderBySentAtDesc(room.getRoomId())
@@ -191,7 +197,10 @@ public class ChatService {
                 lastMessage != null ? lastMessage.getSentAt() : null,
                 unreadCount,
                 lastMine,
-                profileImagePath
+                profileImagePath, 
+                productId,
+                pdTitle,
+                thumbnailPath
             );
         }).collect(Collectors.toList());
     }

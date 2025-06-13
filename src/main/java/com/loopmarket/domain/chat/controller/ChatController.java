@@ -113,7 +113,7 @@ public class ChatController extends BaseController {
 	 */
 	@GetMapping("/start")
 	public String startChat(@RequestParam Integer targetId,
-							@RequestParam Integer productId,
+							@RequestParam Long productId,
 	                        HttpSession session,
 	                        Model model,
 	                        RedirectAttributes redirectAttributes) {
@@ -164,7 +164,7 @@ public class ChatController extends BaseController {
 	/** 채팅하기 누르고 입장 후, 메시지를 입력했을때 방이 만들어지게 매핑된 메서드 */
 	@PostMapping("/api/create-room")
 	@ResponseBody
-	public Map<String, Object> createRoom(@RequestParam Integer targetId, @RequestParam Integer productId, HttpSession session) {
+	public Map<String, Object> createRoom(@RequestParam Integer targetId, @RequestParam Long productId, HttpSession session) {
 		MemberEntity loginUser = getLoginUser();
 	    Integer userId = loginUser.getUserId();
 
@@ -237,6 +237,7 @@ public class ChatController extends BaseController {
 		Integer userId = loginUser.getUserId();
 		
 		List<ChatRoomSummaryDTO> summaries = chatService.getChatRoomSummaries(userId);
+		
 	    model.addAttribute("chatSummaries", summaries);
 
 	    return render("chat/chatList", model);

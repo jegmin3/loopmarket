@@ -38,4 +38,5 @@ public interface ImageRepository extends JpaRepository<ImageEntity, Long> {
    * @return 첫 번째 이미지 (없으면 null)
    */
   ImageEntity findFirstByTargetTableAndTargetId(String targetTable, Long targetId);
+  
 }
