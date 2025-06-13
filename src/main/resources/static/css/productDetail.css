@@ -92,35 +92,19 @@ a.text-decoration-none.text-dark .fw-semibold {
   margin-top: 8px;
 }
 
-/* 🔹 버튼 공통 */
-.btn-outline-primary,
-.btn-outline-success,
-.btn-outline-danger {
-  font-weight: 500;
-}
-
-/* 🔹 채팅하기 */
-.btn-outline-primary {
-  color: var(--dark-blue);
-  border: 1.5px solid var(--dark-blue);
-}
-.btn-outline-primary:hover {
-  background-color: var(--dark-blue);
-  color: white;
-}
 
 /* 🔹 택배 구매하기 */
-.btn-outline-success {
+.btn-outline-success1 {
   color: var(--main-blue);
   border: 1.5px solid var(--main-blue);
 }
-.btn-outline-success:hover {
+.btn-outline-success1:hover {
   background-color: var(--main-blue);
   color: white;
 }
 
 /* 🔹 찜하기 (원형 버튼) */
-.btn-outline-danger {
+.btn-outline-danger1 {
   color: #ff3366;
   border: 1.5px solid #ff3366;
   width: 48px;
@@ -131,7 +115,7 @@ a.text-decoration-none.text-dark .fw-semibold {
   align-items: center;
   border-radius: 50%;
 }
-.btn-outline-danger:hover {
+.btn-outline-danger1:hover {
   background-color: #ff3366;
   color: white;
 }
