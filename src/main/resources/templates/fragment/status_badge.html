@@ -11,21 +11,21 @@
   <!-- BEST -->
   <div th:if="${isBest}"
        class="badge bg-danger text-white px-2 py-1 small mb-1">
-    BEST
+    🔥 BEST
   </div>
 
   <!-- 택배 가능 -->
   <div th:if="${isDelivery}"
        class="badge text-white px-2 py-1 small mb-1"
        style="background-color: #C19A6B;">
-    택배 가능
+    📦 택배 가능
   </div>
 
   <!-- 나눔 -->
   <div th:if="${price == 0 or price == null}"
        class="badge text-white px-2 py-1 small"
        style="background-color: #f06292;">
-    나눔
+    🎁 나눔
   </div>
 
 </div>
