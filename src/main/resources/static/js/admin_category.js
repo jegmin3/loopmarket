@@ -73,7 +73,7 @@ $(document).ready(function () {
 	      <div class="card mb-3 shadow-sm">
 	        <div class="card-header d-flex justify-content-between align-items-center toggle-header" style="cursor: pointer;">
 	          <div class="d-flex align-items-center gap-2">
-	            <span class="toggle-icon">▶</span>
+	            <span class="toggle-icon">&gt;</span>
 	            <strong>${cat.ctgName}</strong>
 	          </div>
 	          ${
@@ -102,11 +102,19 @@ $(document).ready(function () {
 	    // 아이콘 요소 참조
 	    const $icon = $card.find('.toggle-icon');
 
-	    $card.find('.toggle-header').click(() => {
-	      $subUl.slideToggle(200);
-	      const isVisible = $subUl.is(":visible");
-	      $icon.text(isVisible ? "▼" : "▶");  // 아이콘 바꾸기
-	    });
+		$card.find('.toggle-header').click(() => {
+		  const isVisible = $subUl.is(":visible");
+
+		  if (isVisible) {
+		    $subUl.slideUp(200, () => {
+		      $icon.text(">");
+		    });
+		  } else {
+		    $subUl.slideDown(200, () => {
+		      $icon.text("v");
+		    });
+		  }
+		});
 
 	    $container.append($card);
 	  });

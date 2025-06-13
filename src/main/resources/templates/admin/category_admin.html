@@ -1,9 +1,10 @@
 <div th:fragment="content">
-  <div class="container-fluid py-4 px-4">
-    <h2 class="fw-bold fs-4 mb-4">📂 카테고리 관리</h2>
+  <!-- 여기만 수정됨 -->
+  <div class="container py-4">
+    <h2 class="fw-bold fs-4 mb-4" style="text-align: center;">📂 카테고리 관리</h2>
 
     <!-- 대분류 추가 -->
-    <div class="card mb-4 shadow-sm">
+    <div class="card mb-4 shadow-sm" style="max-width: 900px; margin: 0 auto;">
       <div class="card-body">
         <h5 class="mb-3 fw-semibold">➕ 대분류 추가</h5>
         <div class="row g-2">
@@ -18,7 +19,7 @@
     </div>
 
     <!-- 하위 카테고리 추가 -->
-    <div class="card mb-4 shadow-sm">
+    <div class="card mb-4 shadow-sm" style="max-width: 900px; margin: 0 auto;">
       <div class="card-body">
         <h5 class="mb-3 fw-semibold">📁 하위 카테고리 추가</h5>
         <div class="row g-2">
@@ -38,7 +39,7 @@
     </div>
 
     <!-- 카테고리 목록 -->
-    <div class="card shadow-sm">
+    <div class="card shadow-sm" style="max-width: 900px; margin: 0 auto;">
       <div class="card-body">
         <h5 class="mb-3 fw-semibold">📦 카테고리 목록</h5>
         <div id="categoryList">
