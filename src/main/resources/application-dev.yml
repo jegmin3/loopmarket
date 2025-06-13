@@ -1,0 +1,9 @@
+# Redis 사용시 (세션만료는 30분 설정해둠)
+spring:
+  redis:
+    host: localhost
+    port: 6379
+
+  session:
+    store-type: redis
+    timeout: 1800s
