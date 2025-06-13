@@ -233,25 +233,26 @@ public class ProductService {
 //	}
 
 	// 전체 가격 필터
-	public List<ProductEntity> getProductsByPriceRange(Integer min, Integer max) {
-    List<ProductEntity> products = productRepository.findByIsHiddenFalseAndPriceBetweenOrderByCreatedAtDesc(min, max);
-	    for (ProductEntity product : products) {
-	        Long productId = product.getProductId();
-	        product.setThumbnailPath(imageService.getThumbnailPath(productId));
-	        product.setImagePaths(imageService.getAllImagePaths(productId));
-	    }
-	    return products;
-	}
+  public List<ProductEntity> getProductsByPriceRange(Integer min, Integer max, String saleType) {
+    List<ProductEntity> products;
 
-//	public List<ProductEntity> getProductsByPriceRange(Integer min, Integer max) {
-//		List<ProductEntity> products = productRepository.findByPriceBetween(min, max);
-//		for (ProductEntity product : products) {
-//			Long productId = product.getProductId();
-//			product.setThumbnailPath(imageService.getThumbnailPath(productId));
-//			product.setImagePaths(imageService.getAllImagePaths(productId));
-//		}
-//		return products;
-//	}
+    if ("DONATION".equalsIgnoreCase(saleType)) {
+      products = productRepository.findByIsHiddenFalseAndSaleTypeIgnoreCaseAndPriceBetweenOrderByCreatedAtDesc("DONATION", min, max);
+    } else {
+      products = productRepository.findByIsHiddenFalseAndPriceBetweenOrderByCreatedAtDesc(min, max);
+    }
+
+    for (ProductEntity product : products) {
+      Long productId = product.getProductId();
+      product.setThumbnailPath(imageService.getThumbnailPath(productId));
+      product.setImagePaths(imageService.getAllImagePaths(productId));
+    }
+
+    return products;
+  }
+
+
+
 
 	// 대분류 + 가격 필터
 	public List<ProductEntity> getProductsByMainCategoryAndPrice(Integer mainCategoryCode, Integer min, Integer max) {
@@ -492,8 +493,8 @@ public class ProductService {
 
     registerProductWithImages(entity, images, mainImageIndex);
   }
-  
-  
+
+
   public Optional<ProductEntity> findProductById(Long productId) {
 	    return productRepository.findById(productId);
 	}

@@ -49,6 +49,23 @@ document.addEventListener("DOMContentLoaded", () => {
 
   let lastPriceValue = ''; // 마지막 정상 가격값 저장용
 
+  // 나눔필터 체크
+  const donationBtn = document.getElementById("donationOnlyBtn");
+  if (donationBtn) {
+    donationBtn.addEventListener("click", () => {
+      const url = new URL(window.location.href);
+      const current = url.searchParams.get("saleType");
+
+      if (current === "DONATION") {
+        url.searchParams.delete("saleType"); // 체크 해제
+      } else {
+        url.searchParams.set("saleType", "DONATION"); // 체크
+      }
+
+      window.location.href = url.toString();
+    });
+  }
+
   const buttons = document.querySelectorAll(".btn-group-vertical .btn");
   buttons.forEach(btn => {
     btn.addEventListener("click", () => {
@@ -145,32 +162,45 @@ document.addEventListener("DOMContentLoaded", () => {
       document.querySelector("input[name='title']").value = result.title;
       document.querySelector("textarea[name='description']").value = result.description.replace(/\\n/g, "\n");
 
-
-      // 카테고리 자동 반영
       const ctgCode = result.ctgCode;
-      const categoryToMainMap = {
-        27: 5,
+
+// 숨겨진 input 설정
+      document.getElementById("selectedSubCategory").value = ctgCode;
+
+// 대분류 자동 선택
+      const mainCategoryCodeMap = {
+        8: 1, 9: 1, 10: 1, 11: 1,
         12: 2,
-        8: 1
+        18: 3, 19: 3, 20: 3, 21: 3,
+        22: 4, 23: 4, 24: 4, 25: 4, 26: 4,
+        27: 5, 28: 5, 29: 5, 30: 5, 31: 5,
+        32: 6, 33: 6, 34: 6, 35: 6, 36: 6,
+        37: 7, 38: 7, 39: 7, 40: 7, 41: 7, 62: 7
       };
 
-      const mainCode = categoryToMainMap[ctgCode];
-      const mainSelect = document.getElementById("main-category");
-      const subSelect = document.getElementById("sub-category");
+      const mainCode = mainCategoryCodeMap[ctgCode];
 
-      if (mainCode && mainSelect && subSelect) {
-        mainSelect.value = mainCode;
-        mainSelect.dispatchEvent(new Event("change"));
+// 대분류 클릭
+      document.querySelectorAll("#main-category-list li").forEach(li => {
+        li.classList.remove("active");
+        if (li.dataset.code == mainCode) {
+          li.classList.add("active");
+          li.click(); // 소분류 동적 로딩
+        }
+      });
 
-        setTimeout(() => {
-          const option = subSelect.querySelector(`option[value="${ctgCode}"]`);
-          if (option) {
-            subSelect.value = ctgCode;
-          } else {
-            console.warn("소분류 옵션이 아직 준비되지 않았습니다:", ctgCode);
+// 소분류는 로딩 완료 후 약간 기다렸다가 선택
+      setTimeout(() => {
+        const subItems = document.querySelectorAll("#sub-category-list li");
+        subItems.forEach(li => {
+          li.classList.remove("active");
+          if (li.dataset.code == ctgCode) {
+            li.classList.add("active");
+            document.getElementById("selectedSubCategory").value = ctgCode;
           }
-        }, 300);
-      }
+        });
+      }, 300); // 이 시간은 필요 시 늘릴 수도 있음
+
 
     } catch (err) {
       alert("⚠ 오류 발생: " + err.message);

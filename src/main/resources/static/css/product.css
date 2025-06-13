@@ -488,3 +488,27 @@
   z-index: 2;
   pointer-events: none;
 }
+
+/* 나눔 버튼 스타일 커스터마이징 */
+.donation-btn {
+  font-size: 14px;
+  font-weight: 600;
+  padding: 8px 16px;
+  border-radius: 8px;
+  border: 1.5px solid #6cc48f;
+  color: #28a745;
+  background-color: white;
+  transition: all 0.2s ease;
+}
+
+.donation-btn:hover {
+  background-color: #e6f9ed;
+  border-color: #4ab57c;
+  color: #218838;
+}
+
+.donation-btn.active {
+  background-color: #d4f4e2;
+  border-color: #28a745;
+  color: #155724;
+}
