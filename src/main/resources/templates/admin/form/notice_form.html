@@ -31,9 +31,9 @@
 
           <!-- 버튼 -->
           <div class="d-flex justify-content-end gap-2">
-            <button type="submit" class="btn btn-primary px-4"
-                    th:text="${notice.noticeId != null} ? '수정' : '등록'">등록</button>
-            <button type="button" class="btn btn-outline-secondary px-4"
+			<button type="submit" class="btn btn-primary px-4" id="saveBtn"
+			        th:text="${notice.noticeId != null} ? '수정' : '등록'">등록</button>
+            <button type="button" class="btn btn-outline-secondary px-4" id="cancelBtn"
                     onclick="loadAdminPage('/admin/notice')">취소</button>
           </div>
         </form>
