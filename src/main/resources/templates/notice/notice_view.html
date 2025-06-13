@@ -1,19 +1,23 @@
-<!-- 유저용 공지사항 상세 페이지 -->
+<!-- 공지사항 상세 페이지 -->
 <div th:fragment="content">
-    <div class="container mt-5">
-        <div class="mb-4">
-            <h2 th:text="${notice.title}" class="h4 h2-lg">공지 제목</h2>
-            <p class="text-muted" th:text="${#temporals.format(notice.createdAt, 'yyyy-MM-dd HH:mm')}">작성일</p>
-        </div>
+  <div class="container py-5">
+    <div class="row justify-content-center">
+      <div class="col-12 col-lg-8">
+        <div class="card shadow-sm p-5 rounded-4 border-0">
+          <h3 class="fw-bold mb-2 text-center" th:text="${notice.title}">공지 제목</h3>
+          <p class="text-muted text-center mb-4" th:text="${#temporals.format(notice.createdAt, 'yyyy-MM-dd HH:mm')}">작성일</p>
 
-        <div class="border rounded p-4"
-             style="min-height: 20rem; font-size: 1rem; line-height: 1.7; background-color: #fdfdfd;"
-             th:utext="${notice.content}">
+          <div class="border rounded-3 p-4"
+               style="min-height: 250px; font-size: 1rem; line-height: 1.7; background-color: #fdfdfd;"
+               th:utext="${notice.content}">
             공지 내용입니다.
-        </div>
+          </div>
 
-        <div class="mt-4 text-end">
-            <a th:href="@{/notice}" class="btn btn-secondary">목록으로</a>
+          <div class="mt-4 text-end">
+            <a th:href="@{/notice}" class="btn btn-secondary rounded-pill px-4">← 목록으로</a>
+          </div>
         </div>
+      </div>
     </div>
+  </div>
 </div>
