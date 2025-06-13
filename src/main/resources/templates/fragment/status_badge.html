@@ -1,8 +1,19 @@
 <!-- status_badge.html -->
-<div th:fragment="statusBadge(status)">
-  <span th:if="${status == 'ONSALE'}" class="badge bg-success">판매중</span>
+<div th:fragment="statusBadge(status, isDelivery, isBest)">
 
-</div>
-<div th:if="${p.isBest}" class="badge bg-danger text-white rounded-end px-2 py-1 small mt-1">
-  BEST
+  <!-- 상태 뱃지 -->
+  <!-- <span th:if="${status == 'ONSALE'}" class="badge bg-success">판매중</span> -->
+
+  <!-- 택배 가능 뱃지 -->
+  <div th:if="${isDelivery == true}"
+       class="badge text-white rounded-end px-2 py-1 small"
+       style="background-color: #C19A6B; margin-top:4px; margin-left:3px;">
+    택배 가능
+  </div>
+
+  <!-- BEST 뱃지 -->
+  <div th:if="${isBest}" class="badge bg-danger text-white rounded-end px-2 py-1 small mt-1">
+    BEST
+  </div>
+
 </div>

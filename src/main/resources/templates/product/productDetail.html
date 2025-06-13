@@ -223,7 +223,7 @@
                 </div>
 
                 <div class="position-absolute top-0 start-0 z-20" style="padding: 4px;">
-                  <div th:replace="fragment/status_badge :: statusBadge(${p.status})"></div>
+					<div th:replace="fragment/status_badge :: statusBadge(${p.status}, ${p.isDelivery}, ${p.isBest})"></div>
                 </div>
 
                 <div class="card-body">
@@ -271,7 +271,7 @@
 
                 <!-- 상태 뱃지 -->
                 <div class="position-absolute top-0 start-0 z-20" style="padding: 4px;">
-                  <div th:replace="fragment/status_badge :: statusBadge(${s.status})"></div>
+					<div th:replace="fragment/status_badge :: statusBadge(${s.status}, ${s.isDelivery}, ${s.isBest})"></div>
                 </div>
 
                 <div class="card-body">

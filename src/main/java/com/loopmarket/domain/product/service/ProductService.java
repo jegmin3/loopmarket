@@ -440,6 +440,7 @@ public class ProductService {
       if (p.getCreatedAt() != null) {
         p.setRelativeTime(formatRelativeTimeInternal(p.getCreatedAt()));
       }
+      p.setIsDelivery(Boolean.TRUE.equals(p.getIsDelivery()));
     }
 
     return products;
@@ -453,6 +454,7 @@ public class ProductService {
       p.setThumbnailPath(imageService.getThumbnailPath(productId));
       p.setImagePaths(imageService.getAllImagePaths(productId));
       p.setRelativeTime(formatRelativeTimeInternal(p.getCreatedAt()));
+      p.setIsDelivery(Boolean.TRUE.equals(p.getIsDelivery()));
     }
 
     // 최대 8개까지
