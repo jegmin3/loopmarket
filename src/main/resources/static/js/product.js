@@ -49,6 +49,23 @@ document.addEventListener("DOMContentLoaded", () => {
 
   let lastPriceValue = ''; // 마지막 정상 가격값 저장용
 
+  // 나눔필터 체크
+  const donationBtn = document.getElementById("donationOnlyBtn");
+  if (donationBtn) {
+    donationBtn.addEventListener("click", () => {
+      const url = new URL(window.location.href);
+      const current = url.searchParams.get("saleType");
+
+      if (current === "DONATION") {
+        url.searchParams.delete("saleType"); // 체크 해제
+      } else {
+        url.searchParams.set("saleType", "DONATION"); // 체크
+      }
+
+      window.location.href = url.toString();
+    });
+  }
+
   const buttons = document.querySelectorAll(".btn-group-vertical .btn");
   buttons.forEach(btn => {
     btn.addEventListener("click", () => {
@@ -172,7 +189,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
       });
 
-// ❗소분류는 로딩 완료 후 약간 기다렸다가 선택
+// 소분류는 로딩 완료 후 약간 기다렸다가 선택
       setTimeout(() => {
         const subItems = document.querySelectorAll("#sub-category-list li");
         subItems.forEach(li => {

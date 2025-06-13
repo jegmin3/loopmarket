@@ -22,7 +22,7 @@ public interface ProductRepository extends JpaRepository<ProductEntity, Long> {
 
     // 거래중 상태들만 가져오기 위한 메서드 추가
     List<ProductEntity> findByUserIdAndStatusIn(Long userId, List<String> statuses);
-    
+
     List<ProductEntity> findByUserIdAndStatusInAndIsHiddenFalse(Long userId, List<String> statuses);
 
     List<ProductEntity> findByCtgCode(Integer ctgCode);
@@ -79,4 +79,7 @@ public interface ProductRepository extends JpaRepository<ProductEntity, Long> {
   List<ProductEntity> findByUserIdAndProductIdNotOrderByCreatedAtDesc(Long userId, Long excludeProductId);
   List<ProductEntity> findByCtgCodeAndProductIdNotOrderByCreatedAtDesc(Integer ctgCode, Long productId);
 
+
+  List<ProductEntity> findByIsHiddenFalseAndSaleTypeIgnoreCaseAndPriceBetweenOrderByCreatedAtDesc(
+    String saleType, Integer minPrice, Integer maxPrice);
 }

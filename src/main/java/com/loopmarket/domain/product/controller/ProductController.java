@@ -47,6 +47,7 @@ public class ProductController {
     @RequestParam(value = "maxPrice", required = false) Integer maxPrice,
     @RequestParam(value = "lat", required = false) Double lat,
     @RequestParam(value = "lng", required = false) Double lng,
+    @RequestParam(value = "saleType", required = false) String saleType,
     Model model) {
 
     int min = (minPrice != null) ? minPrice : 0;
@@ -75,7 +76,7 @@ public class ProductController {
       } else if (search != null && !search.isBlank()) {
         productList = productService.searchProductsByKeyword(search);
       } else if (category == null || category.equalsIgnoreCase("ALL") || category.isBlank()) {
-        productList = productService.getProductsByPriceRange(min, max);
+        productList = productService.getProductsByPriceRange(min, max, saleType);
       } else {
         Integer categoryCode = Integer.parseInt(category);
         subCategories = categoryRepository.findByUpCtgCodeOrderBySeqAsc(categoryCode);
@@ -86,11 +87,12 @@ public class ProductController {
           productList = productService.getProductsByCategoryAndPrice(categoryCode, min, max);
         }
 
+
         model.addAttribute("subCategories", subCategories);
         model.addAttribute("selectedMainCategory", categoryCode);
       }
     } catch (NumberFormatException e) {
-      productList = productService.getProductsByPriceRange(min, max);
+      productList = productService.getProductsByPriceRange(min, max, saleType);
     }
 
     model.addAttribute("mainCategories", categoryRepository.findMainCategories());
@@ -108,9 +110,16 @@ public class ProductController {
       p.setIsBest(wishCount >= 5 || viewCount >= 30);
     });
 
+    // saleType 파라미터가 있으면 나눔만 필터링
+    if ("DONATION".equalsIgnoreCase(saleType)) {
+      productList = productList.stream()
+        .filter(p -> "DONATION".equalsIgnoreCase(p.getSaleType()))
+        .collect(Collectors.toList());
+    }
 
     model.addAttribute("productList", productList);
     model.addAttribute("viewName", "product/productList");
+    model.addAttribute("saleType", saleType);
 
     return "layout/layout";
   }
