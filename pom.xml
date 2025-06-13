@@ -103,6 +103,16 @@
 		    <groupId>org.springframework.boot</groupId>
 		    <artifactId>spring-boot-starter-websocket</artifactId>
 		</dependency>
+		<!-- Redis 의존성-->
+		<dependency>
+		  <groupId>org.springframework.boot</groupId>
+		  <artifactId>spring-boot-starter-data-redis</artifactId>
+		</dependency>
+		<!-- Spring Session (with 레디스) -->
+		<dependency>
+		  <groupId>org.springframework.session</groupId>
+		  <artifactId>spring-session-data-redis</artifactId>
+		</dependency>
 		<!-- 포맷팅용 jackson -->
 		<dependency>
 		    <groupId>com.fasterxml.jackson.core</groupId>
