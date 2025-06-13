@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -86,18 +87,60 @@ public class DashboardRestController {
     }
     
     @GetMapping("/trade-stats")
-    public Map<String, Integer> getTradeStats() {
+    public Map<String, Object> getTradeStats() {
         List<TransactionType> completedTypes = List.of(TransactionType.BUY_NOW, TransactionType.SAFE_PAY);
-        
+        Map<String, Object> result = new HashMap<>();
+
+        // 전체 성사 건수
         int completedCount = (int) moneyTransactionRepository.countByTypeInAndStatus(completedTypes, TransactionStatus.SUCCESS);
-        long totalProducts = productRepository.count();
+        long totalProducts = productRepository.count(); // 전체 상품 수 기준
 
         int uncompletedCount = (int)(totalProducts - completedCount);
         if (uncompletedCount < 0) uncompletedCount = 0;
 
-        Map<String, Integer> result = new HashMap<>();
         result.put("성사", completedCount);
         result.put("미성사", uncompletedCount);
+
+        // 오늘 날짜 기준
+        LocalDate today = LocalDate.now();
+        LocalDateTime startOfDay = today.atStartOfDay();
+        LocalDateTime endOfDay = today.plusDays(1).atStartOfDay();
+
+        int todayCompleted = moneyTransactionRepository.countByTypeInAndStatusAndCreatedAtBetween(
+            completedTypes,
+            TransactionStatus.SUCCESS,
+            startOfDay,
+            endOfDay
+        );
+
+        int todayTotalAttempts = moneyTransactionRepository.countByCreatedAtBetween(startOfDay, endOfDay);
+
+        double todaySuccessRate = todayTotalAttempts > 0
+            ? (todayCompleted * 100.0 / todayTotalAttempts)
+            : 0.0;
+
+        result.put("오늘성사건수", todayCompleted);
+        result.put("오늘총거래시도", todayTotalAttempts);
+        result.put("오늘성사율", Math.round(todaySuccessRate * 10) / 10.0); // 소수점 1자리
+
+        // 최근 30일 성사 건수
+        LocalDate thirtyDaysAgo = today.minusDays(29); // 오늘 포함 30일
+        List<Object[]> dailyStats = moneyTransactionRepository.countDailyCompletedTransactions(
+            completedTypes,
+            TransactionStatus.SUCCESS,
+            thirtyDaysAgo.atStartOfDay(),
+            endOfDay
+        );
+
+        Map<String, Integer> dailyCompletedMap = new TreeMap<>();
+        for (Object[] row : dailyStats) {
+            java.sql.Date sqlDate = (java.sql.Date) row[0];  // 먼저 sql.Date로 캐스팅
+            LocalDate date = sqlDate.toLocalDate();          // 변환
+            Long count = (Long) row[1];
+            dailyCompletedMap.put(date.toString(), count.intValue());
+        }
+
+        result.put("최근30일일별성사", dailyCompletedMap);
 
         return result;
     }

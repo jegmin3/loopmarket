@@ -339,6 +339,17 @@ public class ProductService {
 	                    ((Number) row[2]).intValue()))    // count
 	            .collect(Collectors.toList());
 	}
+	
+	// 카테고리별 상품 등록 통계
+	public List<CategoryProductStatsDTO> getTopCategoryProductStats() {
+	    List<Object[]> raw = productRepository.countProductsByTopCategory();
+	    return raw.stream()
+	            .map(row -> new CategoryProductStatsDTO(
+	                    ((Number) row[0]).intValue(),      // categoryCode
+	                    (String) row[1],                   // categoryName
+	                    ((Number) row[2]).intValue()))    // count
+	            .collect(Collectors.toList());
+	}
 
   @Transactional
   public void updateProductWithImages(Long id, ProductEntity updatedProduct, List<MultipartFile> images, int mainImageIndex) {
