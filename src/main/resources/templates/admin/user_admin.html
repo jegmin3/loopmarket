@@ -1,156 +1,132 @@
 <!-- 유저 관리 페이지 -->
 <div th:fragment="content">
-    <div class="container">
-        <div class="text-center mb-4">
-            <h2 class="userPage">유저 관리 페이지입니다.</h2>
+  <div class="container py-4">
+    <h2 class="fw-bold fs-4 mb-4">👤 유저 관리</h2>
+
+    <!-- 모바일 카드 뷰 -->
+    <div class="d-block d-md-none">
+      <div th:each="member : ${members}" class="card mb-3 shadow-sm">
+        <div class="card-body">
+          <h6 class="card-title fw-bold mb-2">닉네임: <span th:text="${member.nickname}">닉네임</span></h6>
+          <p class="mb-1"><strong>ID:</strong> <span th:text="${member.userId}">1</span></p>
+          <p class="mb-1"><strong>이메일:</strong> <span th:text="${member.email}">email</span></p>
+          <p class="mb-1"><strong>이름:</strong> <span th:text="${member.name}">홍길동</span></p>
+          <p class="mb-1"><strong>가입일:</strong> <span th:text="${#temporals.format(member.createdAt, 'yyyy-MM-dd HH:mm')}">날짜</span></p>
+          <p class="mb-2"><strong>상태:</strong> <span th:text="${userStatusMap[member.userId]}">ACTIVE</span></p>
+
+          <!-- 상태 변경 -->
+          <form th:action="@{/admin/user/changeStatus}" method="post" class="mb-2">
+            <input type="hidden" name="userId" th:value="${member.userId}" />
+            <input type="hidden" name="page" th:value="${currentPage}" />
+            <div class="input-group">
+              <select name="newStatus" class="form-select">
+                <option value="ACTIVE" th:selected="${userStatusMap[member.userId] == 'ACTIVE'}">ACTIVE</option>
+                <option value="SUSPENDED" th:selected="${userStatusMap[member.userId] == 'SUSPENDED'}">SUSPENDED</option>
+              </select>
+              <button type="submit" class="btn btn-outline-primary">변경</button>
+            </div>
+          </form>
+
+          <!-- 권한 변경 -->
+          <div th:if="${currentUserRole != null}" th:switch="${currentUserRole.name()}">
+            <div th:case="'ADMIN'">
+              <span th:if="${currentUserId == member.userId}" class="text-muted">본인 권한 변경 불가</span>
+              <form th:if="${currentUserId != member.userId}" th:action="@{/admin/user/changeRole}" method="post">
+                <input type="hidden" name="userId" th:value="${member.userId}" />
+                <input type="hidden" name="page" th:value="${currentPage}" />
+                <div class="input-group">
+                  <select name="newRole" class="form-select">
+                    <option value="USER" th:selected="${member.role.name() == 'USER'}">USER</option>
+                    <option value="BUSINESS" th:selected="${member.role.name() == 'BUSINESS'}">BUSINESS</option>
+                    <option value="MANAGER" th:selected="${member.role.name() == 'MANAGER'}">MANAGER</option>
+                  </select>
+                  <button type="submit" class="btn btn-outline-secondary">변경</button>
+                </div>
+              </form>
+            </div>
+            <div th:case="*">
+              <span class="text-muted">권한 변경 불가</span>
+            </div>
+          </div>
         </div>
-		
-		<!-- 모바일 카드 뷰 -->
-		    <div class="d-block d-md-none">
-		        <div th:each="member : ${members}" class="card mb-3 shadow-sm">
-		            <div class="card-body">
-		                <h5 class="card-title" th:text="'닉네임: ' + ${member.nickname}">닉네임</h5>
-		                <p class="card-text">
-		                    <strong>ID:</strong> <span th:text="${member.userId}"></span><br/>
-		                    <strong>이메일:</strong> <span th:text="${member.email}"></span><br/>
-		                    <strong>이름:</strong> <span th:text="${member.name}"></span><br/>
-		                    <strong>가입일:</strong> <span th:text="${#temporals.format(member.createdAt, 'yyyy-MM-dd HH:mm')}"></span><br/>
-		                    <strong>상태:</strong> <span th:text="${userStatusMap[member.userId]}"></span>
-		                </p>
-
-		                <!-- 상태 변경 -->
-		                <form th:action="@{/admin/user/changeStatus}" method="post" class="mb-2">
-		                    <input type="hidden" name="userId" th:value="${member.userId}" />
-		                    <input type="hidden" name="page" th:value="${currentPage}" />
-		                    <div class="input-group">
-		                        <select name="newStatus" class="form-select">
-		                            <option value="ACTIVE" th:selected="${userStatusMap[member.userId] == 'ACTIVE'}">ACTIVE</option>
-		                            <option value="SUSPENDED" th:selected="${userStatusMap[member.userId] == 'SUSPENDED'}">SUSPENDED</option>
-		                        </select>
-		                        <button type="submit" class="btn btn-primary">변경</button>
-		                    </div>
-		                </form>
-
-		                <!-- 권한 변경 -->
-		                <div th:if="${currentUserRole != null}" th:switch="${currentUserRole.name()}">
-		                    <div th:case="'ADMIN'">
-		                        <span th:if="${currentUserId == member.userId}" class="text-muted">본인 권한 변경 불가</span>
-		                        <form th:if="${currentUserId != member.userId}" th:action="@{/admin/user/changeRole}" method="post">
-		                            <input type="hidden" name="userId" th:value="${member.userId}" />
-		                            <input type="hidden" name="page" th:value="${currentPage}" />
-		                            <div class="input-group mt-2">
-		                                <select name="newRole" class="form-select">
-		                                    <option value="USER" th:selected="${member.role.name() == 'USER'}">USER</option>
-		                                    <option value="BUSINESS" th:selected="${member.role.name() == 'BUSINESS'}">BUSINESS</option>
-		                                    <option value="MANAGER" th:selected="${member.role.name() == 'MANAGER'}">MANAGER</option>
-		                                </select>
-		                                <button type="submit" class="btn btn-secondary">변경</button>
-		                            </div>
-		                        </form>
-		                    </div>
-		                    <div th:case="*">
-		                        <span class="text-muted">권한 변경 불가</span>
-		                    </div>
-		                </div>
-		            </div>
-		        </div>
-		    </div>
-		
-		
-
-        <div class="table-responsive d-none d-md-block">
-            <table class="table table-bordered table-hover">
-                <thead class="thead-light">
-                    <tr class="text-center">
-                        <th>ID</th>
-                        <th>이메일</th>
-                        <th>닉네임</th>
-                        <th>이름</th>
-                        <th>가입일</th>
-                        <th>상태</th>
-                        <th>상태 변경</th>
-                        <th>권한 변경</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr th:each="member : ${members}" class="text-center align-middle">
-                        <td th:text="${member.userId}">1</td>
-                        <td th:text="${member.email}">test@example.com</td>
-                        <td th:text="${member.nickname}">닉네임</td>
-                        <td th:text="${member.name}">홍길동</td>
-                        <td th:text="${#temporals.format(member.createdAt, 'yyyy-MM-dd HH:mm')}">2025-05-26</td>
-                        <td th:text="${userStatusMap[member.userId]}">ACTIVE</td>
-                        <!-- 계정 상태 변경-->
-                        <td>
-                            <form th:action="@{/admin/user/changeStatus}" method="post" class="d-flex justify-content-center user-status-form">
-                                <input type="hidden" name="userId" th:value="${member.userId}" />
-                                <input type="hidden" name="page" th:value="${currentPage}" />
-
-                                <select name="newStatus" class="form-control form-control-sm w-auto mx-1">
-                                    <option value="ACTIVE" th:selected="${userStatusMap[member.userId] == 'ACTIVE'}">ACTIVE</option>
-                                    <option value="SUSPENDED" th:selected="${userStatusMap[member.userId] == 'SUSPENDED'}">SUSPENDED</option>
-                                </select>
-                                <button type="submit" class="btn btn-sm btn-primary change-status-btn">변경</button>
-                            </form>
-                        </td>
-                        <!-- 권한 변경 가능한지 여부를 한 td에서 판단 -->
-                        <td>
-                            <div th:if="${currentUserRole != null}" th:switch="${currentUserRole.name()}">
-                                <!-- 현재 사용자가 ADMIN일 때 -->
-                                <div th:case="'ADMIN'">
-                                    <!-- 본인 계정이면 변경 불가 메시지 -->
-                                    <span th:if="${currentUserId == member.userId}" class="text-muted">본인 권한 변경 불가</span>
-
-                                    <!-- 본인이 아니면 변경 폼 -->
-                                    <form th:if="${currentUserId != member.userId}" th:action="@{/admin/user/changeRole}" method="post" class="d-flex justify-content-center user-role-form">
-                                        <input type="hidden" name="userId" th:value="${member.userId}" />
-                                        <input type="hidden" name="page" th:value="${currentPage}" />
-
-                                        <select name="newRole" class="form-control form-control-sm w-auto mx-1">
-                                            <option value="USER" th:selected="${member.role.name() == 'USER'}">USER</option>
-                                            <option value="BUSINESS" th:selected="${member.role.name() == 'BUSINESS'}">BUSINESS</option>
-                                            <option value="MANAGER" th:selected="${member.role.name() == 'MANAGER'}">MANAGER</option>
-                                            <!-- ADMIN은 변경 불가 -->
-                                            <!--<option value="ADMIN" th:selected="${member.role.name() == 'ADMIN'}">ADMIN</option>-->
-                                        </select>
-                                        <button type="submit" class="btn btn-sm btn-secondary change-role-btn">변경</button>
-                                    </form>
-                                </div>
-
-                                <!-- ADMIN이 아니면 변경 불가 메시지 -->
-                                <div th:case="*">
-                                    <span class="text-muted">권한 변경 불가</span>
-                                </div>
-                            </div>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
-
-        <!-- 페이징 네비게이션 -->
-        <nav aria-label="Page navigation" class="mt-4">
-            <ul class="pagination justify-content-center">
-                <!-- 이전 버튼 -->
-                <li class="page-item" th:classappend="${currentPage == 0} ? 'disabled'">
-                    <a class="page-link user-page-link" th:attr="data-page=${currentPage - 1}" href="#">이전</a>
-                </li>
-
-                <!-- 숫자 페이지들 -->
-                <li class="page-item"
-                    th:each="i : ${#numbers.sequence(0, totalPages - 1)}"
-                    th:classappend="${i == currentPage} ? 'active'">
-                    <a th:href="@{/admin/user(page=${i})}" class="page-link user-page-link" th:attr="data-page=${i}" th:text="${i + 1}">1</a>
-                </li>
-
-                <!-- 다음 버튼 -->
-                <li class="page-item" th:classappend="${currentPage + 1 >= totalPages} ? 'disabled'">
-                    <a class="page-link user-page-link" th:attr="data-page=${currentPage + 1}" href="#">다음</a>
-                </li>
-            </ul>
-        </nav>
-
+      </div>
     </div>
+
+    <!-- 데스크탑 테이블 -->
+    <div class="table-responsive d-none d-md-block">
+      <table class="table table-hover align-middle text-center border rounded shadow-sm">
+        <thead class="table-light">
+          <tr class="align-middle">
+            <th>ID</th>
+            <th>이메일</th>
+            <th>닉네임</th>
+            <th>이름</th>
+            <th>가입일</th>
+            <th>상태</th>
+            <th>상태 변경</th>
+            <th>권한 변경</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr th:each="member : ${members}" class="align-middle">
+            <td th:text="${member.userId}">1</td>
+            <td th:text="${member.email}">email</td>
+            <td th:text="${member.nickname}">닉네임</td>
+            <td th:text="${member.name}">홍길동</td>
+            <td th:text="${#temporals.format(member.createdAt, 'yyyy-MM-dd HH:mm')}">가입일</td>
+            <td th:text="${userStatusMap[member.userId]}">ACTIVE</td>
+            <td>
+              <form th:action="@{/admin/user/changeStatus}" method="post" class="d-flex justify-content-center align-items-center gap-1">
+                <input type="hidden" name="userId" th:value="${member.userId}" />
+                <input type="hidden" name="page" th:value="${currentPage}" />
+                <select name="newStatus" class="form-select form-select-sm w-auto">
+                  <option value="ACTIVE" th:selected="${userStatusMap[member.userId] == 'ACTIVE'}">ACTIVE</option>
+                  <option value="SUSPENDED" th:selected="${userStatusMap[member.userId] == 'SUSPENDED'}">SUSPENDED</option>
+                </select>
+                <button type="submit" class="btn btn-sm btn-outline-primary">변경</button>
+              </form>
+            </td>
+            <td>
+              <div th:if="${currentUserRole != null}" th:switch="${currentUserRole.name()}">
+                <div th:case="'ADMIN'">
+                  <span th:if="${currentUserId == member.userId}" class="text-muted">본인 권한 변경 불가</span>
+                  <form th:if="${currentUserId != member.userId}" th:action="@{/admin/user/changeRole}" method="post" class="d-flex justify-content-center align-items-center gap-1">
+                    <input type="hidden" name="userId" th:value="${member.userId}" />
+                    <input type="hidden" name="page" th:value="${currentPage}" />
+                    <select name="newRole" class="form-select form-select-sm w-auto">
+                      <option value="USER" th:selected="${member.role.name() == 'USER'}">USER</option>
+                      <option value="BUSINESS" th:selected="${member.role.name() == 'BUSINESS'}">BUSINESS</option>
+                      <option value="MANAGER" th:selected="${member.role.name() == 'MANAGER'}">MANAGER</option>
+                    </select>
+                    <button type="submit" class="btn btn-sm btn-outline-secondary">변경</button>
+                  </form>
+                </div>
+                <div th:case="*">
+                  <span class="text-muted">권한 변경 불가</span>
+                </div>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- 페이징 -->
+    <nav aria-label="Page navigation" class="mt-4">
+      <ul class="pagination justify-content-center flex-wrap">
+        <li class="page-item" th:classappend="${currentPage == 0} ? 'disabled'">
+          <a class="page-link" th:href="@{/admin/user(page=${currentPage - 1})}">이전</a>
+        </li>
+        <li class="page-item" th:each="i : ${#numbers.sequence(0, totalPages - 1)}" th:classappend="${i == currentPage} ? 'active'">
+          <a class="page-link" th:href="@{/admin/user(page=${i})}" th:text="${i + 1}">1</a>
+        </li>
+        <li class="page-item" th:classappend="${currentPage + 1 >= totalPages} ? 'disabled'">
+          <a class="page-link" th:href="@{/admin/user(page=${currentPage + 1})}">다음</a>
+        </li>
+      </ul>
+    </nav>
+  </div>
+</div>
 	
 	<script>
 	    function bindUserStatusFormEvents() {

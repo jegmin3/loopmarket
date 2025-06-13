@@ -1,29 +1,57 @@
-<!-- 공지사항 등록/수정 폼 -->
 <div th:fragment="content">
-    <div class="container">
-        <h2 th:text="${notice.noticeId != null} ? '공지사항 수정' : '공지사항 등록'">공지사항 등록</h2>
+  <div class="container py-5" style="max-width: 720px;">
+    <div class="card shadow-sm">
+      <div class="card-body">
+        <!-- 제목 -->
+        <h4 class="card-title fw-bold mb-4 text-center"
+            th:text="${notice.noticeId != null} ? '📄 공지사항 수정' : '📝 공지사항 등록'">공지사항 등록</h4>
 
+        <!-- 폼 -->
         <form id="saveNoticeForm" th:action="@{/admin/notice/save}" th:object="${notice}" method="post">
-            <input type="hidden" th:field="*{noticeId}" />
+          <input type="hidden" th:field="*{noticeId}" />
 
-            <div class="mb-3">
-                <label for="title" class="form-label">제목</label>
-                <input type="text" th:field="*{title}" class="form-control" id="title" required />
-            </div>
+          <!-- 제목 -->
+          <div class="mb-3">
+            <label for="title" class="form-label">제목</label>
+            <input type="text" th:field="*{title}" class="form-control" id="title" placeholder="공지 제목을 입력하세요" required />
+          </div>
 
-            <div class="mb-3">
-                <label for="content" class="form-label">내용</label>
-                <textarea th:field="*{content}" class="form-control" id="content" rows="5" required></textarea>
-            </div>
+          <!-- 내용 -->
+          <div class="mb-3">
+            <label for="content" class="form-label">내용</label>
+            <textarea th:field="*{content}" class="form-control" id="content" rows="6"
+                      placeholder="공지 내용을 입력하세요" required></textarea>
+          </div>
 
-            <div class="form-check mb-3">
-                <input type="checkbox" th:field="*{published}" class="form-check-input" id="published" />
-                <label class="form-check-label" for="published">공개 여부</label>
-            </div>
+          <!-- 공개 여부 -->
+          <div class="form-check form-switch mb-4">
+            <input type="checkbox" th:field="*{published}" class="form-check-input" id="published" />
+            <label class="form-check-label" for="published">공개 여부</label>
+          </div>
 
-			<button type="submit" class="btn btn-primary" 
-			    th:text="${notice.noticeId != null} ? '수정' : '등록'">등록</button>
-            <button type="button" class="btn btn-secondary" onclick="loadAdminPage('/admin/notice')">취소</button>
+          <!-- 버튼 -->
+          <div class="d-flex justify-content-end gap-2">
+			<button type="submit" class="btn btn-primary px-4" id="saveBtn"
+			        th:text="${notice.noticeId != null} ? '수정' : '등록'">등록</button>
+            <button type="button" class="btn btn-outline-secondary px-4" id="cancelBtn"
+                    onclick="loadAdminPage('/admin/notice')">취소</button>
+          </div>
         </form>
+      </div>
     </div>
+  </div>
+
+  <!-- 선택적 커스텀 스타일 -->
+  <style>
+    .form-check-input {
+      cursor: pointer;
+    }
+    .form-check-label {
+      margin-left: 0.5rem;
+      font-weight: 500;
+    }
+    textarea.form-control {
+      resize: vertical;
+    }
+  </style>
 </div>
