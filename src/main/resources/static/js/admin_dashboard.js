@@ -149,6 +149,9 @@ $(document).ready(function () {
   fetch('/admin/statistics/category-product-stats')
     .then(res => res.json())
     .then(data => {
+      // 상품 수 내림차순 정렬
+      data.sort((a, b) => b.count - a.count);
+
       const ctx = document.getElementById('categoryChart');
       const labels = data.map(d => d.categoryName);
       const counts = data.map(d => d.count);
@@ -160,7 +163,11 @@ $(document).ready(function () {
           labels: labels,
           datasets: [{
             data: counts,
-            backgroundColor: ['#ff6384', '#36a2eb', '#ffcd56', '#4bc0c0', '#9966ff', '#ff9f40']
+            backgroundColor: [
+              '#ff6384', '#36a2eb', '#ffcd56', '#4bc0c0', '#9966ff', '#ff9f40',
+              '#c9cbcf', '#8e5ea2', '#3cba9f', '#e8c3b9', '#c45850', '#2f4f4f',
+              '#ff7f50', '#6495ed', '#dda0dd', '#90ee90', '#ffa07a', '#20b2aa'
+            ]
           }]
         },
         options: {
