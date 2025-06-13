@@ -9,6 +9,7 @@ import com.loopmarket.domain.chat.entity.ChatMessageEntity;
 import com.loopmarket.domain.chat.entity.ChatRoomEntity;
 import com.loopmarket.domain.chat.repository.ChatMessageRepository;
 import com.loopmarket.domain.chat.repository.ChatRoomRepository;
+import com.loopmarket.domain.image.service.ImageService;
 import com.loopmarket.domain.member.MemberEntity;
 import com.loopmarket.domain.member.MemberRepository;
 import com.loopmarket.domain.product.service.ProductService;
@@ -27,6 +28,7 @@ public class ChatService {
     private final MemberRepository memberRepository;
     private final ProductService productService;
     //private final ImageRepository imageRepository;
+    private final ImageService imageService;
     
     /**
      * 두 유저 간의 채팅방을 찾거나, 없으면 새로 생성해서 반환
@@ -165,9 +167,11 @@ public class ChatService {
             Integer opponentId = room.getUser1Id().equals(userId) ? room.getUser2Id() : room.getUser1Id();
             String nickname = getNicknameByUserId(opponentId);
             
-            MemberEntity opponent = memberRepository.findById(opponentId)
-                    .orElseThrow(() -> new IllegalArgumentException("상대방 정보를 찾을 수 없습니다."));
-            String profileImagePath = productService.getProfileImagePath(opponent.getProfileImgId()); //프로필 이미지
+//            MemberEntity opponent = memberRepository.findById(opponentId)
+//                    .orElseThrow(() -> new IllegalArgumentException("상대방 정보를 찾을 수 없습니다."));
+            
+            // 프로필 이미지
+            String profileImagePath = imageService.getProfilePath(opponentId);
 
             // 마지막 메시지 조회
             ChatMessageEntity lastMessage = chatMessageRepository.findTopByRoomIdOrderBySentAtDesc(room.getRoomId())
