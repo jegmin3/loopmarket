@@ -165,7 +165,7 @@
 
               <div class="d-flex gap-2 justify-content-between mt-3">
                 <!-- 찜하기 -->
-                <button type="button" class="btn btn-outline-danger flex-grow-1">
+                <button type="button" class="btn btn-outline-danger1 btn-like flex-grow-1">
                   <i id="heart-icon" class="bi bi-heart"></i> 찜하기
                 </button>
 
@@ -183,7 +183,7 @@
               <!-- 택배로 구매하기 -->
               <a th:if="${product.status == 'ONSALE' and (product.isDelivery ?: false)}"
                  th:href="@{/pay/checkout(productId=${product.productId})}"
-                 class="btn btn-outline-success w-100 text-center">
+                 class="btn btn-outline-success1 w-100 text-center">
                 택배로 구매하기
               </a>
 

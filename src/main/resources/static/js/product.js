@@ -125,6 +125,14 @@ document.addEventListener("DOMContentLoaded", () => {
       alert("이미지를 먼저 업로드해주세요.");
       return;
     }
+    // 지원되는 형식인지 확인
+    const allowedTypes = ["image/png", "image/jpeg", "image/webp", "image/gif"];
+    for (const file of selectedFiles) {
+      if (!allowedTypes.includes(file.type)) {
+        alert(`😢 "${file.name}"은 지원되지 않는 이미지 형식입니다.\nPNG, JPG, WEBP, GIF 형식만 업로드해주세요.`);
+        return;
+      }
+    }
 
     const aiBtn = document.getElementById("aiGenerateBtn");
     aiBtn.disabled = true;
