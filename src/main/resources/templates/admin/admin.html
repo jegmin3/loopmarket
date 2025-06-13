@@ -28,18 +28,29 @@
     </div>
 
     <!-- 콘텐츠 영역 -->
-    <main id="admin-content" class="p-4 bg-light flex-grow-1 rounded-start-4">
+    <main id="admin-content" class="p-4 bg-light flex-grow-1 rounded-start-4" style="overflow-y: auto;">
       <!-- AJAX 콘텐츠가 여기에 로드됨 -->
     </main>
   </div>
 
   <!-- 스타일 -->
   <style>
+    html, body {
+      height: 100%;
+      margin: 0;
+    }
+
+    .admin-layout {
+      flex-grow: 1;
+      min-height: 0;
+      display: flex;
+    }
+
     .sidebar {
       width: 220px;
       background-color: #fdfdfd;
       border-right: 1px solid #e0e0e0;
-      height: 100%;
+      height: auto;
       transition: transform 0.3s ease;
       z-index: 1000;
     }
@@ -108,9 +119,6 @@
     #admin-content {
       background-color: #f8f9fa;
       border-left: none;
-      min-height: auto;
-      max-height: none;
-      overflow: visible;
     }
   </style>
 
