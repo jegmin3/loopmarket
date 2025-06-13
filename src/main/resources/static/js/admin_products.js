@@ -141,7 +141,7 @@ $(document).ready(function () {
 
 		  const row = `
 		    <tr class="${rowClass}">
-		      <td>
+		      <td class="text-start">
 		        <img src="${thumbnail}" style="width:50px; height:auto; margin-right:5px; vertical-align: middle;">
 		        ${product.title}
 		      </td>
