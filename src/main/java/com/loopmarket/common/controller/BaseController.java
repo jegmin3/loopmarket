@@ -11,4 +11,9 @@ public class BaseController extends GetMemberInfo {
         model.addAttribute("viewName", viewName);
         return "layout/layout";
     }
+    
+    public String renderError(String viewName, Model model) {
+        model.addAttribute("viewName", viewName);
+        return "layout/layout";
+    }
 }
