@@ -68,11 +68,16 @@
 			<input type="hidden" name="email" id="email"> <!-- 실제 서버에 전송될 최종 이메일 -->
 
 			<!-- 🔹 비밀번호 입력 -->
-			<label class="form-label small fw-bold">
-				<i class="bi bi-lock-fill me-1"></i>비밀번호
-			</label>
-			<input type="password" name="password" class="form-control mb-3" placeholder="비밀번호" required>
-
+			<div class="position-relative">
+			  <label class="form-label small fw-bold">
+			    <i class="bi bi-lock-fill me-1"></i>비밀번호
+			  </label>
+			  <input type="password" name="password" id="passwordInput" class="form-control mb-3" placeholder="비밀번호" required>
+			  <!-- 비밀번호 보기/숨기기 토글 버튼 -->
+			  <i class="bi bi-eye-slash toggle-password"
+			     style="position: absolute; top: 38px; right: 12px; cursor: pointer;"></i>
+			</div>
+			
 			<!-- 🔹 닉네임 입력 -->
 			<label class="form-label small fw-bold">
 				<i class="bi bi-person-badge-fill me-1"></i>닉네임
@@ -96,6 +101,24 @@
 
 	<script>
 		let verified = false;
+		// 비번 보기안보기 토글
+		$(document).ready(function () {
+		  $(".toggle-password").on("click", function () {
+		    const $icon = $(this);
+		    const $input = $("#passwordInput");
+		    const type = $input.attr("type");
+
+		    // 토글: password <-> text
+		    if (type === "password") {
+		      $input.attr("type", "text");
+		      $icon.removeClass("bi-eye-slash").addClass("bi-eye");
+		    } else {
+		      $input.attr("type", "password");
+		      $icon.removeClass("bi-eye").addClass("bi-eye-slash");
+		    }
+		  });
+		});
+		
 		// 도메인 선택 시 직접입력 활성/비활성 제어
 		$("#emailDomainSelect").change(function () {
 			const selected = $(this).val();

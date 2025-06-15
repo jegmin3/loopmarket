@@ -131,6 +131,10 @@ public class MemberController extends BaseController {
         redirectAttributes.addFlashAttribute("successMessage", "회원가입 되었습니다! 로그인 해주세요.");
         return "redirect:/member/login";
     }
+    // 비번 변경 페이지로
+    @GetMapping("/reset-password")
+    public String goPasswordReset(Model model) 
+    { return render("member/pwReset", model); }
     
     // 강제 비밀번호 변경
     @GetMapping("force_change_password")

@@ -26,6 +26,20 @@ public class MemberService {
     public MemberEntity findMemberByEmail(String email) {
         return memberRepository.findByEmail(email).orElse(null);
     }
+    
+    /** 해당 이메일의 회원 존재하는지 */
+    public boolean existByEmail(String email) {
+    	return memberRepository.findByEmail(email).isPresent();
+    }
+    /** 이메일 인증과 비밀번호 리셋 */
+    public void resetPasswordByEmail(String email, String newPassword) {
+        MemberEntity member = memberRepository.findByEmail(email)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 이메일입니다."));
+
+        String encrypted = passwordEncoder.encode(newPassword);
+        member.setPassword(encrypted);
+        memberRepository.save(member);
+    }
 
     // ID로 회원 조회 (기존 JpaRepository의 findById 사용 가능하지만 명시적 메서드)
     @Transactional(readOnly = true)

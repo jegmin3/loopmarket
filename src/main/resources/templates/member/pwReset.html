@@ -1,0 +1,146 @@
+<div th:fragment="content" class="container my-5" style="max-width: 480px;">
+	<div class="card shadow-sm rounded-3">
+		<div class="card-body">
+			<h4 class="card-title text-center mb-4">
+				<i class="bi bi-key-fill me-1"></i>비밀번호 찾기
+			</h4>
+
+			<form id="resetForm">
+
+				<!-- 이메일 입력 -->
+				<div class="mb-3">
+					<label for="email" class="form-label fw-semibold">이메일</label>
+					<div class="input-group">
+						<span class="input-group-text"><i class="bi bi-envelope"></i></span>
+						<input type="email" id="email" class="form-control" placeholder="example@email.com" required>
+					</div>
+				</div>
+
+				<!-- 인증번호 전송 버튼 -->
+				<div class="mb-3 d-grid">
+					<button type="button" id="sendCodeBtn" class="btn btn-primary">
+						인증번호 전송
+					</button>
+				</div>
+
+				<!-- 인증번호 입력 + 확인 -->
+				<div id="verifySection" class="d-none">
+					<div class="mb-3">
+						<label for="emailCode" class="form-label fw-semibold">인증번호</label>
+						<div class="input-group">
+							<span class="input-group-text"><i class="bi bi-shield-lock"></i></span>
+							<input type="text" id="emailCode" class="form-control" placeholder="6자리 코드 입력">
+						</div>
+					</div>
+					<div class="mb-3 d-grid">
+						<button type="button" id="verifyBtn" class="btn btn-success">
+							인증 확인
+						</button>
+					</div>
+				</div>
+
+				<!-- 새 비밀번호 입력 -->
+				<div id="newPwSection" class="d-none">
+					<div class="mb-3">
+						<label for="newPassword" class="form-label fw-semibold">새 비밀번호</label>
+						<div class="input-group">
+							<span class="input-group-text"><i class="bi bi-lock-fill"></i></span>
+							<input type="password" id="newPassword" class="form-control" placeholder="새 비밀번호 입력">
+						</div>
+						<div class="form-text text-muted">
+							영문, 숫자, 특수문자 포함 8~20자
+						</div>
+					</div>
+					<div class="d-grid">
+						<button type="submit" class="btn btn-dark">
+							비밀번호 재설정
+						</button>
+					</div>
+				</div>
+
+			</form>
+		</div>
+	</div>
+
+	<script>
+		let verified = false;
+		// 인증번호 전송
+		$("#sendCodeBtn").click(function () {
+		  const $btn = $(this);
+		  const email = $("#email").val();
+
+		  // 이메일 비어있거나 형식 틀리면 중단
+		  if (!email || !isValidEmail(email)) {
+		    showAlert("warning", "이메일 오류", "올바른 이메일 형식을 입력해주세요.");
+		    return;
+		  }
+
+		  // UI 즉시 반응
+		  showAlert("success", "전송 완료", "이메일을 확인해주세요.");
+		  $("#verifySection").removeClass("d-none");
+
+		  // 버튼 완전 비활성화
+		  $btn.prop("disabled", true).text("전송됨");
+
+		  // 서버 요청
+		  $.post("/api/account/send-code", { email })
+		    .done(() => {
+		      //showAlert("success", "전송 완료", "이메일을 확인해주세요.");
+		    })
+		    .fail(() => {
+		      showAlert("error", "전송 실패", "발송에 실패했습니다. 다시 시도해주세요.");
+		    });
+		});
+
+		// 이메일 정규식 검사 함수
+		function isValidEmail(email) {
+		  const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+		  return regex.test(email);
+		}
+		// 인증 확인
+		$("#verifyBtn").click(function () {
+			const $btn = $(this);
+			const email = $("#email").val();
+			const code = $("#emailCode").val();
+			if (!code) return;
+
+			$btn.prop("disabled", true);
+
+			$.post("/api/account/verify-code", {email, code}, function (res) {
+				if (res.verified) {
+					showAlert("success", "인증 완료", "인증에 성공했습니다.");
+					$("#newPwSection").removeClass("d-none");
+				} else {
+					showAlert("error", "실패", "인증번호가 일치하지 않습니다.");
+				}
+			}).always(() => {
+				$btn.prop("disabled", false);
+			});
+		});
+
+		// 비밀번호 재설정
+		$("#resetForm").submit(function (e) {
+			e.preventDefault();
+			const $btn = $(this).find("button[type='submit']");
+			const email = $("#email").val();
+			const newPassword = $("#newPassword").val();
+
+			// 비밀번호 형식 검사 (안할거임!)
+			//if (!isValidPassword(newPassword)) {
+			//	showAlert("warning", "형식 오류", "비밀번호는 8~20자, 영문+숫자+특수문자 포함이어야 합니다.");
+			//	return;
+			//}
+
+			$btn.prop("disabled", true);
+
+			$.post("/api/account/reset-password", {email, newPassword}, function () {
+				showAlert("success", "완료", "비밀번호가 변경되었습니다.");
+				setTimeout(() => location.href = "/member/login", 1000);
+			}).fail(() => {
+				showAlert("error", "실패", "비밀번호 변경에 실패했습니다.");
+			}).always(() => {
+				$btn.prop("disabled", false);
+			});
+		});
+	</script>
+</div> <!-- 본 조각 div -->
