@@ -11,3 +11,9 @@
 *.pdf binary
 *.ico binary
 
+# 바이너리 파일은 텍스트를 처리하지 않게
+*.woff binary
+*.woff2 binary
+*.ttf binary
+*.eot binary
+
