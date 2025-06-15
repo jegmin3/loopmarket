@@ -1,21 +1,23 @@
 <th:block th:fragment="content">
-  <section class="d-flex align-items-center justify-content-center" style="min-height: 70vh;">
+  <section class="d-flex align-items-center justify-content-center pt-5 pt-md-0" style="min-height: 70vh; overflow-x: hidden;">
     <div class="container">
       <div class="row align-items-center justify-content-center">
-        
+
         <!-- 텍스트 -->
-        <div class="col-12 col-md-6 text-center text-md-start px-4">
-          <h1 class="fw-bold display-4 mb-3">Oops! Something went wrong</h1>
+        <div class="col-12 col-md-6 text-center text-md-start px-3">
+          <h1 class="fw-bold display-5 mb-3">
+            Oops!<br />Something went wrong
+          </h1>
           <p class="fs-5 text-muted mb-4" th:text="${message}">An unexpected error has occurred.</p>
 
-          <button class="btn btn-primary btn-lg px-4 shadow-sm" onclick="location.href='/'">
-            Go to main page
+          <button class="btn btn-primary px-4 py-2 shadow-sm" onclick="location.href='/'">
+            메인화면으로 가기
           </button>
         </div>
 
         <!-- 이미지 -->
-        <div class="col-10 col-md-6 text-center mt-5 mt-md-0 px-4">
-          <img th:src="@{/img/error.png}" alt="에러 이미지" class="img-fluid" style="max-width: 400px;" />
+        <div class="col-12 col-md-6 text-center mt-4 mt-md-0 px-3">
+          <img th:src="@{/img/error.png}" alt="에러 이미지" class="img-fluid" style="max-width: 350px;" />
         </div>
 
       </div>
