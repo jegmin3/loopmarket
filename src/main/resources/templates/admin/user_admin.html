@@ -15,7 +15,7 @@
           <p class="mb-2"><strong>상태:</strong> <span th:text="${userStatusMap[member.userId]}">ACTIVE</span></p>
 
           <!-- 상태 변경 -->
-          <form th:action="@{/admin/user/changeStatus}" method="post" class="mb-2">
+		  <form th:action="@{/admin/user/changeStatus}" method="post" class="user-status-form mb-2">
             <input type="hidden" name="userId" th:value="${member.userId}" />
             <input type="hidden" name="page" th:value="${currentPage}" />
             <div class="input-group">
@@ -31,7 +31,7 @@
           <div th:if="${currentUserRole != null}" th:switch="${currentUserRole.name()}">
             <div th:case="'ADMIN'">
               <span th:if="${currentUserId == member.userId}" class="text-muted">본인 권한 변경 불가</span>
-              <form th:if="${currentUserId != member.userId}" th:action="@{/admin/user/changeRole}" method="post">
+			  <form th:if="${currentUserId != member.userId}" th:action="@{/admin/user/changeRole}" method="post" class="user-role-form">
                 <input type="hidden" name="userId" th:value="${member.userId}" />
                 <input type="hidden" name="page" th:value="${currentPage}" />
                 <div class="input-group">
@@ -76,7 +76,7 @@
             <td th:text="${#temporals.format(member.createdAt, 'yyyy-MM-dd HH:mm')}">가입일</td>
             <td th:text="${userStatusMap[member.userId]}">ACTIVE</td>
             <td>
-              <form th:action="@{/admin/user/changeStatus}" method="post" class="d-flex justify-content-center align-items-center gap-1">
+				<form th:action="@{/admin/user/changeStatus}" method="post" class="d-flex justify-content-center align-items-center gap-1 user-status-form">
                 <input type="hidden" name="userId" th:value="${member.userId}" />
                 <input type="hidden" name="page" th:value="${currentPage}" />
                 <select name="newStatus" class="form-select form-select-sm w-auto">
@@ -90,7 +90,7 @@
               <div th:if="${currentUserRole != null}" th:switch="${currentUserRole.name()}">
                 <div th:case="'ADMIN'">
                   <span th:if="${currentUserId == member.userId}" class="text-muted">본인 권한 변경 불가</span>
-                  <form th:if="${currentUserId != member.userId}" th:action="@{/admin/user/changeRole}" method="post" class="d-flex justify-content-center align-items-center gap-1">
+				  <form th:if="${currentUserId != member.userId}" th:action="@{/admin/user/changeRole}" method="post" class="d-flex justify-content-center align-items-center gap-1 user-role-form">
                     <input type="hidden" name="userId" th:value="${member.userId}" />
                     <input type="hidden" name="page" th:value="${currentPage}" />
                     <select name="newRole" class="form-select form-select-sm w-auto">
@@ -127,151 +127,6 @@
     </nav>
   </div>
 </div>
-	
-	<script>
-	    function bindUserStatusFormEvents() {
-	        document.querySelectorAll('.user-status-form').forEach(form => {
-	            form.addEventListener('submit', function (e) {
-	                e.preventDefault();
-
-	                const formData = new FormData(form);
-	                const page = form.querySelector('input[name="page"]').value;
-
-	                fetch(form.getAttribute('action'), {
-	                    method: 'POST',
-	                    body: formData,
-	                    headers: {
-	                        'X-Requested-With': 'XMLHttpRequest'
-	                    }
-	                })
-	                .then(response => response.json())
-	                .then(data => {
-	                    if (data.success) {
-	                        Swal.fire({
-	                            icon: 'success',
-	                            title: '상태 변경 성공',
-	                            text: data.message,
-	                            timer: 1500,
-	                            showConfirmButton: false
-	                        }).then(() => {
-	                            loadAdminPage('/admin/user?page=' + page);
-	                        });
-	                    } else {
-	                        Swal.fire({
-	                            icon: 'error',
-	                            title: '실패',
-	                            text: data.message
-	                        });
-	                    }
-	                })
-	                .catch(error => {
-	                    Swal.fire({
-	                        icon: 'error',
-	                        title: '에러 발생',
-	                        text: '잠시 후 다시 시도해주세요.'
-	                    });
-	                    console.error('오류:', error);
-	                });
-	            });
-	        });
-	    }
-		function bindUserRoleFormEvents() {
-		    document.querySelectorAll('.user-role-form').forEach(form => {
-		        form.addEventListener('submit', function (e) {
-		            e.preventDefault();
-
-		            const formData = new FormData(form);
-		            const page = form.querySelector('input[name="page"]').value;
-
-		            fetch(form.getAttribute('action'), {
-		                method: 'POST',
-		                body: formData,
-		                headers: {
-		                    'X-Requested-With': 'XMLHttpRequest'
-		                }
-		            })
-		            .then(response => response.json())
-		            .then(data => {
-		                if (data.success) {
-		                    Swal.fire({
-		                        icon: 'success',
-		                        title: '권한 변경 성공',
-		                        text: data.message,
-		                        timer: 1500,
-		                        showConfirmButton: false
-		                    }).then(() => {
-		                        loadAdminPage('/admin/user?page=' + page);
-		                    });
-		                } else {
-		                    Swal.fire({
-		                        icon: 'error',
-		                        title: '실패',
-		                        text: data.message
-		                    });
-		                }
-		            })
-		            .catch(error => {
-		                Swal.fire({
-		                    icon: 'error',
-		                    title: '에러 발생',
-		                    text: '잠시 후 다시 시도해주세요.'
-		                });
-		                console.error('오류:', error);
-		            });
-		        });
-		    });
-		}
-
-	    function bindPaginationEvents() {
-	        document.querySelectorAll('.user-page-link').forEach(link => {
-	            link.addEventListener('click', function (e) {
-	                e.preventDefault();
-	                const page = this.getAttribute('data-page');
-	                loadAdminPage('/admin/user?page=' + page);
-	            });
-	        });
-	    }
-
-		function loadAdminPage(url) {
-		    const container = document.getElementById('admin-content');
-
-		    // 기본 로딩 텍스트와 애니메이션 시작
-		    container.innerHTML = `<div class="text-center mt-5"><p id="loading-text">Loading.</p></div>`;
-
-		    const loadingText = document.getElementById('loading-text');
-		    let dotCount = 1;
-
-		    // 점 애니메이션: . .. ... 반복
-		    const loadingInterval = setInterval(() => {
-		        dotCount = (dotCount % 3) + 1;
-		        loadingText.textContent = 'Loading' + '.'.repeat(dotCount);
-		    }, 500);
-
-		    fetch(url, {
-		        headers: { 'X-Requested-With': 'XMLHttpRequest' }
-		    })
-		    .then(res => res.text())
-		    .then(html => {
-		        clearInterval(loadingInterval); // 로딩 애니메이션 중지
-		        container.innerHTML = html;
-
-		        // 이벤트 재바인딩
-		        bindUserStatusFormEvents();
-		        bindUserRoleFormEvents();
-		        bindPaginationEvents();
-		    })
-		    .catch(err => {
-		        clearInterval(loadingInterval); // 실패 시에도 중지
-		        console.error('페이지 로드 실패:', err);
-		        container.innerHTML = '<p style="color:red;">페이지를 불러오지 못했습니다.</p>';
-		    });
-		}
-
-	    // ✅ 초기 바인딩 수동 호출
-	    bindUserStatusFormEvents();
-		bindUserRoleFormEvents();
-	    bindPaginationEvents();
-	</script>
 	
 	<style>
 		.card-title {
