@@ -180,7 +180,7 @@ $(function () {
 function showMessage(msg) {
 	// chatArea: 채팅 말풍선이 들어가는 곳
 	const chatArea = $("#chatArea");
-	const isMine = (msg.senderId === senderId); // subscribe와 별개로 여기서도 정의
+	const isMine = Number(msg.senderId) === Number(senderId); // subscribe와 별개로 여기서도 정의
 	// 중복 메시지면 새로 append하지 않음
 	if (shownMessageIds.has(msg.msgId)) {
 		// 내가 보낸 메시지고, 읽음 처리된 경우라면 UI 업데이트

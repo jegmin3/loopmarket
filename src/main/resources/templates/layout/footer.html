@@ -1,6 +1,49 @@
-<footer th:fragment="footer">
-    <div class="text-gray text-center py-3 bg-light" style="background-color: #e3f2fd;">
-        <small>&copy; 2025 LoopMarket. All rights reserved.</small>
-    </div>
-</footer>
+<footer th:fragment="footer" class="bg-light text-muted pt-4 pb-5 mt-5 border-top small">
+  <div class="container">
+    <div class="row row-cols-1 row-cols-md-3 g-4">
 
+      <!-- 회사 정보 -->
+      <div>
+        <h6 class="fw-bold mb-3">🏢 회사 정보</h6>
+        <p class="mb-1">루프마켓(주)</p>
+        <p class="mb-1">사업자등록번호: 644-12-37891</p>
+        <p class="mb-0">주소: 부산광역시 부산진구 동천로 109 삼한골든게이트빌딩 7층</p>
+      </div>
+
+      <!-- 고객센터 -->
+      <div>
+        <h6 class="fw-bold mb-3">📞 고객센터</h6>
+        <p class="mb-1">운영시간: 평일 오전 9시 ~ 오후 6시</p>
+        <p class="mb-1">점심시간: 12:00 ~ 13:00</p>
+        <p class="mb-1">전화: 1544-9876</p>
+        <p class="mb-0">이메일: <a href="mailto:support@loopmarket.co.kr" class="text-reset text-decoration-none">support@loopmarket.co.kr</a></p>
+      </div>
+
+      <!-- 이용 안내 -->
+      <div>
+        <h6 class="fw-bold mb-3">🔒 이용 안내</h6>
+        <ul class="list-unstyled">
+          <li><a href="#" class="text-reset text-decoration-none">이용약관</a></li>
+          <li><a href="#" class="text-reset text-decoration-none">개인정보처리방침</a></li>
+          <li><a href="#" class="text-reset text-decoration-none">안전거래 가이드</a></li>
+          <li><a href="#" class="text-reset text-decoration-none">자주 묻는 질문</a></li>
+        </ul>
+      </div>
+    </div>
+
+    <hr class="my-4">
+
+    <!-- 하단 바 -->
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-center">
+      <div class="mb-2 mb-md-0">
+        <span class="me-2">&copy; 2025 LoopMarket Inc.</span>
+        <span>All rights reserved.</span>
+      </div>
+      <div>
+        <a href="#" class="text-reset me-3"><i class="bi bi-facebook"></i></a>
+        <a href="#" class="text-reset me-3"><i class="bi bi-instagram"></i></a>
+        <a href="#" class="text-reset"><i class="bi bi-youtube"></i></a>
+      </div>
+    </div>
+  </div>
+</footer>
