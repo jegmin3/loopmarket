@@ -1,28 +1,33 @@
 package com.loopmarket.common.config;
 
-import java.util.concurrent.ConcurrentHashMap;
-
-import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Primary;
-import org.springframework.data.redis.connection.RedisConnectionFactory;
-import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.session.MapSession;
-import org.springframework.session.MapSessionRepository;
-import org.springframework.session.Session;
-import org.springframework.session.SessionRepository;
-import org.springframework.session.data.redis.RedisIndexedSessionRepository;
-
 /**
  * Spring Boot 애플리케이션의 세션 저장소 설정을 담당하는 Configuration 클래스입니다.
  * Redis 서버의 가용성(실행 여부)에 따라 세션 저장소를 동적으로 변경합니다.
  * - Redis가 실행 중이면 Redis를 세션 저장소로 사용합니다.
  * - Redis가 꺼져 있으면 JVM(메모리)을 세션 저장소로 사용합니다.
+ * EnableRdisHttpSession 어노테이션이 없으면 세션저장소를 인식하지 못하기에 붙여놨습니다
+ * 이 클래스의 내부 메서드들은 이 어노테이션을 붙였기에 주석처리 했습니다.
+ * redis를 무조건 사용할것이 아니라면 이 어노테이션은 제거해야 합니다.
+ * ConditionalOnProperty를 사용해 store-type: redis일때만 동작하고,
+ * 프로파일별로 store-type: none으로 fallback가능하게 설정했습니다.
+ * 지금은 yml파일에서 store-type: ${SESSION_STORE_TYPE:none} 설정으로 전환중!
  */
-@Configuration
+//@Configuration
+//@EnableRedisHttpSession
+//@ConditionalOnProperty(name = "spring.session.store-type", havingValue = "redis")
 public class SessionConfig {
+	
+	/*
+	 * Redis의 keyspace notifications 설정(notify-keyspace-events)을 
+	 * 자동으로 바꾸려 하지 않게 만드는 설정입니다.
+	 * reids 안쓸거면 없어도 됩니다.
+	 * ConditionalOnMissingBean로 redis가 꺼졌을때도 앱이 터지지 않도록
+	 */
+//    @Bean
+//    @ConditionalOnMissingBean
+//    ConfigureRedisAction configureRedisAction() {
+//        return ConfigureRedisAction.NO_OP;
+//    }
 
     /**
      * RedisConnectionFactory 빈이 성공적으로 생성되었을 때 (즉, Redis 서버가 실행 중일 때)
@@ -43,15 +48,15 @@ public class SessionConfig {
      * 기본 RedisTemplate 빈을 자동으로 생성합니다.
      * @return RedisIndexedSessionRepository 인스턴스 (Redis 세션 저장소)
      */
-    @Bean
-    @ConditionalOnBean(RedisConnectionFactory.class)
-    @Primary
-    SessionRepository<?> redisSessionRepository( // 반환 타입을 SessionRepository<?>로 변경
-            RedisTemplate<Object, Object> redisTemplate) {
-        System.out.println("--- RedisIndexedSessionRepository가 활성화되었습니다. (Redis 사용 중) ---");
-        // RedisIndexedSessionRepository의 생성자는 RedisOperations (RedisTemplate의 상위 인터페이스)를 인자로 받습니다.
-        return new RedisIndexedSessionRepository(redisTemplate);
-    }
+//    @Bean
+//    @ConditionalOnBean(RedisConnectionFactory.class)
+//    @Primary
+//    SessionRepository<?> redisSessionRepository( // 반환 타입을 SessionRepository<?>로 변경
+//            RedisTemplate<Object, Object> redisTemplate) {
+//        System.out.println("--- RedisIndexedSessionRepository가 활성화되었습니다. (Redis 사용 중) ---");
+//        // RedisIndexedSessionRepository의 생성자는 RedisOperations (RedisTemplate의 상위 인터페이스)를 인자로 받습니다.
+//        return new RedisIndexedSessionRepository(redisTemplate);
+//    }
 
     /**
      * RedisConnectionFactory 빈이 컨텍스트에 존재하지 않을 때 (즉, Redis 서버가 꺼져 있거나 연결 실패 시)
@@ -67,13 +72,13 @@ public class SessionConfig {
      *
      * @return MapSessionRepository 인스턴스 (JVM 메모리 세션 저장소)
      */
-    @Bean
-    @ConditionalOnMissingBean(RedisConnectionFactory.class)
-    @Primary
-    SessionRepository<MapSession> inMemorySessionRepository() { // MapSession 타입은 그대로 유지
-        System.out.println("--- MapSessionRepository (JVM 메모리)가 활성화되었습니다. (Redis 미사용, Fallback) ---");
-        // MapSessionRepository는 세션을 저장할 Map 구현체를 인자로 받습니다.
-        // ConcurrentHashMap은 멀티스레드 환경에서 안전하게 사용할 수 있는 Map입니다.
-        return new MapSessionRepository(new ConcurrentHashMap<String, Session>());
-    }
+//    @Bean
+//    @ConditionalOnMissingBean(RedisConnectionFactory.class)
+//    @Primary
+//    SessionRepository<MapSession> inMemorySessionRepository() { // MapSession 타입은 그대로 유지
+//        System.out.println("--- MapSessionRepository (JVM 메모리)가 활성화되었습니다. (Redis 미사용, Fallback) ---");
+//        // MapSessionRepository는 세션을 저장할 Map 구현체를 인자로 받습니다.
+//        // ConcurrentHashMap은 멀티스레드 환경에서 안전하게 사용할 수 있는 Map입니다.
+//        return new MapSessionRepository(new ConcurrentHashMap<String, Session>());
+//    }
 }

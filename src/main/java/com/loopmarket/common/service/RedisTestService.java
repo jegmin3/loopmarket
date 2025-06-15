@@ -3,7 +3,7 @@ package com.loopmarket.common.service;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
-@Service
+//@Service
 public class RedisTestService {
 
     private final RedisTemplate<String, String> redisTemplate;
@@ -23,7 +23,7 @@ public class RedisTestService {
             }
         } catch (Exception e) {
             System.err.println("❌ Redis Template 연결 시도 중 예외 발생: " + e.getMessage());
-            // 이 예외가 발생하면 RedisConnectionFactory 자체가 실패한 것입니다.
+            // 이 예외가 발생하면 RedisConnectionFactory 자체가 실패한 것.
         }
     }
 }
