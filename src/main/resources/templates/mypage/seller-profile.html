@@ -33,24 +33,33 @@
 				<div class="row g-3" th:unless="${#lists.isEmpty(sellingProducts)}">
 					<div class="col-6 col-md-4" th:each="product : ${sellingProducts}">
 						<a th:href="@{/products/{id}(id=${product.productId})}" class="text-decoration-none text-dark">
-							<div class="card shadow-sm h-100 border-0 rounded-3"
-								style="transition: transform 0.2s ease;"
-								onmouseover="this.style.transform='scale(1.02)'"
-								onmouseout="this.style.transform='scale(1)'">
+							<div class="card shadow-sm h-100 border-0 rounded-3 position-relative"
+							     style="transition: transform 0.2s ease;"
+							     onmouseover="this.style.transform='scale(1.02)'"
+							     onmouseout="this.style.transform='scale(1)'">
 
-								<img th:src="${product.thumbnailPath != null && product.thumbnailPath != ''} ?
-								               @{${product.thumbnailPath}} :
-								               @{/img/no-image.png}"
-								     th:alt="'상품 ' + ${product.title}"
-								     class="card-img-top"
-								     style="object-fit: cover; height: 160px; border-radius: 0.5rem 0.5rem 0 0;" />
+							  <!-- 뱃지: 이미지 위에 겹치기 -->
+							  <div class="position-absolute top-0 start-0 m-2 z-10">
+							    <div th:replace="fragment/status_badge :: badges(${product.status}, ${product.isDelivery}, ${product.isBest}, ${product.price})"></div>
+							  </div>
 
-								<div class="card-body p-2">
-									<h6 class="card-title mb-1 text-truncate" style="max-width: 100%;"
-										th:text="${product.title}">상품명</h6>
-									<p class="card-text text-danger fw-semibold mb-0"
-										th:text="${#numbers.formatInteger(product.price, 3, 'COMMA')} + '원'">가격</p>
-								</div>
+							  <!-- 상품 이미지 -->
+							  <img th:src="${product.thumbnailPath != null && product.thumbnailPath != ''} ?
+							                @{${product.thumbnailPath}} :
+							                @{/img/no-image.png}"
+							       th:alt="'상품 ' + ${product.title}"
+							       class="card-img-top"
+							       style="object-fit: cover; height: 160px; border-radius: 0.5rem 0.5rem 0 0;" />
+
+							  <!-- 상품 정보 -->
+							  <div class="card-body p-2">
+							    <h6 class="card-title mb-1 text-truncate" th:text="${product.title}">상품명</h6>
+							    <p class="card-text text-danger fw-semibold mb-0">
+							      <span th:if="${product.price == 0 or product.price == null}">나눔</span>
+							      <span th:unless="${product.price == 0 or product.price == null}"
+							            th:text="${#numbers.formatInteger(product.price, 0, 'COMMA')} + '원'">가격</span>
+							    </p>
+							  </div>
 							</div>
 						</a>
 					</div>

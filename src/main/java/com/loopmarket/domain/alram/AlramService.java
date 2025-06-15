@@ -141,7 +141,7 @@ public class AlramService {
                 return;
             }
 
-            // ✅ 중복 알림 확인 (userId + url + type 기준)
+            // 중복 알림 확인 (userId + url + type 기준) => 이거 나중에 list로 고쳐야지..
             Optional<AlramEntity> optional = alramRepository.findByUserIdAndUrlAndType(
                 dto.getUserId(), dto.getUrl(), dto.getType()
             );

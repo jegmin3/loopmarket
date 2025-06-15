@@ -1,185 +1,173 @@
-<div th:fragment="content" style="height: 100vh; display: flex; flex-direction: column; margin: 0;">
+<div th:fragment="content" style="min-height: 100vh; display: flex; flex-direction: column; margin: 0;">
   <!-- 상단 헤더 -->
-  <div class="admin-header d-flex justify-content-between align-items-center p-3 border-bottom" style="background-color: #f8f9fa;">
-    <button class="btn btn-outline-secondary d-md-none" id="toggleSidebar">&#9776;</button>
+  <div class="admin-header d-flex justify-content-between align-items-center px-4 py-3 border-bottom shadow-sm"
+       style="background-color: #ffffff;">
+    <h5 class="mb-0 fw-bold">관리자 페이지</h5>
+    <button class="btn btn-outline-dark d-md-none" id="toggleSidebar">&#9776;</button>
   </div>
 
-  <!-- 본문 전체 flex 레이아웃 -->
+  <!-- 전체 레이아웃 -->
   <div class="admin-layout d-flex flex-grow-1" style="min-height: 0;">
-    <!-- 사이드바 -->
+    <!-- 사이드바 오버레이 -->
     <div id="sidebarOverlay" class="overlay d-none"></div>
-    <div class="sidebar p-3 border-end" id="adminSidebar">
-      <h5 class="mb-4">관리자 메뉴</h5>
-      <div class="btn-group-vertical w-100" role="group">
-        <button class="btn btn-outline-secondary text-start w-100 admin-link" data-url="/admin/dashboard">대시보드</button>
-        <button class="btn btn-outline-secondary text-start w-100 admin-link" data-url="/admin/user">사용자 관리</button>
-        <button class="btn btn-outline-secondary text-start w-100 admin-link" data-url="/admin/products">상품 관리</button>
-        <button class="btn btn-outline-secondary text-start w-100 admin-link" data-url="/admin/reports">신고 관리</button>
-        <button class="btn btn-outline-secondary text-start w-100 admin-link" data-url="/admin/categories">카테고리 관리</button>
-        <button class="btn btn-outline-secondary text-start w-100 admin-link" data-url="/admin/notice">공지사항 관리</button>
-        <button class="btn btn-outline-secondary text-start w-100 admin-link" data-url="/admin/notifications">알림 전송</button>
+
+    <!-- 사이드바 -->
+    <div class="sidebar" id="adminSidebar">
+      <div class="sidebar-header px-4 pt-4 pb-2 border-bottom">
+        <h6 class="fw-bold text-secondary">관리자 메뉴</h6>
+      </div>
+      <div class="nav flex-column px-3 pt-3">
+        <button class="nav-link admin-link" data-url="/admin/dashboard">📊 대시보드</button>
+        <button class="nav-link admin-link" data-url="/admin/user">👥 사용자 관리</button>
+        <button class="nav-link admin-link" data-url="/admin/products">📦 상품 관리</button>
+        <button class="nav-link admin-link" data-url="/admin/reports">🚨 신고 관리</button>
+        <button class="nav-link admin-link" data-url="/admin/categories">📂 카테고리 관리</button>
+        <button class="nav-link admin-link" data-url="/admin/notice">📢 공지사항</button>
+        <button class="nav-link admin-link" data-url="/admin/notifications">🔔 알림 전송</button>
       </div>
     </div>
 
     <!-- 콘텐츠 영역 -->
-    <main id="admin-content">
-      <!-- AJAX 콘텐츠 로드 -->
+    <main id="admin-content" class="p-4 bg-light flex-grow-1 rounded-start-4" style="overflow-y: auto;">
+      <!-- AJAX 콘텐츠가 여기에 로드됨 -->
     </main>
   </div>
 
-  <!--<script src="https://code.jquery.com/jquery-3.7.1.js" 
-      integrity="sha256-eKhayi8LEQwp4NKxN+CfCh+3qOVUtJn3QNZ0TciWLP4=" crossorigin="anonymous"></script>-->
+  <!-- 스타일 -->
+  <style>
+    html, body {
+      height: 100%;
+      margin: 0;
+    }
 
+    .admin-layout {
+      flex-grow: 1;
+      min-height: 0;
+      display: flex;
+    }
+
+    .sidebar {
+      width: 220px;
+      background-color: #fdfdfd;
+      border-right: 1px solid #e0e0e0;
+      height: auto;
+      transition: transform 0.3s ease;
+      z-index: 1000;
+    }
+
+    .nav-link {
+      background: transparent;
+      border: none;
+      text-align: left;
+      padding: 0.75rem 1rem;
+      font-weight: 500;
+      color: #495057;
+      transition: background 0.2s, color 0.2s;
+      border-radius: 0.5rem;
+      cursor: pointer;
+    }
+
+    .nav-link:hover {
+      background-color: #f0f2f5;
+    }
+
+    .nav-link.active {
+      background-color: #0d6efd;
+      color: white;
+    }
+
+    .overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background-color: rgba(0, 0, 0, 0.4);
+      z-index: 999;
+    }
+
+    @media (max-width: 768px) {
+      .sidebar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        transform: translateX(-100%);
+        height: 100vh;
+        box-shadow: 2px 0 10px rgba(0, 0, 0, 0.15);
+      }
+
+      .sidebar.show {
+        transform: translateX(0);
+      }
+    }
+
+    @media (min-width: 769px) {
+      .overlay {
+        display: none !important;
+      }
+
+      #toggleSidebar {
+        display: none;
+      }
+
+      .sidebar {
+        transform: none !important;
+        position: relative;
+      }
+    }
+
+    #admin-content {
+      background-color: #f8f9fa;
+      border-left: none;
+    }
+  </style>
+
+  <!-- 스크립트 -->
   <script th:inline="javascript">
-    $(document).ready(function() {
-		$('#toggleSidebar').on('click', function () {
-		  $('#adminSidebar').toggleClass('show');
-		  $('#sidebarOverlay').toggleClass('d-none');
-		});
+    $(document).ready(function () {
+      $('#toggleSidebar').on('click', function () {
+        $('#adminSidebar').toggleClass('show');
+        $('#sidebarOverlay').toggleClass('d-none');
+      });
 
-		// 오버레이 클릭 시 사이드바 닫기
-		$('#sidebarOverlay').on('click', function () {
-		  $('#adminSidebar').removeClass('show');
-		  $(this).addClass('d-none');
-		});
-		
-		function loadAdminPage(url) {
-			
-		  console.log("Loading admin page:", url);
-		  $.ajax({
-		    url: url,
-		    method: 'GET',
-			success: function(data) {
-			  console.log("AJAX 성공", data);
-			  $('#admin-content').html(data);
+      $('#sidebarOverlay').on('click', function () {
+        $('#adminSidebar').removeClass('show');
+        $(this).addClass('d-none');
+      });
 
-			  // ✅ URL에 따라 JS 로드
-			  if (url === '/admin/dashboard') {
-			    $('#admin-content').html(data); // 이걸 먼저 DOM에 붙이고
-
-			    // 약간의 delay 후 JS 실행 → DOM 렌더 완료 후 실행 보장
-			    setTimeout(function () {
-			      $.getScript('/js/admin_dashboard.js')
-			        .done(function () {
-			          console.log('✅ admin_dashboard.js 로딩 완료');
-			        })
-			        .fail(function () {
-			          console.error('❌ admin_dashboard.js 로드 실패');
-			        });
-			    }, 100); // 100~200ms 정도면 충분
-			  } else if (url === '/admin/products') {
-			    $.getScript('/js/admin_products.js')
-			      .done(function () {
-			        console.log('✅ admin_products.js 로딩 완료');
-			      })
-			      .fail(function () {
-			        console.error('❌ admin_products.js 로드 실패');
-			      });
-			  } else if (url === '/admin/categories') {
-			    $.getScript('/js/admin_category.js')
-			      .done(function () {
-			        console.log('✅ admin_category.js 로딩 완료');
-			      })
-			      .fail(function () {
-			        console.error('❌ admin_category.js 로드 실패');
-			      });
-			  }
-			},
-		    error: function(xhr, status, error) {
-		      console.error("AJAX 오류", status, error);
-		      $('#admin-content').html('<p style="color:red;">페이지를 불러오지 못했습니다.</p>');
-		    }
-		  });
-		}
-
+      function loadAdminPage(url) {
+        $.ajax({
+          url: url,
+          method: 'GET',
+          success: function (data) {
+            $('#admin-content').html(data);
+            setTimeout(() => {
+              if (url === '/admin/dashboard') {
+                $.getScript('/js/admin_dashboard.js');
+              } else if (url === '/admin/products') {
+                $.getScript('/js/admin_products.js');
+              } else if (url === '/admin/categories') {
+                $.getScript('/js/admin_category.js');
+              }
+            }, 100);
+          },
+          error: function () {
+            $('#admin-content').html('<p class="text-danger">페이지를 불러오지 못했습니다.</p>');
+          }
+        });
+      }
 
       // 기본 페이지 로드
       loadAdminPage('/admin/dashboard');
 
-      // 버튼 클릭 시 AJAX 요청
+      // 메뉴 클릭 시
       $(document).on('click', '.admin-link', function (e) {
         e.preventDefault();
         const url = $(this).data('url');
-
-        // active 클래스 처리
         $('.admin-link').removeClass('active');
         $(this).addClass('active');
-
-        // AJAX 로드
         loadAdminPage(url);
       });
     });
   </script>
-
-  <!-- 스타일 수정 -->
-    <style>
-      .admin-layout {
-        display: flex;
-        flex-grow: 1;
-        height: 100%;
-        overflow: hidden;
-      }
-
-      .sidebar {
-        width: 200px;
-        background-color: #f8f9fa;
-        overflow-y: auto;
-        flex-shrink: 0;
-        height: 100%;
-      }
-
-      #admin-content {
-        flex-grow: 1;
-        padding: 2rem;
-        background-color: #fff;
-        overflow-y: auto;
-      }
-
-      /* 모바일 스타일 */
-      @media (max-width: 768px) {
-        .sidebar {
-          position: fixed;
-          top: 0;
-          left: 0;
-          width: 70%;
-          height: 100vh;
-          transform: translateX(-100%);
-          transition: transform 0.3s ease;
-          z-index: 999;
-        }
-
-        .sidebar.show {
-          transform: translateX(0);
-        }
-
-        .overlay {
-          position: fixed;
-          top: 0;
-          left: 0;
-          width: 100vw;
-          height: 100vh;
-          background-color: rgba(0, 0, 0, 0.4);
-          z-index: 998;
-        }
-
-        #toggleSidebar {
-          display: block;
-        }
-      }
-
-      @media (min-width: 769px) {
-        .overlay {
-          display: none !important;
-        }
-
-        #toggleSidebar {
-          display: none;
-        }
-
-        .sidebar {
-          position: relative;
-          transform: none !important;
-        }
-      }
-    </style>
-  </div>
+</div>

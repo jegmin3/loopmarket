@@ -23,11 +23,11 @@
 		                   alt="상품 이미지" class="img-fluid object-fit-cover rounded" />
 		            </a>
 		          </td>
-		          <td>
-		            <a th:href="@{/products/{id}(id=${product.productId})}" class="text-decoration-none text-dark">
-		              <span th:text="${product.title}">상품명</span>
-		            </a>
-		          </td>
+				  <td style="width: 30%;">
+				    <a th:href="@{/products/{id}(id=${product.productId})}" class="text-decoration-none text-dark">
+				      <span th:text="${product.title}" class="two-lines">상품명</span>
+				    </a>
+				  </td>
 		          <td th:text="${#numbers.formatInteger(product.price, 3, 'COMMA')} + '원'">가격</td>
 		          <td th:text="${#temporals.format(product.createdAt, 'yyyy-MM-dd')}">등록일</td>
 
@@ -42,15 +42,23 @@
 		            </select>
 		          </td>
 
-		          <!-- 숨기기 -->
+				  <!-- 숨기기 + 삭제 -->
 				  <td>
-		            <button type="button"
-		                    class="btn btn-sm btn-outline-secondary btn-toggle-hide"
-		                    th:attr="data-id=${product.productId}"
-		                    th:text="${product.isHidden} ? '숨김 해제' : '숨김 처리'">
-		              숨김 처리
-		            </button>
-		          </td>
+				    <div class="d-flex justify-content-center gap-2">
+				      <button type="button"
+				              class="btn btn-sm btn-outline-secondary btn-toggle-hide"
+				              th:attr="data-id=${product.productId}"
+				              th:text="${product.isHidden} ? '숨김 해제' : '숨김 처리'">
+				        숨김 처리
+				      </button>
+
+				      <button type="button"
+				              class="btn btn-sm btn-outline-danger btn-delete-product"
+				              th:attr="data-id=${product.productId}">
+				        삭제
+				      </button>
+				    </div>
+				  </td>
 		        </tr>
 
 		        <!-- 판매 중 상품이 없을 경우 -->
@@ -80,21 +88,28 @@
 	        <p class="mb-1 text-muted" th:text="${#numbers.formatInteger(product.price, 3, 'COMMA')} + '원'">가격</p>
 	        <p class="mb-2 text-muted" th:text="'등록일: ' + ${#temporals.format(product.createdAt, 'yyyy-MM-dd')}">등록일</p>
 	
-	        <div class="d-flex align-items-center gap-2">
-	          <select class="form-select form-select-sm w-auto"
-	                  th:if="${!product.isHidden}"
-	                  data-status-change
-	                  th:attr="data-id=${product.productId}">
-	            <option value="ONSALE" th:selected="${product.status == 'ONSALE'}">판매중</option>
-	            <option value="RESERVED" th:selected="${product.status == 'RESERVED'}">예약중</option>
-	          </select>
-	          <button type="button"
-	                  class="btn btn-sm btn-outline-secondary btn-toggle-hide"
-	                  th:attr="data-id=${product.productId}"
-	                  th:text="${product.isHidden} ? '숨김 해제' : '숨김 처리'">
-	            숨김 처리
-	          </button>
-	        </div>
+			<div class="d-flex align-items-center gap-2 flex-wrap">
+			  <select class="form-select form-select-sm w-auto"
+			          th:if="${!product.isHidden}"
+			          data-status-change
+			          th:attr="data-id=${product.productId}">
+			    <option value="ONSALE" th:selected="${product.status == 'ONSALE'}">판매중</option>
+			    <option value="RESERVED" th:selected="${product.status == 'RESERVED'}">예약중</option>
+			  </select>
+
+			  <button type="button"
+			          class="btn btn-sm btn-outline-secondary btn-toggle-hide"
+			          th:attr="data-id=${product.productId}"
+			          th:text="${product.isHidden} ? '숨김 해제' : '숨김 처리'">
+			    숨김 처리
+			  </button>
+
+			  <button type="button"
+			          class="btn btn-sm btn-outline-danger btn-delete-product"
+			          th:attr="data-id=${product.productId}">
+			    삭제
+			  </button>
+			</div>
 	      </div>
 	    </div>
 	  </div>
@@ -105,3 +120,16 @@
 	  </div>
 	</div>
 </div>
+
+<styple>
+	.two-lines {
+	  display: -webkit-box;
+	  -webkit-line-clamp: 2;     /* 최대 2줄 */
+	  -webkit-box-orient: vertical;
+	  overflow: hidden;
+	  text-overflow: ellipsis;
+	  word-break: break-word;
+	  white-space: normal;
+	}
+	
+</styple>

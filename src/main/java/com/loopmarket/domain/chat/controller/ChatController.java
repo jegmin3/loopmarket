@@ -1,7 +1,6 @@
 package com.loopmarket.domain.chat.controller;
 
 import java.util.List;
-import java.util.Map;
 import java.util.NoSuchElementException;
 
 import javax.servlet.http.HttpSession;
@@ -14,14 +13,12 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.loopmarket.common.controller.BaseController;
 import com.loopmarket.domain.chat.dto.ChatMessageDTO;
 import com.loopmarket.domain.chat.dto.ChatMessageDTO.MessageType;
 import com.loopmarket.domain.chat.dto.ChatRoomSummaryDTO;
-import com.loopmarket.domain.chat.dto.UnreadChatDTO;
 import com.loopmarket.domain.chat.entity.ChatMessageEntity;
 import com.loopmarket.domain.chat.entity.ChatRoomEntity;
 import com.loopmarket.domain.chat.repository.ChatRoomRepository;
@@ -113,7 +110,7 @@ public class ChatController extends BaseController {
 	 */
 	@GetMapping("/start")
 	public String startChat(@RequestParam Integer targetId,
-							@RequestParam Integer productId,
+							@RequestParam Long productId,
 	                        HttpSession session,
 	                        Model model,
 	                        RedirectAttributes redirectAttributes) {
@@ -161,27 +158,6 @@ public class ChatController extends BaseController {
 	    return render("chat/chatRoom", model);
 	}
 	
-	/** 채팅하기 누르고 입장 후, 메시지를 입력했을때 방이 만들어지게 매핑된 메서드 */
-	@PostMapping("/api/create-room")
-	@ResponseBody
-	public Map<String, Object> createRoom(@RequestParam Integer targetId, @RequestParam Integer productId, HttpSession session) {
-		MemberEntity loginUser = getLoginUser();
-	    Integer userId = loginUser.getUserId();
-
-	    ChatRoomEntity room = chatService.enterRoom(userId, targetId, productId); // 여기선 생성 허용
-	    return Map.of("roomId", room.getRoomId());
-	}
-	
-	// 안읽은 메시지 반환
-    @GetMapping("/api/unread-summary")
-    @ResponseBody
-    public List<UnreadChatDTO> getUnreadSummary(HttpSession session) {
-		MemberEntity loginUser = getLoginUser();
-	    Integer userId = loginUser.getUserId();
-	    
-        return chatService.getUnreadSummariesWithLastMessage(userId);
-    }
-	
 	/** 채팅창 나가기 */
 	@PostMapping("/leave")
 	public String leaveRoom(@RequestParam Long roomId,
@@ -206,18 +182,12 @@ public class ChatController extends BaseController {
 	        return "redirect:/chat/list";
 	    }
 	    
-	    //Integer targetId = room.getUser1Id().equals(userId) ? room.getUser2Id() : room.getUser1Id();
-	    
 	    ChatMessageDTO leaveNotice = new ChatMessageDTO();
 	    leaveNotice.setType(MessageType.LEAVE);
 	    leaveNotice.setRoomId(roomId);
 	    leaveNotice.setSenderId(userId);
 	    leaveNotice.setContent("상대가 채팅방을 나갔습니다. 지금부터 보내는 메시지는 전달되지 않습니다.");
-//	    messagingTemplate.convertAndSendToUser(
-//	        targetId.toString(),
-//	        "/queue/room." + roomId,
-//	        leaveNotice
-//	    );
+
 	    // 유저별로 보내지 않음 (방 전체에 브로드캐스트)
 	    messagingTemplate.convertAndSend("/queue/room." + roomId, leaveNotice);
 
@@ -237,6 +207,7 @@ public class ChatController extends BaseController {
 		Integer userId = loginUser.getUserId();
 		
 		List<ChatRoomSummaryDTO> summaries = chatService.getChatRoomSummaries(userId);
+		
 	    model.addAttribute("chatSummaries", summaries);
 
 	    return render("chat/chatList", model);

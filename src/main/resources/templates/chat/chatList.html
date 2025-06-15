@@ -6,53 +6,92 @@
 	.chat-room-item:hover {
 	  background-color: #f8f9fa;
 	}
+	.image-stack {
+	    position: relative;
+	    width: 52px; /* 이미지 커졌으니 약간 여유 */
+	    height: 52px;
+	    margin-right: 1rem;
+	}
 
-	.chat-room-item img {
-	  border: 2px solid #dee2e6;
-	  transition: transform 0.2s ease;
+	/* 공통 스타일 */
+	.image-stack img {
+	    position: absolute;
+	    object-fit: cover;
+	    border: 2px solid #dee2e6;
+	    transition: transform 0.25s ease, z-index 0.25s ease;
+	    cursor: pointer;
 	}
-	.chat-room-item:hover img {
-	  transform: scale(1.05);
+
+	/* 프로필 이미지: 둥글고 작게, 뒤로 */
+	.image-stack img.profile {
+	    top: 0;
+	    left: 0;
+	    width: 36px;
+	    height: 36px;
+	    border-radius: 50%;
+	    z-index: 1;
 	}
+
+	/* 상품 이미지: 네모, 더 크고 앞으로 */
+	.image-stack img.product {
+	    bottom: 0;
+	    right: 0;
+	    width: 40px; /* 약간 크게 */
+		border-radius: 10px;
+	    height: 40px;
+	    opacity: 0.95;
+	    z-index: 2;
+	}
+
+	/* hover 시 강조 */
+	.image-stack img:hover {
+	    transform: scale(1.15);
+	    z-index: 3;
+	    box-shadow: 0 0 6px rgba(0,0,0,0.2);
+	}
+
 </style>
     <h4 class="mb-4">📨 나의 채팅방</h4>
 
     <!-- 채팅방 없을 경우 -->
-    <div th:if="${chatSummaries != null and #lists.isEmpty(chatSummaries)}" class="text-center text-muted mt-5">
-        <i class="bi bi-chat-dots fs-2 d-block mb-2"></i>
-        <p>참여 중인 채팅방이 없습니다.</p>
-    </div>
+	<div th:if="${chatSummaries != null and #lists.isEmpty(chatSummaries)}" class="text-center text-muted mt-5">
+	     <i class="bi bi-chat-dots fs-2 d-block mb-2"></i>
+	     <p>참여 중인 채팅방이 없습니다.</p>
+	</div>
 
     <!-- 채팅방 목록 -->
-    <div class="list-group w-100" th:if="${chatSummaries != null and !#lists.isEmpty(chatSummaries)}">
-        <a th:each="summary : ${chatSummaries}"
-           th:href="@{/chat/room/{id}(id=${summary.room.roomId})}"
-           class="list-group-item list-group-item-action py-3 d-flex align-items-center chat-room-item">
-
-           <!-- 프로필 이미지 -->
-           <img th:src="${summary.profileImagePath}"
-                alt="프로필"
-                class="rounded-circle border shadow-sm me-3 flex-shrink-0"
-                style="width: 56px; height: 56px; object-fit: cover;" />
+	<div class="list-group w-100" th:if="${chatSummaries != null and !#lists.isEmpty(chatSummaries)}">
+	    <a th:each="summary : ${chatSummaries}"
+	       th:href="@{/chat/room/{id}(id=${summary.room.roomId})}"
+	       class="list-group-item list-group-item-action py-3 d-flex align-items-center chat-room-item">
+			
+		   <!-- 프로필, 상품이미지 겹치기 -->
+		   <div class="image-stack">
+		       <img th:src="${summary.thumbnailPath}" alt="상품정보" class="product" />
+		       <img th:src="${summary.profileImagePath}" alt="프로필" class="profile" />
+		   </div>
 
            <!-- 내용 -->
-           <div class="flex-grow-1">
-               <div class="d-flex justify-content-between align-items-center">
-                   <!-- 닉네임 -->
-                   <strong class="text-dark" th:text="${summary.opponentNickname}">상대방</strong>
-               </div>
-               <!--  마지막 메시지 내용 -->
-               <div class="text-muted small text-truncate mt-1"
-                    th:id="'chat-msg-' + ${summary.room.roomId}"
-                    style="max-width: 100%;"
-                    th:text="${summary.lastMessage}">(메시지 없음)</div>
-           </div>
-           <!-- 뱃지 -->
-           <span class="badge rounded-pill bg-danger ms-3 me-2"
-                 th:id="'chat-badge-' + ${summary.room.roomId}"
-                 style="font-size: 0.75rem; display: none;">
-               <!-- JS에서 채워짐 -->
-           </span>
+		   <div class="flex-grow-1">
+		       <div class="d-flex justify-content-between align-items-center">
+		           <!-- 닉네임 + 상품명 -->
+		           <strong class="text-dark">
+		               <span th:text="${summary.opponentNickname}">상대방</span>
+		               [<span th:text="${summary.pdTitle}">상품 정보</span>]
+		           </strong>
+		       </div>
+		       <!-- 마지막 메시지 -->
+		       <div class="text-muted small text-truncate mt-1"
+		            th:id="'chat-msg-' + ${summary.room.roomId}"
+		            style="max-width: 100%;"
+		            th:text="${summary.lastMessage}">(메시지 없음)</div>
+		   </div>
+		   <!-- 뱃지 -->
+		   <span class="badge rounded-pill bg-danger ms-3 me-2"
+		         th:id="'chat-badge-' + ${summary.room.roomId}"
+		         style="font-size: 0.75rem; display: none;">
+		   </span>
+
 		   <!-- 마지막 시간 -->
 		   <small class="text-muted"
 		          th:if="${summary.lastTime != null}"
@@ -65,7 +104,7 @@
     <script>
     $(document).ready(function () {
         function updateUnreadBadgesAndMessages() {
-            $.get("/chat/api/unread-summary", function (data) {
+            $.get("/api/chat/unread-summary", function (data) {
                 data.forEach(item => {
                     const badge = $("#chat-badge-" + item.roomId);
                     const msgBox = $("#chat-msg-" + item.roomId);

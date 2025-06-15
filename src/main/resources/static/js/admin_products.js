@@ -107,60 +107,68 @@ $(document).ready(function () {
   function loadProducts(page = 0) {
     if (loading) return;
     loading = true;
-	console.log(`📥 loadProducts(${page}) 호출됨`);
+    console.log(`📥 loadProducts(${page}) 호출됨`);
     currentPage = page;
-
-    $('#product-tbody').empty();
 
     $.ajax({
       url: '/admin/api/products/paged',
       data: { page: currentPage, size: pageSize },
       method: 'GET'
     }).done(response => {
-	  console.log("📦 전체 응답:", response);
-	  console.log("📄 totalPages:", response.totalPages);
+      console.log("📦 전체 응답:", response);
+      console.log("📄 totalPages:", response.totalPages);
+
       const products = response.content || [];
       totalPages = response.totalPages || 1;
 
+      const isMobile = window.innerWidth < 768;
       const tbody = $('#product-tbody');
+      const cardList = $('#product-card-list');
+
+      // 먼저 양쪽 모두 비움
+      tbody.empty();
+      cardList.empty();
 
       if (products.length === 0) {
-        tbody.html('<tr><td colspan="5">상품이 없습니다.</td></tr>');
+        if (isMobile) {
+          cardList.html('<p>상품이 없습니다.</p>');
+        } else {
+          tbody.html('<tr><td colspan="5">상품이 없습니다.</td></tr>');
+        }
       } else {
-		
-		products.forEach(product => {
-		  const categoryName = getCategoryName(product.ctgCode);
-		  const statusName = getStatusName(product.status, product.ishidden);
-		  const thumbnail = product.thumbnailUrl || '/img.pay/kakao.png';  // 기본 썸네일 이미지
+        if (isMobile) {
+          renderProductCards(products); // 모바일 카드만 렌더링
+        } else {
+          // PC 테이블 렌더링
+          products.forEach(product => {
+            const categoryName = getCategoryName(product.ctgCode);
+            const statusName = getStatusName(product.status, product.ishidden);
+            const thumbnail = product.thumbnailUrl || '/img.pay/kakao.png';
+            const isHidden = product.ishidden;
+            const buttonLabel = isHidden ? '🔓 공개하기' : '🔒 숨기기';
+            const buttonClass = isHidden ? 'btn btn-sm btn-success' : 'btn btn-sm btn-dark';
+            const rowClass = isHidden ? 'table-secondary' : '';
+            const buttonTitle = isHidden ? '숨긴 상품을 다시 보이게 합니다' : '상품을 숨깁니다';
 
-		  const isHidden = product.ishidden;
-		  const buttonLabel = isHidden ? '🔓 공개하기' : '🔒 숨기기';
-		  const buttonClass = isHidden ? 'btn btn-sm btn-success' : 'btn btn-sm btn-dark';
-		  const rowClass = isHidden ? 'table-secondary' : '';
-		  const buttonTitle = isHidden ? '숨긴 상품을 다시 보이게 합니다' : '상품을 숨깁니다';
-
-		  const row = `
-		    <tr class="${rowClass}">
-		      <td>
-		        <img src="${thumbnail}" style="width:50px; height:auto; margin-right:5px; vertical-align: middle;">
-		        ${product.title}
-		      </td>
-		      <td>${(product.price ?? 0).toLocaleString()}원</td>
-		      <td>${categoryName}</td>
-		      <td>${statusName}</td>
-		      <td>
-		        <button class="btn btn-sm btn-danger" onclick="deleteProduct('${product.productId}')">삭제</button>
-		        <button class="${buttonClass}" title="${buttonTitle}" onclick="toggleHide('${product.productId}', ${isHidden})">
-		          ${buttonLabel}
-		        </button>
-		      </td>
-		    </tr>`;
-		  tbody.append(row);
-		});
-		
-		// 모바일 카드 UI 렌더링 호출
-		renderProductCards(products);
-		
+            const row = `
+              <tr class="${rowClass}">
+                <td class="text-start">
+                  <img src="${thumbnail}" style="width:50px; height:auto; margin-right:5px; vertical-align: middle;">
+                  ${product.title}
+                </td>
+                <td>${(product.price ?? 0).toLocaleString()}원</td>
+                <td>${categoryName}</td>
+                <td>${statusName}</td>
+                <td>
+                  <button class="btn btn-sm btn-danger" onclick="deleteProduct('${product.productId}')">삭제</button>
+                  <button class="${buttonClass}" title="${buttonTitle}" onclick="toggleHide('${product.productId}', ${isHidden})">
+                    ${buttonLabel}
+                  </button>
+                </td>
+              </tr>`;
+            tbody.append(row);
+          });
+        }
       }
 
       updatePaginationControls();

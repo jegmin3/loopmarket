@@ -1,109 +1,169 @@
-<!-- 전체 알림 관리 페이지 -->
 <div th:fragment="content">
-  <div class="container mt-5">
-    <div class="card shadow-sm">
+  <div class="container py-4" style="max-width: 720px;">
+
+    <!-- 알림 전송 카드 -->
+    <div class="card shadow-sm mb-5">
       <div class="card-body">
-        <h3 class="card-title text-center mb-4">🔔 관리자 알림 전송</h3>
+        <h2 class="fw-bold fs-4 mb-4 text-center">🔔 관리자 알림 전송</h2>
 
         <form id="adminAlramForm">
           <div class="mb-3">
-            <label for="title" class="form-label">알림 제목</label>
+            <label for="title" class="form-label">제목</label>
             <input type="text" class="form-control" id="title" name="title" required />
           </div>
 
           <div class="mb-3">
-            <label for="content" class="form-label">알림 내용</label>
-            <textarea class="form-control" id="content" name="content" rows="3" required></textarea>
+            <label for="content" class="form-label">내용</label>
+            <textarea class="form-control" id="content" name="content" rows="4" required></textarea>
           </div>
 
-          <div class="mb-3">
-            <label for="userId" class="form-label">대상 사용자 ID (비워두면 전체)</label>
+          <div class="mb-4">
+            <label for="userId" class="form-label">대상 사용자 ID <span class="text-muted">(비워두면 전체 전송)</span></label>
             <input type="number" class="form-control" id="userId" name="userId" />
           </div>
 
           <div class="d-grid">
-            <button type="submit" class="btn btn-primary">알림 전송</button>
+            <button type="submit" class="btn btn-primary py-2 fw-semibold">📨 알림 전송</button>
           </div>
         </form>
       </div>
     </div>
-  </div>
-  
-  <!-- 최근 알림 목록 -->
-  <hr class="my-5" />
-  <h5>📜 최근 관리자 알림 목록</h5>
-  <div class="table-responsive">
-    <table class="table table-bordered table-sm" id="adminAlramTable">
-      <thead class="table-light">
-        <tr>
-          <th>제목</th>
-          <th>내용</th>
-          <th>보낸사람</th>
-          <th>받은사람</th>
-          <th>보낸시간</th>
-        </tr>
-      </thead>
-      <tbody></tbody>
-    </table>
+
+    <!-- 최근 알림 목록 -->
+    <div>
+      <h2 class="fw-bold fs-4 mb-4">📜 최근 알림 내역</h2>
+      <div class="table-responsive">
+        <table class="table table-hover table-bordered align-middle text-center" id="adminAlramTable">
+          <thead class="table-light">
+            <tr>
+              <th>제목</th>
+              <th>내용</th>
+              <th>보낸사람</th>
+              <th>받은사람</th>
+              <th>보낸시간</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+
+      <!-- 페이지네이션 -->
+      <nav class="mt-4" id="alarmPagination">
+        <ul class="pagination justify-content-center flex-wrap"></ul>
+      </nav>
+    </div>
   </div>
 
-  <!-- JS: 알림 전송 -->
   <script>
-	function fetchAdminAlrams() {
-	  fetch("/admin/alram/list")
-	    .then(res => res.json())
-	    .then(list => {
-	      const tbody = document.querySelector("#adminAlramTable tbody");
-	      tbody.innerHTML = "";
-	      list.forEach(a => {
-	        const row = document.createElement("tr");
-	        row.innerHTML = `
-	          <td>${a.title}</td>
-	          <td>${a.content}</td>
-	          <td>${a.senderId ?? "관리자"}</td>
-	          <td>${a.receiverName}(ID: ${a.userId})</td>
-	          <td>${a.createdAt?.replace("T", " ").substring(0, 16) ?? "-"}</td>
-	        `;
-	        tbody.appendChild(row);
-	      });
-	    });
+    let alarmData = [];
+    let currentPage = 0;
+    const pageSize = 6;
+
+	async function fetchAdminAlrams() {
+	  try {
+	    const tbody = document.querySelector("#adminAlramTable tbody");
+	    tbody.innerHTML = `
+	      <tr>
+	        <td colspan="5" class="text-muted text-center py-3">🔄 알림 목록 불러오는 중...</td>
+	      </tr>
+	    `;
+
+	    const res = await fetch("/admin/alram/list");
+	    alarmData = await res.json();
+	    currentPage = 0;
+	    renderAdminAlrams();
+	    renderPagination();
+	  } catch (err) {
+	    console.error("알림 목록 불러오기 실패:", err);
+	    const tbody = document.querySelector("#adminAlramTable tbody");
+	    tbody.innerHTML = `
+	      <tr>
+	        <td colspan="5" class="text-danger text-center py-3">❌ 알림 불러오기 실패</td>
+	      </tr>
+	    `;
+	  }
 	}
 
-	fetchAdminAlrams(); // 최초 로드 시 호출
-	
-	// 알림 폼 제출시
-    document.getElementById("adminAlramForm").addEventListener("submit", function (e) {
+    function renderAdminAlrams() {
+      const tbody = document.querySelector("#adminAlramTable tbody");
+      tbody.innerHTML = "";
+
+      const start = currentPage * pageSize;
+      const pageItems = alarmData.slice(start, start + pageSize);
+
+      pageItems.forEach(a => {
+        const row = document.createElement("tr");
+        row.innerHTML = `
+          <td>${a.title}</td>
+          <td>${a.content}</td>
+          <td>${a.senderId ?? "관리자"}</td>
+          <td>${a.receiverName}(ID: ${a.userId})</td>
+          <td>${a.createdAt?.replace("T", " ").slice(0, 16) ?? "-"}</td>
+        `;
+        tbody.appendChild(row);
+      });
+    }
+
+    function renderPagination() {
+      const totalPages = Math.ceil(alarmData.length / pageSize);
+      const pagination = document.querySelector("#alarmPagination ul");
+      pagination.innerHTML = "";
+
+      const createPageBtn = (pageNum, label, disabled = false, active = false) => {
+        const li = document.createElement("li");
+        li.className = `page-item ${disabled ? "disabled" : ""} ${active ? "active" : ""}`;
+        const btn = document.createElement("button");
+        btn.className = "page-link";
+        btn.innerText = label;
+        btn.onclick = () => {
+          currentPage = pageNum;
+          renderAdminAlrams();
+          renderPagination();
+        };
+        li.appendChild(btn);
+        return li;
+      };
+
+      // Prev
+      pagination.appendChild(createPageBtn(currentPage - 1, "이전", currentPage === 0));
+
+      // Numbered pages
+      for (let i = 0; i < totalPages; i++) {
+        pagination.appendChild(createPageBtn(i, i + 1, false, i === currentPage));
+      }
+
+      // Next
+      pagination.appendChild(createPageBtn(currentPage + 1, "다음", currentPage >= totalPages - 1));
+    }
+
+    // 초기 로드
+    fetchAdminAlrams();
+
+    // 알림 전송
+    document.getElementById("adminAlramForm").addEventListener("submit", async function (e) {
       e.preventDefault();
-
       const form = e.target;
-	  const data = {
-	    title: form.elements["title"]?.value.trim(),
-	    content: form.elements["content"]?.value.trim(),
-	    url: form.elements["url"]?.value.trim() || null,
-	    userId: form.elements["userId"]?.value.trim()
-	      ? parseInt(form.elements["userId"].value.trim())
-	      : null
-	  };
+      const data = {
+        title: form.title.value.trim(),
+        content: form.content.value.trim(),
+        userId: form.userId.value.trim() ? parseInt(form.userId.value.trim()) : null
+      };
 
-      fetch("/admin/alram/send", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify(data)
-      })
-        .then(response => {
-          if (!response.ok) throw new Error("전송 실패");
-          return response.text();
-        })
-        .then(result => {
-          alert("알림 전송 완료");
-          form.reset();
-        })
-        .catch(err => {
-          console.error("알림 전송 오류:", err);
-          alert("전송 중 오류가 발생했습니다");
+      try {
+        const res = await fetch("/admin/alram/send", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(data)
         });
+
+        if (!res.ok) throw new Error("전송 실패");
+        alert("✅ 알림 전송 완료");
+        form.reset();
+        fetchAdminAlrams();
+      } catch (err) {
+        console.error("전송 오류:", err);
+        alert("❌ 알림 전송 실패");
+      }
     });
   </script>
 </div>

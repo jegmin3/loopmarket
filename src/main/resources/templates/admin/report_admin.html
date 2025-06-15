@@ -1,192 +1,115 @@
-<div id="admin-content" th:fragment="content">
-    <h2 class="reportPage">신고 관리</h2>
+<div th:fragment="content">
+  <div class="container py-4" th:if="${reports != null}">
+    <h2 class="fw-bold fs-4 mb-4">🚨 신고 관리</h2>
 
-    <div th:if="${reports != null}">
-        <!-- 신고 없을 때 -->
-        <div th:if="${#lists.isEmpty(reports.content)}" class="text-center text-muted py-4">
-            신고된 내역이 없습니다.
-        </div>
-
-        <!-- 신고 있을 때 -->
-        <div th:if="${!#lists.isEmpty(reports.content)}">
-            <!-- PC용 테이블 -->
-            <div class="table-responsive d-none d-md-block">
-                <table class="table table-bordered align-middle text-center">
-					<colgroup>
-				        <col style="width: 5%;">
-				        <col style="width: 18%;">
-				        <col style="width: 9%;">
-				        <col style="width: 10%;">
-				        <col style="width: 30%;">
-				        <col style="width: 12%;">
-				        <col style="width: 9%;">
-				        <col style="width: 7%;">
-				    </colgroup>
-                    <thead class="table-light">
-                        <tr>
-                            <th>신고 ID</th>
-                            <th>상품</th>
-                            <th>신고자</th>
-                            <th>신고 사유</th>
-                            <th>상세 내용</th>
-                            <th>신고일</th>
-                            <th>처리 상태</th>
-                            <th>작업</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr th:each="report : ${reports.content}">
-                            <td th:text="${report.reportId}">1</td>
-                            <td th:text="${report.productTitle != null ? report.productTitle : 'N/A'}">상품 ID</td>
-                            <td th:text="${report.nickname}">신고자</td>
-                            <td th:text="${report.reason}">사유</td>
-                            <td>
-                                <div class="detail-content" th:text="${report.detail}">내용</div>
-                            </td>
-                            <td th:text="${#temporals.format(report.createdAt, 'yyyy-MM-dd HH:mm')}">날짜</td>
-                            <td>
-                                <span th:text="${report.processed ? '처리완료' : '대기중'}"
-                                      th:classappend="${report.processed ? 'text-success' : 'text-danger'}">
-                                    상태
-                                </span>
-                            </td>
-                            <td>
-                                <a th:href="@{/admin/reports/{id}(id=${report.reportId})}" class="btn btn-sm btn-outline-primary">
-                                    답변 작성
-                                </a>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-
-            <!-- 모바일용 카드 리스트 -->
-            <div class="d-md-none">
-                <div th:each="report : ${reports.content}" class="card mb-3 shadow-sm">
-                    <div class="card-body">
-                        <h5 class="card-title mb-2">신고 ID: <span th:text="${report.reportId}">1</span></h5>
-                        <p class="mb-1"><strong>상품:</strong> <span th:text="${report.productTitle != null ? report.productTitle : 'N/A'}">상품명</span></p>
-                        <p class="mb-1"><strong>신고자:</strong> <span th:text="${report.nickname}">닉네임</span></p>
-                        <p class="mb-1"><strong>신고 사유:</strong> <span th:text="${report.reason}">사유</span></p>
-                        <p class="mb-1"><strong>상세 내용:</strong> 
-                            <span class="detail-content" th:text="${report.detail}">내용</span>
-                        </p>
-                        <p class="mb-1"><strong>신고일:</strong> <span th:text="${#temporals.format(report.createdAt, 'yyyy-MM-dd HH:mm')}">날짜</span></p>
-                        <p class="mb-1">
-                            <strong>처리 상태:</strong>
-                            <span th:text="${report.processed ? '처리완료' : '대기중'}"
-                                  th:classappend="${report.processed ? 'text-success' : 'text-danger'}">
-                            상태
-                            </span>
-                        </p>
-                        <a th:href="@{/admin/reports/{id}(id=${report.reportId})}" class="btn btn-primary btn-sm mt-2 w-100">
-                            답변 작성
-                        </a>
-                    </div>
-                </div>
-            </div>
-
-            <!-- 페이징 -->
-            <nav th:if="${reports.totalPages > 1}" class="mt-4">
-                <ul class="pagination justify-content-center flex-wrap">
-                    <li class="page-item" th:classappend="${reports.first} ? 'disabled'">
-                        <a href="#" class="page-link ajax-page-link" th:data-url="@{/admin/reports(page=${reports.number - 1})}">이전</a>
-                    </li>
-                    <li class="page-item" 
-                        th:each="i : ${#numbers.sequence(0, reports.totalPages - 1)}"
-                        th:classappend="${i == reports.number} ? 'active'">
-                        <a href="#" class="page-link ajax-page-link" th:data-url="@{/admin/reports(page=${i})}" th:text="${i + 1}">1</a>
-                    </li>
-                    <li class="page-item" th:classappend="${reports.last} ? 'disabled'">
-                        <a href="#" class="page-link ajax-page-link" th:data-url="@{/admin/reports(page=${reports.number + 1})}">다음</a>
-                    </li>
-                </ul>
-            </nav>
-        </div>
+  <div th:if="${reports != null}">
+    <!-- 신고 없을 때 -->
+    <div th:if="${#lists.isEmpty(reports.content)}" class="text-center text-muted py-4">
+      신고된 내역이 없습니다.
     </div>
-    <script src="/js/admin_report.js"></script>
+
+    <!-- 신고 있을 때 -->
+    <div th:if="${!#lists.isEmpty(reports.content)}">
+      <!-- PC용 테이블 -->
+      <div class="table-responsive d-none d-md-block">
+        <table class="table table-hover align-middle text-center border rounded shadow-sm">
+          <thead class="table-light">
+            <tr class="align-middle">
+              <th>신고 ID</th>
+              <th class="text-start">상품</th>
+              <th>신고자</th>
+              <th class="text-start">신고 사유</th>
+              <th class="text-start">상세 내용</th>
+              <th>신고일</th>
+              <th>처리 상태</th>
+              <th>작업</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr th:each="report : ${reports.content}">
+              <td th:text="${report.reportId}">1</td>
+              <td class="text-start" th:text="${report.productTitle ?: 'N/A'}">상품</td>
+              <td th:text="${report.nickname}">닉네임</td>
+              <td class="text-start" th:text="${report.reason}">사유</td>
+              <td class="text-start">
+                <div class="text-truncate" style="max-width: 260px;" th:text="${report.detail}">내용</div>
+              </td>
+              <td th:text="${#temporals.format(report.createdAt, 'yyyy-MM-dd HH:mm')}">날짜</td>
+              <td>
+				<span class="fw-semibold"
+				      th:classappend="${report.processed} ? ' text-success' : ' text-danger'">
+				    <span th:text="${report.processed ? '처리완료' : '대기중'}">상태</span>
+				</span>
+                </span>
+              </td>
+              <td>
+                <a th:href="@{/admin/reports/{id}(id=${report.reportId})}" class="btn btn-sm btn-outline-primary">
+                  답변 작성
+                </a>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- 모바일 카드 리스트 -->
+      <div class="d-md-none">
+        <div th:each="report : ${reports.content}" class="card mb-3 shadow-sm">
+          <div class="card-body">
+            <h6 class="card-title mb-2 fw-bold">
+              신고 ID: <span th:text="${report.reportId}">1</span>
+            </h6>
+            <p><strong>상품:</strong> <span th:text="${report.productTitle ?: 'N/A'}">상품명</span></p>
+            <p><strong>신고자:</strong> <span th:text="${report.nickname}">닉네임</span></p>
+            <p><strong>사유:</strong> <span th:text="${report.reason}">사유</span></p>
+            <p><strong>상세 내용:</strong> 
+              <span class="detail-content" th:text="${report.detail}">내용</span>
+            </p>
+            <p><strong>신고일:</strong> <span th:text="${#temporals.format(report.createdAt, 'yyyy-MM-dd HH:mm')}">날짜</span></p>
+            <p><strong>처리 상태:</strong>
+              <span th:text="${report.processed ? '처리완료' : '대기중'}"
+                    th:classappend="${report.processed ? 'text-success' : 'text-danger'}">
+              상태</span>
+            </p>
+            <a th:href="@{/admin/reports/{id}(id=${report.reportId})}"
+               class="btn btn-outline-primary btn-sm w-100">답변 작성</a>
+          </div>
+        </div>
+      </div>
+
+      <!-- 페이징 -->
+      <nav th:if="${reports.totalPages > 1}" class="mt-4">
+        <ul class="pagination justify-content-center flex-wrap">
+          <li class="page-item" th:classappend="${reports.first} ? 'disabled'">
+            <a href="#" class="page-link ajax-page-link"
+               th:data-url="@{/admin/reports(page=${reports.number - 1})}">이전</a>
+          </li>
+          <li class="page-item"
+              th:each="i : ${#numbers.sequence(0, reports.totalPages - 1)}"
+              th:classappend="${i == reports.number} ? 'active'">
+            <a href="#" class="page-link ajax-page-link"
+               th:data-url="@{/admin/reports(page=${i})}" th:text="${i + 1}">1</a>
+          </li>
+          <li class="page-item" th:classappend="${reports.last} ? 'disabled'">
+            <a href="#" class="page-link ajax-page-link"
+               th:data-url="@{/admin/reports(page=${reports.number + 1})}">다음</a>
+          </li>
+        </ul>
+      </nav>
+    </div>
+  </div>
+  <script src="/js/admin_report.js"></script>
 </div>
 
 <style>
-    /* 테이블 각 칼럼 텍스트 정렬 명확히 지정 */
-    table.table th, table.table td {
-        vertical-align: middle !important;
-    }
-
-    table.table tbody tr {
-        min-height: 60px; /* 최소 높이만 지정, 고정 height 제거 */
-        height: auto;
-    }
-
-    /* 각 컬럼별 텍스트 정렬 */
-    table.table th:nth-child(1), table.table td:nth-child(1) { /* 신고 ID */
-        text-align: center;
-        width: 6%;
-    }
-    table.table th:nth-child(2), table.table td:nth-child(2) { /* 상품 */
-        text-align: left;
-        width: 18%;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-    }
-    table.table th:nth-child(3), table.table td:nth-child(3) { /* 신고자 */
-        text-align: center;
-        width: 10%;
-    }
-    table.table th:nth-child(4), table.table td:nth-child(4) { /* 신고 사유 */
-        text-align: left;
-        width: 15%;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-    }
-
-    table.table td:nth-child(5) {
-        max-width: 300px;
-        padding: 0.75rem; /* 기본 테이블 패딩 유지 */
-    }
-
-    /* 상세 내용 div 별도 처리 */
-	.detail-content {
-	    display: -webkit-box;
-	    -webkit-box-orient: vertical;
-	    -webkit-line-clamp: 1;
-	    line-clamp: 1; /* 표준 속성 */
-	    overflow: hidden;
-	    text-overflow: ellipsis;
-	    white-space: normal;
-	}
-
-    table.table th:nth-child(6), table.table td:nth-child(6) { /* 신고일 */
-        text-align: center;
-        width: 12%;
-    }
-    table.table th:nth-child(7), table.table td:nth-child(7) { /* 처리 상태 */
-        text-align: center;
-        width: 10%;
-    }
-    table.table th:nth-child(8), table.table td:nth-child(8) { /* 작업 */
-        text-align: center;
-        width: 10%;
-    }
-
-    /* 모바일 카드 상세 내용 영역 높이 제한 및 overflow */
-	#admin-content .card .detail-content {
-	    max-height: 40px;
-	    overflow: hidden;
-	    text-overflow: ellipsis;
-	    display: -webkit-box;
-	    -webkit-line-clamp: 1; /* ⬅ 2줄만 표시하고 자르기 */
-	    -webkit-box-orient: vertical;
-	    word-wrap: break-word;
-	    white-space: normal;
-	}
-	
-	table.table {
-	    table-layout: fixed;
-	    width: 100%;
-	}
-	
-	
+  .detail-content {
+    max-height: 40px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-line-clamp: 1;
+    -webkit-box-orient: vertical;
+    word-break: break-word;
+    white-space: normal;
+  }
 </style>

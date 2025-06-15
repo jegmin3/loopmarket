@@ -38,7 +38,9 @@
           <label class="form-check-label" for="autoLogin">자동 로그인</label>
         </div>
       </div>
-
+	  
+	  <!-- CSRF 토큰 자동 생성 -->
+	  <!--<input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />-->
       <!-- 🔸 로그인 버튼 -->
       <div class="d-grid gap-2">
         <button type="submit" class="btn btn-primary">

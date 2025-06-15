@@ -1,11 +1,11 @@
 package com.loopmarket.domain.chat.controller;
 
 import lombok.RequiredArgsConstructor;
+
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Controller;
-
 import com.loopmarket.domain.alram.AlramDTO;
 import com.loopmarket.domain.alram.AlramService;
 import com.loopmarket.domain.chat.dto.ChatMessageDTO;
@@ -34,19 +34,29 @@ public class ChatSocketController {
 	private final MemberRepository memberRepository;
 	private final ChatRoomRepository chatRoomRepository;
 	private final AlramService alramService;
-
+	private final SimpMessagingTemplate simpMessagingTemplate;
+	
 	/**
 	 * 클라이언트로부터 채팅 메시지를 수신 - 경로: /app/chat.send
 	 */
 	@MessageMapping("/chat.send")
 	public void handleChatMessage(ChatMessageDTO messageDTO) {
 		// 메시지 저장
-		ChatMessageEntity saved = chatService.saveMessage(messageDTO.getRoomId(), messageDTO.getSenderId(),
-				messageDTO.getContent());
-
+		ChatMessageEntity saved = chatService.saveMessage(
+				messageDTO.getRoomId(), 
+				messageDTO.getSenderId(),
+				messageDTO.getContent(),
+				messageDTO.getImageUrl());
+		
+		// 저장된 엔티티를 DTO로 변환.
 		// 응답 메시지 구성 (timestamp, 읽음 여부 포함)
 		ChatMessageDTO dto = ChatMessageDTO.fromEntity(saved, MessageType.CHAT);
-
+	    // 2. 저장된 Entity를 DTO로 변환해 전송 (imageUrl 포함된 DTO)
+	    simpMessagingTemplate.convertAndSend(
+	        "/queue/room." + saved.getRoomId(),
+	        ChatMessageDTO.fromEntity(saved, MessageType.CHAT)
+	    );
+		
 		// --------------알림용 로직-----------------
 		// 0. 채팅방 정보 조회 후 수신자 ID 계산
 		ChatRoomEntity room = chatRoomRepository.findById(saved.getRoomId())
@@ -91,7 +101,6 @@ public class ChatSocketController {
 		} else { System.out.println("알림 전송 생략 (상대방이 이미 방에 있음)"); } 
 
 		// ----------------알림용 로직 끝-----------------
-
 		// 채팅방 구독자에게 메시지 전송(브로드캐스트)
 		messagingTemplate.convertAndSend("/queue/room." + saved.getRoomId(), dto);
 	}
@@ -138,7 +147,7 @@ public class ChatSocketController {
 //	    );
 		// 유저별로 보내지 않음 (방 전체에 브로드캐스트)
 		messagingTemplate.convertAndSend("/queue/room." + roomId, readMsg);
-
 	}
+
 
 }

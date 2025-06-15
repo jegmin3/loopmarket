@@ -93,6 +93,7 @@
 			<div class="d-flex justify-content-between align-items-center">
         <h4 class="fw-bold mb-1">
           <span th:if="${product.status == 'RESERVED'}" class="text-success me-1">예약</span>
+          <span th:if="${product.status == 'SOLD'}" class="badge bg-secondary me-2">판매완료</span>
           <span th:text="${product.title}">상품 제목</span>
         </h4>
 
@@ -152,19 +153,22 @@
                 <strong>거래 방식:</strong> 나눔
               </li>
 
-              <li><strong>거래 위치:</strong><span th:text="${product.locationText}">부산진구 전포동</span>
-              </li>
-            </ul>
+			  <li th:if="${!product.deliveryOnly}">
+			    <strong>거래 위치:</strong>
+			    <span th:text="${product.locationText}">부산진구 전포동</span>
+			  </li>
+			  </ul>
 
-            <!-- 지도 -->
-            <div id="map" style="width: 100%; height: 180px;" class="rounded my-3"></div>
+			  <!-- 지도 -->
+			  <div id="map" th:if="${!product.deliveryOnly}"
+			       style="width: 100%; height: 180px;" class="rounded my-3"></div>
 
             <!-- 버튼 영역 -->
             <div class="product-detail-buttons d-flex flex-column gap-2 mt-4">
 
               <div class="d-flex gap-2 justify-content-between mt-3">
                 <!-- 찜하기 -->
-                <button type="button" class="btn btn-outline-danger flex-grow-1">
+                <button type="button" class="btn btn-outline-danger1 btn-like flex-grow-1">
                   <i id="heart-icon" class="bi bi-heart"></i> 찜하기
                 </button>
 
@@ -182,7 +186,7 @@
               <!-- 택배로 구매하기 -->
               <a th:if="${product.status == 'ONSALE' and (product.isDelivery ?: false)}"
                  th:href="@{/pay/checkout(productId=${product.productId})}"
-                 class="btn btn-outline-success w-100 text-center">
+                 class="btn btn-outline-success1 w-100 text-center">
                 택배로 구매하기
               </a>
 
@@ -222,14 +226,20 @@
                   </div>
                 </div>
 
-                <div class="position-absolute top-0 start-0 z-20" style="padding: 4px;">
-                  <div th:replace="fragment/status_badge :: statusBadge(${p.status})"></div>
-                </div>
+				<div class="position-absolute top-0 start-0 z-20" style="padding: 4px;">
+					<div th:replace="fragment/status_badge :: badges(
+					  status=${p.status},
+					  isDelivery=${p.isDelivery},
+					  isBest=${p.isBest},
+					  price=${p.price}
+					)"></div>
+				</div>
 
                 <div class="card-body">
                   <h6 class="card-title fw-bold text-truncate" th:text="${p.title}">상품명</h6>
                   <p class="card-text small text-muted">
-                    <span th:text="${#numbers.formatInteger(p.price, 3, 'COMMA')} + '원'">가격</span> |
+					  <span th:if="${p.saleType == 'DONATION'}">나눔</span>
+					  <span th:unless="${p.saleType == 'DONATION'}" th:text="${#numbers.formatInteger(p.price, 0, 'COMMA')} + '원'"></span> |
                     <span th:text="${p.relativeTime}">시간</span>
                   </p>
                 </div>
@@ -269,17 +279,23 @@
                   </div>
                 </div>
 
-                <!-- 상태 뱃지 -->
-                <div class="position-absolute top-0 start-0 z-20" style="padding: 4px;">
-                  <div th:replace="fragment/status_badge :: statusBadge(${s.status})"></div>
-                </div>
+				<div class="position-absolute top-0 start-0 z-20" style="padding: 4px;">
+					<div th:replace="fragment/status_badge :: badges(
+					  status=${s.status},
+					  isDelivery=${s.isDelivery},
+					  isBest=${s.isBest},
+					  price=${s.price}
+					)"></div>
+				</div>
 
                 <div class="card-body">
                   <h6 class="card-title fw-bold text-truncate" th:text="${s.title}">상품명</h6>
-                  <p class="card-text small text-muted">
-                    <span th:text="${#numbers.formatInteger(s.price, 3, 'COMMA')} + '원'">가격</span> |
-                    <span th:text="${s.relativeTime}">시간</span>
-                  </p>
+				  <p class="card-text small text-muted">
+				    <span th:if="${s.price == 0 or s.price == null}">나눔</span>
+				    <span th:unless="${s.price == 0 or s.price == null}"
+				          th:text="${#numbers.formatInteger(s.price, 0, 'COMMA')} + '원'">가격</span> |
+				    <span th:text="${s.relativeTime}">시간</span>
+				  </p>
                 </div>
 
               </div>

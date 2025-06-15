@@ -1,37 +1,53 @@
 <div th:fragment="content">
+  <!-- 여기만 수정됨 -->
   <div class="container py-4">
-    <h2 class="mb-4 text-center">카테고리 관리</h2>
+    <h2 class="fw-bold fs-4 mb-4" style="text-align: center;">📂 카테고리 관리</h2>
 
     <!-- 대분류 추가 -->
-    <div class="mb-4 row g-2 align-items-center justify-content-center">
-      <div class="col-12 col-sm-6 col-md-4">
-        <input type="text" id="newRootCategoryName" class="form-control" placeholder="대분류명 입력" aria-label="대분류명 입력">
-      </div>
-      <div class="col-auto">
-        <button id="addRootCategoryBtn" class="btn btn-success w-100">대분류 추가</button>
+    <div class="card mb-4 shadow-sm" style="max-width: 900px; margin: 0 auto;">
+      <div class="card-body">
+        <h5 class="mb-3 fw-semibold">➕ 대분류 추가</h5>
+        <div class="row g-2">
+          <div class="col-md-9 col-sm-8">
+            <input type="text" id="newRootCategoryName" class="form-control" placeholder="대분류명 입력">
+          </div>
+          <div class="col-md-3 col-sm-4">
+            <button id="addRootCategoryBtn" class="btn btn-success w-100">추가</button>
+          </div>
+        </div>
       </div>
     </div>
 
     <!-- 하위 카테고리 추가 -->
-    <div class="mb-4 row g-2 align-items-center justify-content-center">
-      <div class="col-12 col-sm-6 col-md-3">
-        <select id="parentCategorySelect" class="form-select" aria-label="상위 카테고리 선택">
-          <option value="" disabled selected>-- 상위 카테고리 선택 --</option>
-        </select>
-      </div>
-      <div class="col-12 col-sm-6 col-md-4">
-        <input type="text" id="newCategoryName" class="form-control" placeholder="새 카테고리명 입력" aria-label="새 카테고리명 입력">
-      </div>
-      <div class="col-auto">
-        <button id="addCategoryBtn" class="btn btn-primary w-100">하위 카테고리 추가</button>
+    <div class="card mb-4 shadow-sm" style="max-width: 900px; margin: 0 auto;">
+      <div class="card-body">
+        <h5 class="mb-3 fw-semibold">📁 하위 카테고리 추가</h5>
+        <div class="row g-2">
+          <div class="col-md-4 col-sm-12">
+            <select id="parentCategorySelect" class="form-select">
+              <option value="" disabled selected>-- 상위 카테고리 선택 --</option>
+            </select>
+          </div>
+          <div class="col-md-5 col-sm-8">
+            <input type="text" id="newCategoryName" class="form-control" placeholder="새 카테고리명 입력">
+          </div>
+          <div class="col-md-3 col-sm-4">
+            <button id="addCategoryBtn" class="btn btn-primary w-100">추가</button>
+          </div>
+        </div>
       </div>
     </div>
 
     <!-- 카테고리 목록 -->
-    <ul id="categoryList" class="container w-100 mx-auto" style="max-width: 720px;">
-      <!-- 동적 렌더링 -->
-    </ul>
-  </div>
+    <div class="card shadow-sm" style="max-width: 900px; margin: 0 auto;">
+      <div class="card-body">
+        <h5 class="mb-3 fw-semibold">📦 카테고리 목록</h5>
+        <div id="categoryList">
+          <!-- JS로 렌더링 -->
+        </div>
+      </div>
+    </div>
 
-  <script src="/js/admin_category.js"></script>
+    <script src="/js/admin_category.js"></script>
+  </div>
 </div>

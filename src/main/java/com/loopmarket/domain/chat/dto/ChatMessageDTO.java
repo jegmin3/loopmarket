@@ -26,8 +26,8 @@ public class ChatMessageDTO {
     private String timestamp; // ISO 포맷 시간 문자열 (서버에서 응답 시 사용)
     private boolean read;     // 읽음 여부 (서버에서 클라이언트에게 알림 시)
     private Long msgId; // 메시지 아이디
-    private boolean isMine;
-    //private LocalDateTime sentAt;
+    private boolean isMine; // 내가 전송한 메시지인지
+    private String imageUrl; // 이미지 경로, null 허용
     /**
      * 메시지 유형 열거형
      */
@@ -44,6 +44,7 @@ public class ChatMessageDTO {
                 .roomId(msg.getRoomId())
                 .senderId(msg.getSenderId())
                 .content(msg.getContent())
+                .imageUrl(msg.getImageUrl())
                 .timestamp(msg.getSentAt().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME))
                 .read(msg.isRead())
                 .type(type) //타입 주입

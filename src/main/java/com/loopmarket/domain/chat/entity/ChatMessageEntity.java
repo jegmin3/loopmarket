@@ -32,16 +32,23 @@ public class ChatMessageEntity {
     // FK: 보낸 사람 ID
     @Column(name = "sender_id", nullable = false)
     private Integer senderId;
-
+    
+    // 메시지 내용
     @Column(name = "content", columnDefinition = "TEXT", nullable = false)
     private String content;
-
+    
+    // 읽음 상태
     @Builder.Default
     @Column(name = "is_read", nullable = false)
     private boolean isRead = false;
-
+    
+    // 보낸 시간
     @Column(name = "sent_at", updatable = false)
     private LocalDateTime sentAt;
+    
+    // 이미지 전송 및 저장용
+    @Column(name = "image_url")
+    private String imageUrl;
 
     @PrePersist
     protected void onCreate() {

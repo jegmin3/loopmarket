@@ -63,21 +63,22 @@ if (!window.noticeScriptInitialized) {
             });
     	});
 		// 수정
-        $(document).on('click', '.btn-warning', function (e) {
-            e.preventDefault();
-            const url = $(this).attr('href');
+		$(document).on('click', '.edit-btn', function (e) {
+		    e.preventDefault();
+		    const noticeId = $(this).data('id');
+		    const url = '/admin/notice/edit/' + noticeId;
 
-            $.ajax({
-                url: url,
-                method: 'GET',
-                success: function (data) {
-                    $('#admin-content').html(data);
-                },
-                error: function () {
-                    alert('수정 폼을 불러오는 데 실패했습니다.');
-                }
-            });
-        });
+		    $.ajax({
+		        url: url,
+		        method: 'GET',
+		        success: function (data) {
+		            $('#admin-content').html(data);
+		        },
+		        error: function () {
+		            alert('수정 폼을 불러오는 데 실패했습니다.');
+		        }
+		    });
+		});
 		// 삭제
         $(document).on('click', '.delete-btn', function () {
             const noticeId = $(this).data('id');
@@ -106,6 +107,10 @@ if (!window.noticeScriptInitialized) {
 		    const url = $(this).attr('href');
 
 		    loadAdminPage(url);  // 위에 정의된 공용 AJAX 로더 함수
+		});
+		
+		$(document).on('click', '#cancelBtn', function () {
+		    loadAdminPage('/admin/notice');
 		});
     });
 }

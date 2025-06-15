@@ -1,5 +1,6 @@
 package com.loopmarket.domain.member;
 
+import java.io.Serializable;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
@@ -16,7 +17,10 @@ import lombok.Getter;
 import lombok.*;
 
 /** 엔티티는 DB와 연결, 저장/조회만 하도록..
- *  즉 내부용 입니다. */
+ *  즉 내부용 입니다.
+ *  로그인시 Entity 저장로직을 수정하기는 어려울것 같아
+ *  Redis를 사용하였습니다
+ *  (세션 객체 직렬화 위해 Serializable impliment하였음) */
 @Entity
 @Getter
 @Setter
@@ -24,9 +28,10 @@ import lombok.*;
 @AllArgsConstructor
 @Builder
 @Table(name = "users")
-public class MemberEntity {
-
-    @Id
+public class MemberEntity implements Serializable {
+	
+    private static final long serialVersionUID = 1L;
+	@Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer userId;
 

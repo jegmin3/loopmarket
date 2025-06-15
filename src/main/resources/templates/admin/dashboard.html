@@ -1,72 +1,81 @@
+<!-- 관리자 대시보드 -->
 <div th:fragment="content">
   <div class="container py-4">
-    <h2 class="mb-4 text-center">관리자 대시보드</h2>
+	<h2 class="fw-bold fs-4 mb-4">📊 관리자 대시보드</h2>
 
-	<!-- HTML 예시: 로딩 표시 엘리먼트들 -->
-	<div id="loadingTodayLogin" style="display:none;">오늘 로그인 수 로딩중...</div>
-	<div id="loadingWeeklyLogin" style="display:none;">주간 로그인 통계 로딩중...</div>
-	<div id="loadingWeeklyJoin" style="display:none;">주간 가입자 통계 로딩중...</div>
-	<div id="loadingWeeklyProduct" style="display:none;">주간 상품 등록 통계 로딩중...</div>
-	<div id="loadingTotalProduct" style="display:none;">전체 상품 수 로딩중...</div>
-	<div id="loadingCategoryProduct" style="display:none;">카테고리별 상품 수 로딩중...</div>
-	<div id="loadingTradeStats" style="display:none;">거래 성사율 로딩중...</div>
-	
-    <!-- 1. 오늘 로그인 수 + 주간 로그인 통계 -->
-    <div class="row mb-4">
-      <div class="col-12 col-md-4 mb-3 mb-md-0">
-        <div class="card h-100">
-          <div class="card-body text-center">
-            <h6 class="mb-2">오늘 로그인한 유저 수</h6>
-            <h2 id="todayLoginCount" class="fw-bold">0명</h2>
-          </div>
-        </div>
-      </div>
-      <div class="col-12 col-md-8">
-        <div class="card h-100 p-3">
-          <h6 class="text-center">최근 7일간 로그인 통계</h6>
-          <canvas id="weeklyLoginChart" style="width: 100%; max-height: 300px;"></canvas>
-        </div>
-      </div>
-    </div>
+    <!-- 로딩 표시 (숨김 처리) -->
+    <div id="loadingTodayLogin" class="text-muted small mb-2" style="display:none;">오늘 로그인 수 로딩중...</div>
+    <div id="loadingWeeklyLogin" class="text-muted small mb-2" style="display:none;">주간 로그인 통계 로딩중...</div>
+    <div id="loadingWeeklyJoin" class="text-muted small mb-2" style="display:none;">주간 가입자 통계 로딩중...</div>
+    <div id="loadingWeeklyProduct" class="text-muted small mb-2" style="display:none;">주간 상품 등록 통계 로딩중...</div>
+    <div id="loadingTotalProduct" class="text-muted small mb-2" style="display:none;">전체 상품 수 로딩중...</div>
+    <div id="loadingCategoryProduct" class="text-muted small mb-2" style="display:none;">카테고리별 상품 수 로딩중...</div>
+    <div id="loadingTradeStats" class="text-muted small mb-2" style="display:none;">거래 성사율 로딩중...</div>
 
-    <!-- 2. 가입자 수 / 등록 상품 수 -->
+	<!-- 1. 로그인 현황 -->
+	    <div class="row mb-4">
+	      <div class="col-md-4 mb-3 mb-md-0">
+	        <div class="card h-100 shadow-sm">
+	          <div class="card-body d-flex flex-column justify-content-center align-items-center text-center h-100">
+	            <h6 class="fw-semibold mb-3">오늘 로그인 수</h6>
+	            <p id="todayLoginCount" class="fw-bold fs-3 text-dark mb-2">0명</p>
+	            <p id="todayTradeSummary" class="fw-semibold text-muted">오늘 거래 성사율 로딩중...</p>
+	          </div>
+	        </div>
+	      </div>
+	      <div class="col-md-8">
+	        <div class="card h-100 p-3 shadow-sm">
+	          <h6 class="text-center fw-semibold mb-3">최근 7일간 로그인 통계</h6>
+	          <canvas id="weeklyLoginChart" style="width: 100%; max-height: 300px;"></canvas>
+	        </div>
+	      </div>
+	    </div>
+
+    <!-- 2. 가입자/상품 등록 -->
     <div class="row mb-4">
-      <div class="col-12 col-md-6 mb-3 mb-md-0">
-        <div class="card p-3 h-100">
-          <h6 class="text-center">한 달간 전체 가입자 수</h6>
-          <h2 class="text-center" id="totalJoinCount">0명</h2>
+      <div class="col-md-6 mb-3 mb-md-0">
+        <div class="card p-3 h-100 shadow-sm">
+          <h6 class="text-center fw-semibold mb-2">한 달간 전체 가입자 수</h6>
+          <h2 class="text-center fw-bold" id="totalJoinCount">0명</h2>
           <canvas id="userChart" style="width: 100%; max-height: 280px;"></canvas>
         </div>
       </div>
-      <div class="col-12 col-md-6">
-        <div class="card p-3 h-100">
-          <h6 class="text-center">한 달간 전체 상품 등록 수</h6>
-          <h2 class="text-center" id="totalProductCount">0개</h2>
+      <div class="col-md-6">
+        <div class="card p-3 h-100 shadow-sm">
+          <h6 class="text-center fw-semibold mb-2">한 달간 전체 상품 등록 수</h6>
+          <h2 class="text-center fw-bold" id="totalProductCount">0개</h2>
           <canvas id="productChart" style="width: 100%; max-height: 280px;"></canvas>
         </div>
       </div>
     </div>
 
-    <!-- 3. 카테고리별 상품 등록 (도넛 차트) -->
-    <div class="card mb-4 p-3">
-      <h6 class="text-center">카테고리별 상품 등록</h6>
+    <!-- 3. 카테고리별 상품 등록 -->
+    <div class="card p-3 mb-4 shadow-sm">
+      <h6 class="text-center fw-semibold mb-3">카테고리별 상품 등록</h6>
       <div class="chart-container" style="position: relative; width: 100%;">
         <canvas id="categoryChart" style="width: 100%; max-height: 400px;"></canvas>
       </div>
     </div>
 
-    <!-- 4. 거래 성사율 (파이 차트) -->
-    <div class="card mb-4 p-3">
-      <h6 class="text-center">거래 성사율</h6>
-      <canvas id="tradePieChart" style="width: 100%; max-height: 400px;"></canvas>
-      <div id="tradeSummary"></div>
+    <!-- 4. 거래 성사 통계 -->
+    <div class="card p-3 mb-4 shadow-sm">
+      <div class="row">
+        <div class="col-md-6 d-flex flex-column align-items-center mb-3 mb-md-0">
+          <h6 class="text-center fw-semibold mb-2">거래 성사율</h6>
+          <canvas id="tradePieChart" style="width: 100%; max-height: 300px;"></canvas>
+          <div id="tradeSummary" class="text-center mt-2 small text-muted"></div>
+        </div>
+        <div class="col-md-6 d-flex flex-column align-items-center">
+          <h6 class="text-center fw-semibold mb-2">최근 4주간 주간 거래 성사 건수</h6>
+          <canvas id="weeklyTradeChart" style="width: 100%; max-height: 300px;"></canvas>
+        </div>
+      </div>
     </div>
 
-    <!-- 5. 인기 상품 순위 -->
-    <!-- 향후 필요 시 활성화 -->
+    <!-- 향후 확장 영역 -->
     <!--
-    <div class="card mb-4 p-3">
-      <h5>인기 상품 순위</h5>
+    <div class="card mb-4 p-3 shadow-sm">
+      <h5 class="fw-semibold">인기 상품 순위</h5>
       <ul id="topProducts" class="list-group">
         AJAX로 삽입
       </ul>
@@ -75,8 +84,8 @@
   </div>
 
   <!-- Chart.js 및 datalabels -->
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels"></script>
+  <script src="/js/lib/chart.umd.min.js"></script>
+  <script src="/js/lib/chartjs-plugin-datalabels.min.js"></script>
 
   <!-- 대시보드 JS -->
   <script src="/js/admin_dashboard.js"></script>
